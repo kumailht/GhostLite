@@ -82,9 +82,6 @@ module.exports = {
   // Settings helpers for calculated settings
   settingsHelpers: {
     isStripeConnected: (...args) => settingsHelpers.isStripeConnected(...args),
-    // Delegates at call time (not bound at load) so tests that stub the
-    // method on the settings-helpers service are still seen through here.
-    getMembersValidationKey: (...args) => settingsHelpers.getMembersValidationKey(...args),
   },
 
   // TODO: Expose less of the API to make this safe

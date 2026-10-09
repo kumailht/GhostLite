@@ -24,7 +24,6 @@ import { CompletionFailureError, describeCompletionFailure } from './publish/com
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
-import { stateSaveError } from './session/error-mapping';
 import type { InvalidField } from './session/settings-fields';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
@@ -233,11 +232,6 @@ export function EditorHeaderActions({
     if (!invalid) {
       return false;
     }
-    // The subject is edited in the preview, whose own save is refused beside the field.
-    if (invalid.key === 'email_subject' && isDraft) {
-      setPreviewOpen(true);
-      return true;
-    }
     void session.saveExplicit();
     return true;
   }, [isDraft, revealInvalidField, session]);
@@ -280,20 +274,7 @@ export function EditorHeaderActions({
   }
 
   const preview: HeaderPreviewProps = {
-    subjectEditor: {
-      value: session.settings.email_subject,
-      fallback: session.title,
-      hasUnsavedChanges: session.isDirty(),
-      isSaving,
-      saveError: stateSaveError(session.state),
-      onChange: (value) => session.stageSettings({ email_subject: value }),
-      onCommit: session.commitSettings,
-    },
-    isPost: postType === 'post',
-    post,
-    newsletterSlug: post.newsletter ?? undefined,
     open: previewOpen,
-    postId: persistedId,
     previewUrl: postPreviewUrl(siteUrl, record?.uuid),
     onBeforeOpen: saveBeforePreview,
     onOpenChange: setPreviewOpen,
@@ -406,7 +387,7 @@ function PublishActions({
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
   const [openedFromPreview, setOpenedFromPreview] = useState(false);
-  const [flowNewsletterSlug, setFlowNewsletterSlug] = useState<string>();
+  const [, setFlowNewsletterSlug] = useState<string>();
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -594,7 +575,6 @@ function PublishActions({
         <PostPreviewModal
           {...preview}
           animate={openFlow !== 'publish'}
-          fallbackNewsletterSlug={flowNewsletterSlug}
           publishDisabled={!inputs.isReady}
           onCloseAutoFocus={previewCloseAutoFocus}
           onOpenChange={changePreviewOpen}

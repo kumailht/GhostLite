@@ -1,52 +1,29 @@
 import { Banner, Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import {
-  getRecipientType,
-  normalizeRecipientFilter,
-} from '@tryghost/admin-x-framework/utils/recipient-filter';
-import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { useEmailSize } from '@/editor/use-email-size';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useState } from 'react';
 import {
-  publishAlreadySent,
   publishContinue,
-  publishEmailSizeWarning,
   publishFlowOptions,
   publishLimitsError,
-  publishSettingEmailRecipients,
   publishSettingPublishAt,
   publishSettingPublishType,
 } from '@/editor/selectors';
-import { EmailRecipientsOptions } from './email-recipients-options';
 import { PublishAtOptions } from './publish-at-options';
 import { LimitMessage } from './limit-message';
 import { PublishSetting, PublishSettingNote } from './publish-setting';
-import { PublishTypeOptions } from './publish-type-options';
-import { recipientsRowLabel, relativeTime } from '@/editor/publish/publish-copy';
-import type {
-  NewsletterInput,
-  PublishOptionsState,
-  PublishType,
-} from '@/editor/publish/publish-options';
-import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import { relativeTime } from '@/editor/publish/publish-copy';
+import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
-type Section = 'publishType' | 'emailRecipients' | 'publishAt';
+type Section = 'publishAt';
 
 export interface OptionsStepProps {
-  post: PublishFlowPost;
   state: PublishOptionsState;
   timezone: string;
-  /** True when the site turned newsletters or members off; hides the historic send row. */
-  emailDisabledInSettings: boolean;
-  /** The limit checks can demote the publish type, so review waits for them. */
+  /** Review waits for the limit checks. */
   limitsChecked: boolean;
   /** A failed limit read keeps Continue disabled and offers a retry. */
   limitsFailure: string | null;
-  onSetPublishType: (publishType: PublishType) => void;
-  onSetNewsletter: (newsletter: NewsletterInput | null) => void;
-  onSetRecipientFilter: (filter: string | null) => void;
   onToggleScheduled: (isScheduled: boolean) => void;
   onSetScheduledAt: (date: Date) => void;
   onContinue: () => void;
@@ -57,58 +34,11 @@ function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function RecipientsRowTitle({ state }: { state: PublishOptionsState }) {
-  const { count } = useMembersCount(state.fullRecipientFilter, {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-
-  if (!state.recipientFilter) {
-    return <>Not sent as newsletter</>;
-  }
-
-  return (
-    <>
-      {recipientsRowLabel({
-        recipientType: getRecipientType(state.recipientFilter),
-        count,
-        newsletterName: state.onlyDefaultNewsletter ? null : (state.newsletter?.name ?? null),
-      })}
-    </>
-  );
-}
-
-function EmailSizeNote({ post }: { post: PublishFlowPost }) {
-  const emailSize = useEmailSize(post);
-
-  if (!emailSize?.overLimit) {
-    return null;
-  }
-
-  return (
-    <Banner className="mb-4" data-testid={publishEmailSizeWarning} variant="warning">
-      <Stack gap="xs">
-        <Text weight="semibold">
-          This email is <span className="text-state-warning">{emailSize.sizeKb}kB</span>
-        </Text>
-        <Text size="sm" tone="secondary">
-          Email newsletters may get clipped in the inbox behind a “View entire message” link when
-          they’re over 100kB.
-        </Text>
-      </Stack>
-    </Banner>
-  );
-}
-
 export function OptionsStep({
-  post,
   state,
   timezone,
-  emailDisabledInSettings,
   limitsChecked,
   limitsFailure,
-  onSetPublishType,
-  onSetNewsletter,
-  onSetRecipientFilter,
   onToggleScheduled,
   onSetScheduledAt,
   onContinue,
@@ -119,11 +49,6 @@ export function OptionsStep({
     setOpenSection((current) => (current === section ? null : section));
 
   const publishBlocked = state.publishBlock !== null;
-  const selectedType = state.publishTypeOptions.find(
-    (option) => option.value === state.publishType,
-  );
-  const historicEmail = post.email;
-  const historicRecipientType = getRecipientType(normalizeRecipientFilter(post.emailSegment));
 
   return (
     <Stack data-testid={publishFlowOptions} gap="xl">
@@ -153,78 +78,16 @@ export function OptionsStep({
 
       <Stack gap="none">
         <PublishSetting
-          disabled={state.emailUnavailable || publishBlocked}
-          footer={state.willEmail ? <EmailSizeNote post={post} /> : null}
           icon={<LucideIcon.Send className="size-4" />}
-          open={openSection === 'publishType'}
           testId={publishSettingPublishType}
-          title={
-            state.emailUnavailable || publishBlocked
-              ? 'Publish on site'
-              : (selectedType?.display ?? 'Publish')
-          }
-          onToggle={toggle('publishType')}
-        >
-          <PublishTypeOptions state={state} onChange={onSetPublishType} />
-        </PublishSetting>
+          title="Publish on site"
+          disabled
+        />
 
         {state.publishBlock ? (
           <PublishSettingNote>
             <LimitMessage parts={state.publishBlock.parts} />
           </PublishSettingNote>
-        ) : null}
-
-        {state.emailUnavailable ? null : (
-          <PublishSetting
-            disabled={state.publishType === 'publish' || publishBlocked}
-            icon={<LucideIcon.Users className="size-4" />}
-            open={openSection === 'emailRecipients'}
-            testId={publishSettingEmailRecipients}
-            title={
-              state.publishType === 'publish' || publishBlocked ? (
-                'Not sent as newsletter'
-              ) : (
-                <RecipientsRowTitle state={state} />
-              )
-            }
-            onToggle={toggle('emailRecipients')}
-          >
-            <EmailRecipientsOptions
-              state={state}
-              onSetNewsletter={onSetNewsletter}
-              onSetRecipientFilter={onSetRecipientFilter}
-            />
-          </PublishSetting>
-        )}
-
-        {state.missingRecipients && !publishBlocked ? (
-          <PublishSettingNote>
-            {state.publishType === 'send'
-              ? 'Choose at least one recipient to send this email.'
-              : 'No recipients are selected, so this post will be published without being emailed.'}
-          </PublishSettingNote>
-        ) : null}
-
-        {historicEmail && !emailDisabledInSettings ? (
-          <PublishSetting
-            icon={<LucideIcon.Users className="size-4" />}
-            testId={publishAlreadySent}
-            title={[
-              historicEmail.status === 'failed' ? 'Retry sending to' : 'Already sent to',
-              formatNumber(historicEmail.email_count ?? 0),
-              // The segment word is dropped for "all", as in the row above it.
-              historicRecipientType === 'all' || historicRecipientType === 'none'
-                ? null
-                : historicRecipientType,
-              historicEmail.email_count === 1 ? 'subscriber' : 'subscribers',
-              state.onlyDefaultNewsletter || !post.newsletterName
-                ? null
-                : `of ${post.newsletterName}`,
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            disabled
-          />
         ) : null}
 
         <PublishSetting

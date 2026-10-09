@@ -11,12 +11,10 @@ import {
 } from '@/editor/selectors';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { CompleteStep } from './components/complete-step';
-import { CompleteWithEmailErrorStep } from './components/complete-with-email-error-step';
 import { ConfirmStep } from './components/confirm-step';
 import { GateDialog } from './components/gate-dialog';
 import { OptionsStep } from './components/options-step';
 import { PUBLIC_PREVIEW_WARNING_COPY, getPublicPreviewWarning } from './public-preview-warning';
-import { isEmailDisabledInSettings } from './publish-options';
 import { usePublishFlow } from './use-publish-flow';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
@@ -222,21 +220,7 @@ function PublishFlowDialog({
         </Inline>
 
         <Stack className="mx-auto w-full max-w-156 px-6 pt-[max(9.6rem,18vh)] pb-16" gap="xl">
-          {step === 'email-error' && flow.emailErrorMessage ? (
-            <CompleteWithEmailErrorStep
-              canRetry={flow.canRetryEmail}
-              checkingEligibility={flow.checkingRetryEligibility}
-              eligibilityFailed={flow.retryEligibilityFailed}
-              emailErrorMessage={flow.emailErrorMessage}
-              mailgunConfigured={site.mailgunConfigured}
-              post={post}
-              retryFailure={flow.retryFailure}
-              status={flow.retryStatus}
-              willOnlyEmail={state.willOnlyEmail}
-              onCheckEligibility={flow.checkRetryEligibility}
-              onRetry={() => void flow.retryEmail()}
-            />
-          ) : step === 'complete' ? (
+          {step === 'complete' ? (
             <CompleteStep
               captured={flow.captured}
               completedAt={flow.completedAt}
@@ -260,17 +244,12 @@ function PublishFlowDialog({
             />
           ) : (
             <OptionsStep
-              emailDisabledInSettings={isEmailDisabledInSettings(site)}
               limitsChecked={flow.limitsChecked}
               limitsFailure={flow.limitsFailure}
-              post={post}
               state={state}
               timezone={timezone}
               onContinue={flow.toConfirm}
               onRetryLimits={flow.retryLimits}
-              onSetNewsletter={flow.setNewsletter}
-              onSetPublishType={flow.setPublishType}
-              onSetRecipientFilter={flow.setRecipientFilter}
               onSetScheduledAt={flow.setScheduledAt}
               onToggleScheduled={flow.setIsScheduled}
             />

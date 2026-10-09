@@ -47,7 +47,6 @@ import {
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
 import { EditorStatus } from './editor-status';
-import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
@@ -468,7 +467,6 @@ function EditorContent({
                   postType === 'page' && liveShowTitleAndFeatureImage === false
                 }
                 titleError={titleError(session.bind.title)}
-                wordCountAccessory={<EmailSizeWarning post={publishPost} />}
                 onExcerptBlur={session.commitField}
                 onTkCountChange={setTkCount}
               />

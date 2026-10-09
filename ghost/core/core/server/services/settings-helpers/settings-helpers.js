@@ -3,7 +3,6 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const emailAddressParser = require('../email-address/email-address-parser');
 const logging = require('@tryghost/logging');
-const crypto = require('crypto');
 const debug = require('@tryghost/debug')('services:settings-helpers');
 
 const messages = {
@@ -115,16 +114,6 @@ class SettingsHelpers {
     return domain;
   }
 
-  /**
-   * Retrieves the member validation key from the settings cache. The intent is for this key to be used where member
-   *  auth is not required. For example, unsubscribe links in emails, which are required to be one-click unsubscribe.
-   *
-   * @returns {string} The member validation key.
-   */
-  getMembersValidationKey() {
-    return this.settingsCache.get('members_email_auth_secret');
-  }
-
   getMembersSupportAddress() {
     const supportAddress = this.settingsCache.get('members_support_address');
 
@@ -141,15 +130,16 @@ class SettingsHelpers {
     return supportAddress;
   }
 
-  /**
-   * @deprecated Use getDefaultEmail().address (without name) or emailAddressParser.stringify(this.getDefaultEmail()) (with name) instead
-   */
-  getNoReplyAddress() {
-    return this.getDefaultEmailAddress();
-  }
-
   getDefaultEmailAddress() {
     return this.getDefaultEmail().address;
+  }
+
+  /**
+   * @deprecated
+   * Please start using the new EmailAddressService
+   */
+  getLegacyNoReplyAddress() {
+    return `noreply@${this.getDefaultEmailDomain()}`;
   }
 
   getDefaultEmail() {
@@ -170,42 +160,8 @@ class SettingsHelpers {
     };
   }
 
-  /**
-   * @deprecated
-   * Please start using the new EmailAddressService
-   */
-  getLegacyNoReplyAddress() {
-    return `noreply@${this.getDefaultEmailDomain()}`;
-  }
-
   areDonationsEnabled() {
     return false;
-  }
-
-  createUnsubscribeUrl(uuid, options = {}) {
-    const siteUrl = this.urlUtils.urlFor('home', true);
-    const unsubscribeUrl = new URL(siteUrl);
-    const key = this.getMembersValidationKey();
-    unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-    if (uuid) {
-      // hash key with member uuid for verification (and to not leak uuid) - it's possible to update member email prefs without logging in
-      const hmac = crypto.createHmac('sha256', key).update(`${uuid}`).digest('hex');
-      unsubscribeUrl.searchParams.set('uuid', uuid);
-      unsubscribeUrl.searchParams.set('key', hmac);
-    } else {
-      unsubscribeUrl.searchParams.set('preview', '1');
-    }
-    if (options.newsletterUuid) {
-      unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
-    }
-    if (options.comments) {
-      unsubscribeUrl.searchParams.set('comments', '1');
-    }
-    if (options.updatesAndAnnouncements) {
-      unsubscribeUrl.searchParams.set('updatesandannouncements', '1');
-    }
-
-    return unsubscribeUrl.href;
   }
 
   /**
@@ -231,54 +187,6 @@ class SettingsHelpers {
       : [];
 
     return Array.from(new Set([...configBlocklist, ...settingsBlocklist]));
-  }
-
-  /**
-   * Calculated setting for Social web (ActivityPub)
-   *
-   * @returns {boolean}
-   */
-  isSocialWebEnabled() {
-    // UI setting
-    if (this.settingsCache.get('social_web') !== true) {
-      debug('Social web is disabled in settings');
-      return false;
-    }
-
-    // Private sites cannot use social web
-    if (this.settingsCache.get('is_private') === true) {
-      debug('Social web is not available for private sites');
-      return false;
-    }
-
-    // Ghost (Pro) limits
-    if (this.limitService.isDisabled('limitSocialWeb')) {
-      debug(
-        'Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory',
-      );
-      return false;
-    }
-
-    // Social web (ActivityPub) currently does not support Ghost sites hosted on a subdirectory, e.g. https://example.com/blog/
-    const subdirectory = this.urlUtils.getSubdir();
-    if (subdirectory) {
-      debug('Social web is not available for Ghost sites hosted on a subdirectory');
-      return false;
-    }
-
-    // Self-hosters cannot connect to production ActivityPub servers from localhost or IPs addresses
-    const siteUrl = new URL(this.urlUtils.getSiteUrl());
-    const isLocalhost =
-      siteUrl.hostname === 'localhost' ||
-      siteUrl.hostname === '127.0.0.1' ||
-      siteUrl.hostname === '::1';
-    const isIP = net.isIP(siteUrl.hostname);
-    if (process.env.NODE_ENV === 'production' && (isLocalhost || isIP)) {
-      debug('Social web is not available from localhost or IPs addresses in production');
-      return false;
-    }
-
-    return true;
   }
 
   #managedEmailEnabled() {

@@ -41,35 +41,17 @@
       "import": "./dist/api/*.js",
       "require": "./dist/api/*.cjs"
     },
-    "./utils/countries": {
-      "source": "./src/utils/countries.ts",
-      "types": "./types/utils/countries.d.ts",
-      "import": "./dist/utils/countries.js",
-      "require": "./dist/utils/countries.cjs"
-    },
     "./utils/post-utils": {
       "source": "./src/utils/post-utils.ts",
       "types": "./types/utils/post-utils.d.ts",
       "import": "./dist/utils/post-utils.js",
       "require": "./dist/utils/post-utils.cjs"
     },
-    "./utils/get-site-timezone": {
-      "source": "./src/utils/get-site-timezone.ts",
-      "types": "./types/utils/get-site-timezone.d.ts",
-      "import": "./dist/utils/get-site-timezone.js",
-      "require": "./dist/utils/get-site-timezone.cjs"
-    },
     "./utils/recipient-filter": {
       "source": "./src/utils/recipient-filter.ts",
       "types": "./types/utils/recipient-filter.d.ts",
       "import": "./dist/utils/recipient-filter.js",
       "require": "./dist/utils/recipient-filter.cjs"
-    },
-    "./vite": {
-      "source": "./src/vite.ts",
-      "types": "./types/vite.d.ts",
-      "import": "./dist/vite.js",
-      "require": "./dist/vite.cjs"
     },
     "./utils/admin-theme": {
       "source": "./src/utils/admin-theme.ts",
@@ -85,15 +67,10 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
-    "@tryghost/app-contracts": "workspace:*",
-    "@tryghost/checkout": "workspace:*",
     "@tryghost/limit-service": "workspace:*",
-    "@tryghost/metafield-csv": "workspace:*",
-    "@tryghost/metafield-types": "workspace:*",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "@tryghost/string": "catalog:",
-    "bson-objectid": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:",
@@ -101,7 +78,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@tryghost/koenig-lexical": "workspace:*",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",
@@ -109,9 +85,7 @@
     "glob": "catalog:",
     "type-fest": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "catalog:"
+    "vite": "catalog:"
   },
   "peerDependencies": {
     "react": "^18.2.0",

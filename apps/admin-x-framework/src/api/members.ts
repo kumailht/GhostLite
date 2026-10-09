@@ -9,7 +9,6 @@ import {
 } from '../utils/api/hooks';
 import { escapeNqlString } from '@tryghost/nql-string';
 import { apiUrl, type RequestOptions } from '../utils/api/fetch-api';
-import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
 import { canManageMembers } from './users';
 import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';
@@ -750,7 +749,7 @@ export interface EditMemberData {
   // The server applies this as a merge: only the keys present are written, and `null` clears
   // a value. Every key is checked against the fields the site has defined; naming one that
   // does not exist rejects the edit rather than being ignored.
-  metafields?: Record<string, Record<string, FieldValue | null>>;
+  metafields?: Record<string, Record<string, unknown>>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({

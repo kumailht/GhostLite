@@ -8,12 +8,11 @@ import {
 } from '@/editor/selectors';
 import { useRef, type SyntheticEvent } from 'react';
 
-import { browserPreviewUrl, type PreviewAudience, type PreviewDevice } from './preview-url';
+import type { PreviewDevice } from './preview-url';
 
 interface BrowserPreviewProps {
-  /** The post's public preview URL, before the audience params are applied. */
+  /** The post's public preview URL. */
   previewUrl: string;
-  audience: PreviewAudience;
   device: PreviewDevice;
   /** Called for an Escape pressed inside a same-origin site frame. */
   onEscape: () => void;
@@ -39,7 +38,7 @@ function useFrameEscape(onEscape: () => void) {
   };
 }
 
-export function BrowserPreview({ previewUrl, audience, device, onEscape }: BrowserPreviewProps) {
+export function BrowserPreview({ previewUrl, device, onEscape }: BrowserPreviewProps) {
   const onFrameLoad = useFrameEscape(onEscape);
 
   if (!previewUrl) {
@@ -66,7 +65,7 @@ export function BrowserPreview({ previewUrl, audience, device, onEscape }: Brows
       <iframe
         className="size-full border-0"
         data-testid={postPreviewBrowserFrame}
-        src={browserPreviewUrl(previewUrl, audience)}
+        src={previewUrl}
         title="Post preview"
         onLoad={onFrameLoad}
       />

@@ -260,10 +260,6 @@ overrides:
   nwsapi: 2.2.24
   'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.71.0
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.71.0
-  # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
-  # and ghost/core share one copy instead of keeping two parsers resident - both
-  # only ever call `load`. See patchedDependencies for the matching slim import.
-  'juice>cheerio': 'catalog:'
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost/core links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and
@@ -331,19 +327,3 @@ patchedDependencies:
   # as its apply while the target is still mounted, which is that replay, so the
   # re-apply finds the page still hidden and nothing is removed.
   aria-hidden@1.2.6: patches/aria-hidden@1.2.6.patch
-  # The juice patch makes three changes:
-  # - lib/cheerio.js imports cheerio's main entry, which eagerly loads parse5,
-  #   undici and the whatwg encoding stack that juice never uses (~20MB RSS per
-  #   process). The patch redirects that one import to cheerio/slim; juice
-  #   already parses via htmlparser2, so output is unchanged.
-  # - juice 11 drops CSS rules with no declarations, so inlining throws on a
-  #   style attribute that has none (e.g. `style=";"`). The patch skips those
-  #   attributes, as juice 9 did.
-  # - mensch parses input like `a{b}` (or a `{placeholder}` in a style
-  #   attribute once replacement strings are wrapped) into a declaration with
-  #   no value, and inlining throws on it. This predates juice 11; the patch
-  #   skips those declarations.
-  # Re-create the patch with `pnpm patch juice@<version>` when juice is bumped -
-  # and note juice 12+ is ESM, so a major bump also needs the `require('juice')`
-  # call sites updated. The malformed CSS email tests cover all three crashes.
-  juice@11.1.1: patches/juice@11.1.1.patch

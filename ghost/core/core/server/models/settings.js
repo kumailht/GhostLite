@@ -42,16 +42,6 @@ const generateKeypair = () => {
   return { public: publicKey, private: privateKey };
 };
 
-const getMembersKey = doBlock(() => {
-  let UNO_KEYPAIRINO;
-  return function getKey(type) {
-    if (!UNO_KEYPAIRINO) {
-      UNO_KEYPAIRINO = generateKeypair();
-    }
-    return UNO_KEYPAIRINO[type];
-  };
-});
-
 const getGhostKey = doBlock(() => {
   let UNO_KEYPAIRINO;
   return function getKey(type) {
@@ -74,15 +64,9 @@ function parseDefaultSettings() {
     public_hash: () => crypto.randomBytes(15).toString('hex'),
     admin_session_secret: () => crypto.randomBytes(32).toString('hex'),
     theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
-    members_public_key: () => getMembersKey('public'),
-    members_private_key: () => getMembersKey('private'),
-    members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
-    members_otc_secret: () => crypto.randomBytes(64).toString('hex'),
-    machine_payments_secret: () => crypto.randomBytes(64).toString('hex'),
     ghost_public_key: () => getGhostKey('public'),
     ghost_private_key: () => getGhostKey('private'),
     site_uuid: () => getOrGenerateSiteUuid(),
-    indexnow_api_key: () => crypto.randomBytes(16).toString('hex'),
   };
 
   _.each(defaultSettingsInCategories, function each(settings, categoryName) {

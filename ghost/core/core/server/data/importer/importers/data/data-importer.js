@@ -8,10 +8,6 @@ const PostsImporter = require('./posts-importer');
 const TagsImporter = require('./tags-importer');
 const SettingsImporter = require('./settings-importer');
 const UsersImporter = require('./users-importer');
-const NewslettersImporter = require('./newsletters-importer');
-const ProductsImporter = require('./products-importer');
-const StripeProductsImporter = require('./stripe-products-importer');
-const StripePricesImporter = require('./stripe-prices-importer');
 const CustomThemeSettingsImporter = require('./custom-theme-settings-importer');
 const RolesImporter = require('./roles-importer');
 const { slugify } = require('@tryghost/string/lib');
@@ -31,11 +27,7 @@ const DataImporter = {
     importers.users = new UsersImporter(importData.data);
     importers.roles = new RolesImporter(importData.data);
     importers.tags = new TagsImporter(importData.data);
-    importers.newsletters = new NewslettersImporter(importData.data);
     importers.settings = new SettingsImporter(importData.data);
-    importers.products = new ProductsImporter(importData.data);
-    importers.stripe_products = new StripeProductsImporter(importData.data);
-    importers.stripe_prices = new StripePricesImporter(importData.data);
     importers.posts = new PostsImporter(importData.data);
     importers.custom_theme_settings = new CustomThemeSettingsImporter(importData.data);
 
@@ -152,42 +144,6 @@ const DataImporter = {
             importedData[importer.dataKeyToImport] = importer.importedDataToReturn;
           }
         });
-      });
-
-      /**
-       * @TODO: figure out how to fix this properly
-       * fixup the circular reference from
-       * stripe_prices -> stripe_products -> products -> stripe_prices
-       *
-       * Note: the product importer validates that all values are either
-       *   - being imported, or
-       *   - already exist in the db
-       * so we only need to map imported products
-       */
-      ops.push(async () => {
-        const importedStripePrices = importers.stripe_prices.importedData;
-        const importedProducts = importers.products.importedData;
-        const productOps = [];
-
-        _.forEach(importedProducts, (importedProduct) => {
-          return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
-            const mappedPrice = _.find(importedStripePrices, {
-              originalId: importedProduct[field],
-            });
-            if (mappedPrice) {
-              productOps.push(() => {
-                return models.Product.edit(
-                  { [field]: mappedPrice.id },
-                  { id: importedProduct.id, transacting },
-                );
-              });
-            }
-          });
-        });
-
-        for (const productOp of productOps) {
-          await productOp();
-        }
       });
 
       for (const op of ops) {

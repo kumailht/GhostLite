@@ -25,20 +25,6 @@ const CONTENT_API_RESTRICTED_RELATIONS = new Set(['mobiledoc_revisions', 'post_r
 const CONTENT_API_PAGE_RESTRICTED_FIELDS = new Set(['email_subject']);
 const CONTENT_API_POST_RESTRICTED_FIELDS = new Set(['show_title_and_feature_image']);
 
-const CONTENT_API_NEWSLETTER_FIELDS = new Set([
-  'id',
-  'uuid',
-  'name',
-  'description',
-  'slug',
-  'sender_email',
-  'subscribe_on_signup',
-  'visibility',
-  'sort_order',
-  'created_at',
-  'updated_at',
-]);
-
 // User fields and relations the Content API does not expose: blocked as bare fields on authors and via author relations elsewhere.
 // Not blocked as bare fields on other resources, where visibility/status are legitimate filters.
 const CONTENT_API_USER_RESTRICTED_FIELDS = new Set([
@@ -85,7 +71,6 @@ function getOrderAttributes(tableName: string): string[] {
 
 const CONTENT_API_AUTHOR_ORDER_ATTRIBUTES = getOrderAttributes('users');
 const CONTENT_API_TAG_ORDER_ATTRIBUTES = getOrderAttributes('tags');
-const CONTENT_API_NEWSLETTER_ORDER_ATTRIBUTES = getOrderAttributes('newsletters');
 const CONTENT_API_POST_ORDER_ATTRIBUTES = [
   ...getOrderAttributes('posts'),
   ...getOrderAttributes('posts_meta').filter(
@@ -157,14 +142,6 @@ function isPagesContentApiRestrictedKey(key: string): boolean {
   );
 }
 
-function isNewslettersContentApiRestrictedKey(key: string): boolean {
-  const normalizedKey = key.toLowerCase();
-  const fieldKey = normalizedKey.startsWith('newsletters.')
-    ? normalizedKey.slice('newsletters.'.length)
-    : normalizedKey;
-  return !CONTENT_API_NEWSLETTER_FIELDS.has(fieldKey);
-}
-
 function rejectRestrictedOrderFields(
   order: string | string[] | undefined,
   orderAttributes: string[],
@@ -208,10 +185,6 @@ export const rejectPostsContentApiRestrictedFieldsTransformer = (input: unknown)
 
 export const rejectPagesContentApiRestrictedFieldsTransformer = (input: unknown) => {
   return rejectStatements(input, isPagesContentApiRestrictedKey);
-};
-
-export const rejectNewslettersContentApiRestrictedFieldsTransformer = (input: unknown) => {
-  return rejectStatements(input, isNewslettersContentApiRestrictedKey);
 };
 
 export const rejectAdminApiRestrictedFieldsTransformer = (input: unknown) => {
@@ -336,15 +309,5 @@ export function rejectPagesContentApiRestrictedOrderFields(
     order,
     CONTENT_API_POST_ORDER_ATTRIBUTES,
     isPagesContentApiRestrictedKey,
-  );
-}
-
-export function rejectNewslettersContentApiRestrictedOrderFields(
-  order: string | string[] | undefined,
-): string | undefined {
-  return rejectRestrictedOrderFields(
-    order,
-    CONTENT_API_NEWSLETTER_ORDER_ATTRIBUTES,
-    isNewslettersContentApiRestrictedKey,
   );
 }

@@ -19,11 +19,9 @@ class PostsImporter extends BaseImporter {
         'posts_tags',
         'posts_authors',
         'posts_meta',
-        'products',
-        'posts_products',
       ],
-      requiredImportedData: ['tags', 'products', 'newsletters'],
-      requiredExistingData: ['tags', 'products', 'newsletters'],
+      requiredImportedData: ['tags'],
+      requiredExistingData: ['tags'],
     });
   }
 
@@ -43,12 +41,14 @@ class PostsImporter extends BaseImporter {
         delete obj.page;
       }
 
-      if (_.has(obj, 'send_email_when_published')) {
-        if (obj.send_email_when_published) {
-          obj.email_recipient_filter = obj.visibility === 'paid' ? 'status:-free' : 'all';
-          // @TODO: we need to set the newsletter_id to the default newsletter here to have a proper fallback for older imports
-        }
-        delete obj.send_email_when_published;
+      // GhostLite has no members, newsletters or email: every post is public and
+      // any newsletter or email data from a full Ghost export is dropped.
+      obj.visibility = 'public';
+      obj.email_recipient_filter = 'all';
+      delete obj.newsletter_id;
+      delete obj.send_email_when_published;
+      if (obj.status === 'sent') {
+        obj.status = 'published';
       }
     });
   }
@@ -73,7 +73,7 @@ class PostsImporter extends BaseImporter {
   }
 
   /**
-   * Naive function to attach related tags, authors, and products.
+   * Naive function to attach related tags and authors.
    */
   addNestedRelations() {
     this.requiredFromFile.posts_tags = _.orderBy(
@@ -86,16 +86,10 @@ class PostsImporter extends BaseImporter {
       ['post_id', 'sort_order'],
       ['asc', 'asc'],
     );
-    this.requiredFromFile.posts_products = _.orderBy(
-      this.requiredFromFile.posts_products,
-      ['post_id', 'sort_order'],
-      ['asc', 'asc'],
-    );
 
     /**
      * from {post_id: 1, tag_id: 2} to post.tags=[{id:id}]
      * from {post_id: 1, author_id: 2} post.authors=[{id:id}]
-     * from {post_id: 1, product_id: 2} post.products=[{id:id}]
      */
     const run = (relations, target, fk) => {
       _.each(relations, (relation) => {
@@ -125,7 +119,6 @@ class PostsImporter extends BaseImporter {
 
     run(this.requiredFromFile.posts_tags, 'tags', 'tag_id');
     run(this.requiredFromFile.posts_authors, 'authors', 'author_id');
-    run(this.requiredFromFile.posts_products, 'tiers', 'product_id');
   }
 
   /**
@@ -212,33 +205,6 @@ class PostsImporter extends BaseImporter {
     _.each(this.dataToImport, (postToImport, postIndex) => {
       run(postToImport, postIndex, 'tags', 'tags');
       run(postToImport, postIndex, 'authors', 'users');
-      run(postToImport, postIndex, 'tiers', 'products');
-    });
-
-    // map newsletter_id -> newsletters.id
-    _.each(this.dataToImport, (objectInFile) => {
-      if (!objectInFile.newsletter_id) {
-        return;
-      }
-      const importedObject = _.find(this.requiredImportedData.newsletters, {
-        originalId: objectInFile.newsletter_id,
-      });
-      // CASE: we've imported the newsletter
-      if (importedObject) {
-        debug(`replaced newsletter_id ${objectInFile.newsletter_id} with ${importedObject.id}`);
-        objectInFile.newsletter_id = importedObject.id;
-        return;
-      }
-      const existingObject = _.find(this.requiredExistingData.newsletters, {
-        id: objectInFile.newsletter_id,
-      });
-      // CASE: newsletter already exists in the db
-      if (existingObject) {
-        return;
-      }
-      // CASE: newsletter doesn't exist; ignore it
-      debug(`newsletter ${objectInFile.newsletter_id} not found; ignoring`);
-      delete objectInFile.newsletter_id;
     });
 
     return super.replaceIdentifiers();

@@ -10,25 +10,18 @@ const getPostServiceInstance = () => {
   const labs = require('../../../shared/labs');
   const models = require('../../models');
   const PostStats = require('./stats/post-stats');
-  const settingsCache = require('../../../shared/settings-cache');
-  const settingsHelpers = require('../settings-helpers');
 
   const postStats = new PostStats();
 
   const postsExporter = new PostsExporter({
     models: {
       Post: models.Post,
-      Newsletter: models.Newsletter,
-      Label: models.Label,
-      Product: models.Product,
     },
     getPostUrl(post) {
       const jsonModel = post.toJSON();
       url.forPost(post.id, jsonModel, { options: {} });
       return jsonModel.url;
     },
-    settingsCache,
-    settingsHelpers,
   });
 
   return new PostsService({

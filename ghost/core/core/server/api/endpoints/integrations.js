@@ -24,7 +24,7 @@ const controller = {
     validation: {
       options: {
         include: {
-          values: ['api_keys', 'webhooks'],
+          values: ['api_keys'],
         },
       },
     },
@@ -47,7 +47,7 @@ const controller = {
       },
       options: {
         include: {
-          values: ['api_keys', 'webhooks'],
+          values: ['api_keys'],
         },
       },
     },
@@ -68,7 +68,7 @@ const controller = {
       cacheInvalidate: false,
     },
     permissions: true,
-    data: ['name', 'icon_image', 'description', 'webhooks'],
+    data: ['name', 'icon_image', 'description'],
     options: ['id', 'keyid', 'include'],
     validation: {
       options: {
@@ -76,7 +76,7 @@ const controller = {
           required: true,
         },
         include: {
-          values: ['api_keys', 'webhooks'],
+          values: ['api_keys'],
         },
       },
     },
@@ -90,7 +90,7 @@ const controller = {
       cacheInvalidate: false,
     },
     permissions: true,
-    data: ['name', 'icon_image', 'description', 'webhooks'],
+    data: ['name', 'icon_image', 'description'],
     options: ['include'],
     validation: {
       data: {
@@ -100,7 +100,7 @@ const controller = {
       },
       options: {
         include: {
-          values: ['api_keys', 'webhooks'],
+          values: ['api_keys'],
         },
       },
     },

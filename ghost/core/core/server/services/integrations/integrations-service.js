@@ -31,7 +31,7 @@ class IntegrationsService {
         return await this.IntegrationModel.findOne(
           { id: options.id },
           {
-            withRelated: ['api_keys', 'webhooks'],
+            withRelated: ['api_keys'],
           },
         );
       } catch (err) {

@@ -11,19 +11,15 @@ const Integration = ghostBookshelf.Model.extend(
     actionsCollectCRUD: true,
     actionsResourceType: 'integration',
 
-    relationships: ['api_keys', 'webhooks'],
+    relationships: ['api_keys'],
     relationshipConfig: {
       api_keys: {
-        editable: true,
-      },
-      webhooks: {
         editable: true,
       },
     },
 
     relationshipBelongsTo: {
       api_keys: 'api_keys',
-      webhooks: 'webhooks',
     },
 
     defaults() {
@@ -70,9 +66,6 @@ const Integration = ghostBookshelf.Model.extend(
       return this.hasMany('ApiKey', 'integration_id');
     },
 
-    webhooks: function webhooks() {
-      return this.hasMany('Webhook', 'integration_id');
-    },
   },
   {
     permittedOptions(methodName) {

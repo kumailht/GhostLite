@@ -1,5 +1,4 @@
 const nql = require('@tryghost/nql');
-const { BadRequestError } = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
@@ -10,9 +9,6 @@ const {
 } = require('../../api/endpoints/utils/api-filter-utils');
 
 const messages = {
-  invalidVisibilityFilter: 'Invalid visibility filter.',
-  invalidVisibility: 'Invalid visibility value.',
-  invalidTiers: 'Invalid tiers value.',
   invalidTags: 'Invalid tags value.',
   unsupportedBulkAction: 'Unsupported bulk action',
   postNotFound: 'Post not found.',
@@ -169,26 +165,6 @@ class PostsService {
       DomainEvents.dispatch(PostsBulkUnfeaturedEvent.create(updateResult.editIds));
 
       return updateResult;
-    }
-    if (data.action === 'access') {
-      if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
-        throw new errors.IncorrectUsageError({
-          message: tpl(messages.invalidVisibility),
-        });
-      }
-      let tiers = undefined;
-      if (data.meta.visibility === 'tiers') {
-        if (!Array.isArray(data.meta.tiers)) {
-          throw new errors.IncorrectUsageError({
-            message: tpl(messages.invalidTiers),
-          });
-        }
-        tiers = data.meta.tiers;
-      }
-      return await this.#updatePosts(
-        { visibility: data.meta.visibility, tiers },
-        { filter: options.filter, context: options.context },
-      );
     }
     if (data.action === 'addTag') {
       if (!Array.isArray(data.meta.tags)) {
@@ -374,7 +350,6 @@ class PostsService {
       'posts_meta',
       'mobiledoc_revisions',
       'post_revisions',
-      'posts_products',
     ];
     for (const table of postTablesToDelete) {
       await this.models.Post.bulkDestroy(deleteIds, table, {
@@ -384,19 +359,6 @@ class PostsService {
       });
     }
 
-    // The `comments.in_reply_to_id` references form chains between a post's
-    // comments, which MySQL cannot resolve while cascade-deleting them
-    // alongside `comments.parent_id`. Clear the references first so the
-    // `comments.post_id` cascade delete can do its job
-    await this.models.Post.bulkEdit(deleteIds, 'comments', {
-      data: { in_reply_to_id: null },
-      column: 'post_id',
-      transacting: options.transacting,
-      throwErrors: true,
-    });
-
-    // A sent post's email and recipients are kept, as when a single post is deleted,
-    // because host email limits count sends from them
     const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {
       ...options,
       throwErrors: true,
@@ -434,77 +396,15 @@ class PostsService {
 
     const editIds = postRows.map((row) => row.id);
 
-    let tiers = undefined;
-    if (data.tiers) {
-      tiers = data.tiers;
-      delete data.tiers;
-    }
-
     const result = await this.models.Post.bulkEdit(editIds, 'posts', {
       ...options,
       data,
       throwErrors: true,
     });
 
-    // Update tiers
-    if (tiers) {
-      // First delete all
-      await this.models.Post.bulkDestroy(editIds, 'posts_products', {
-        column: 'post_id',
-        transacting: options.transacting,
-        throwErrors: true,
-      });
-
-      // Then add again
-      const toInsert = [];
-      for (const postId of editIds) {
-        for (const [index, tier] of tiers.entries()) {
-          if (typeof tier.id === 'string') {
-            toInsert.push({
-              id: ObjectId().toHexString(),
-              post_id: postId,
-              product_id: tier.id,
-              sort_order: index,
-            });
-          }
-        }
-      }
-      await this.models.Post.bulkAdd(toInsert, 'posts_products', {
-        transacting: options.transacting,
-        throwErrors: true,
-      });
-    }
-
     result.editIds = editIds;
 
     return result;
-  }
-
-  async getProductsFromVisibilityFilter(visibilityFilter) {
-    try {
-      const allProducts = await this.models.Product.findAll();
-      const visibilityFilterJson = nql(visibilityFilter).toJSON();
-      const productsData =
-        (visibilityFilterJson.product ? [visibilityFilterJson] : visibilityFilterJson.$or) || [];
-      const tiers = productsData
-        .map((data) => {
-          return allProducts.find((p) => {
-            return p.get('slug') === data.product;
-          });
-        })
-        .filter((p) => !!p)
-        .map((d) => {
-          return d.toJSON();
-        });
-      return tiers;
-    } catch (err) {
-      return Promise.reject(
-        new BadRequestError({
-          message: tpl(messages.invalidVisibilityFilter),
-          context: err.message,
-        }),
-      );
-    }
   }
 
   handleCacheInvalidation(model) {
@@ -586,12 +486,6 @@ class PostsService {
         'feature_image_caption',
         'hide_title_and_feature_image',
       ]);
-    }
-
-    const existingPostTiers = existingPost.related('tiers');
-
-    if (existingPostTiers.length > 0) {
-      newPostData.tiers = existingPostTiers.map((tier) => ({ id: tier.get('id') }));
     }
 
     return this.models.Post.add(newPostData, frame.options);

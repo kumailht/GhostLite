@@ -8,15 +8,11 @@ const nql = require('@tryghost/nql');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const ghostBookshelf = require('./base');
 const config = require('../../shared/config');
-const settingsCache = require('../../shared/settings-cache');
-const { limitService } = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils').default;
 const { Tag } = require('./tag');
-const { Newsletter } = require('./newsletter');
-const { BadRequestError } = require('@tryghost/errors');
 const { mobiledocToLexical } = require('@tryghost/kg-converters');
 const { setIsRoles } = require('./role-utils');
 
@@ -27,17 +23,17 @@ const messages = {
     'Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.',
   untitled: '(Untitled)',
   notEnoughPermission: 'You do not have permission to perform this action',
-  invalidNewsletter: "The newsletter parameter doesn't match any active newsletter.",
   invalidMobiledocStructure: 'Invalid mobiledoc structure.',
   invalidMobiledocStructureHelp: 'https://docs.ghost.org/publishing/',
   invalidLexicalStructure: 'Invalid lexical structure.',
   invalidLexicalStructureHelp: 'https://docs.ghost.org/publishing/',
-  emailOnlyWithoutNewsletter: 'Scheduling an email requires a newsletter reference.',
 };
 
 const POST_REVISIONS_COUNT = 25;
 const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
+
+const REMOVED_RELATIONS = ['tiers', 'email', 'newsletter', 'sentiment'];
 
 let Post;
 
@@ -69,30 +65,12 @@ Post = ghostBookshelf.Model.extend(
      *      2. model events e.g. "post.published" are using the inserted resource, not the fetched resource
      */
     defaults: function defaults() {
-      let visibility = 'public';
-      let tiers = [];
-      const defaultContentVisibility = settingsCache.get('default_content_visibility');
-      if (defaultContentVisibility) {
-        if (defaultContentVisibility === 'tiers') {
-          const tiersData = settingsCache.get('default_content_visibility_tiers') || [];
-          ((visibility = 'tiers'),
-            (tiers = tiersData.map((tierId) => {
-              return {
-                id: tierId,
-              };
-            })));
-        } else if (defaultContentVisibility !== 'tiers') {
-          visibility = settingsCache.get('default_content_visibility');
-        }
-      }
-
       return {
         uuid: crypto.randomUUID(),
         status: 'draft',
         featured: false,
         type: 'post',
-        tiers,
-        visibility: visibility,
+        visibility: 'public',
         email_recipient_filter: 'all',
         show_title_and_feature_image: true,
       };
@@ -104,7 +82,6 @@ Post = ghostBookshelf.Model.extend(
       'mobiledoc_revisions',
       'post_revisions',
       'posts_meta',
-      'tiers',
     ],
     relationshipConfig: {
       tags: {
@@ -127,7 +104,6 @@ Post = ghostBookshelf.Model.extend(
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
       tags: 'tags',
-      tiers: 'products',
       authors: 'users',
       posts_meta: 'posts_meta',
     },
@@ -137,21 +113,6 @@ Post = ghostBookshelf.Model.extend(
         targetTableName: 'posts_meta',
         foreignKey: 'post_id',
       },
-      email: {
-        targetTableName: 'emails',
-        foreignKey: 'post_id',
-      },
-    },
-
-    tiers() {
-      return this.belongsToMany('Product', 'posts_products', 'post_id', 'product_id')
-        .withPivot('sort_order')
-        .query('orderBy', 'sort_order', 'ASC')
-        .query((qb) => {
-          // avoids bookshelf adding a `DISTINCT` to the query
-          // we know the result set will already be unique and DISTINCT hurts query performance
-          qb.columns('products.*');
-        });
     },
 
     parse() {
@@ -275,33 +236,6 @@ Post = ghostBookshelf.Model.extend(
       );
 
       return [...keys, ...postsMetaKeys];
-    },
-
-    orderRawQuery: function orderRawQuery(field, direction, withRelated) {
-      if (field === 'sentiment') {
-        if (withRelated.includes('count.sentiment')) {
-          // Internally sentiment can be included via the count.sentiment relation. We can do a quick optimisation of the query in that case.
-          return {
-            orderByRaw: `count__sentiment ${direction}`,
-          };
-        }
-        return {
-          orderByRaw: `(select AVG(score) from \`members_feedback\` where posts.id = members_feedback.post_id) ${direction}`,
-        };
-      }
-      if (field === 'email.open_rate' && withRelated && withRelated.indexOf('email') > -1) {
-        return {
-          // *1.0 is needed on one of the columns to prevent sqlite from
-          // performing integer division rounding and always giving 0.
-          // Order by emails.track_opens desc first so we always tracked emails
-          // before untracked emails in the posts list.
-          orderByRaw: `
-                    emails.track_opens desc,
-                    emails.opened_count * 1.0 / emails.email_count * 100 ${direction},
-                    posts.created_at desc`,
-          eagerLoad: 'email.open_rate',
-        };
-      }
     },
 
     filterExpansions: function filterExpansions() {
@@ -841,75 +775,8 @@ Post = ghostBookshelf.Model.extend(
         }
       }
 
-      // newsletter_id is read-only and should only be set using the newsletter param when publishing/scheduling
-      if (
-        options.newsletter &&
-        !this.get('newsletter_id') &&
-        this.hasChanged('status') &&
-        (newStatus === 'published' || newStatus === 'scheduled' || newStatus === 'sent')
-      ) {
-        // Map the passed slug to the id + validate the passed newsletter
-        ops.push(async () => {
-          const newsletter = await Newsletter.findOne(
-            { slug: options.newsletter },
-            { transacting: options.transacting, filter: 'status:active' },
-          );
-          if (!newsletter) {
-            throw new BadRequestError({
-              message: messages.invalidNewsletter,
-            });
-          }
-          this.set('newsletter_id', newsletter.id);
-        });
-
-        // If the `email_segment` isn't passed at the same time, reset it to be 100% sure that they can only be used together
-        this.set('email_recipient_filter', 'all');
-
-        // email_segment is read-only and should only be set using a query param when publishing/scheduling
-        // we can't set it if we don't pass newsletter
-        if (options.email_segment) {
-          this.set('email_recipient_filter', options.email_segment);
-        }
-      }
-
-      // ensure draft posts have the email_recipient_filter reset unless an email has already been sent
-      if (newStatus === 'draft' && this.hasChanged('status')) {
-        ops.push(function ensureSendEmailWhenPublishedIsUnchanged() {
-          return self
-            .getLazyRelation('email', { transacting: options.transacting })
-            .then((email) => {
-              if (!email) {
-                self.set('email_recipient_filter', 'all');
-                self.set('newsletter_id', null);
-              }
-            });
-        });
-      }
-
-      // NOTE: this is a stopgap solution for email-only posts where their status is unchanged after publish
-      //       but the usual publis/send newsletter flow continues
-      const hasEmailOnlyFlag =
-        _.get(attrs, 'posts_meta.email_only') || model.related('posts_meta').get('email_only');
-
-      // Require newsletter reference for scheduled email-only posts
-      if (
-        hasEmailOnlyFlag &&
-        newStatus === 'scheduled' &&
-        this.hasChanged('status') &&
-        !this.get('newsletter_id') &&
-        !options.newsletter
-      ) {
-        return Promise.reject(
-          new errors.ValidationError({
-            message: tpl(messages.emailOnlyWithoutNewsletter),
-          }),
-        );
-      }
-
-      if (hasEmailOnlyFlag && newStatus === 'published' && this.hasChanged('status')) {
-        this.set('status', 'sent');
-      } else if (!hasEmailOnlyFlag && newStatus === 'sent' && this.hasChanged('status')) {
-        // Prevent setting status to 'sent' for non email only posts
+      // GhostLite never emails posts, so a post is never "sent".
+      if (newStatus === 'sent' && this.hasChanged('status')) {
         this.set('status', 'published');
       }
 
@@ -1036,29 +903,6 @@ Post = ghostBookshelf.Model.extend(
         });
       }
 
-      if (this.get('tiers')) {
-        this.set(
-          'tiers',
-          this.get('tiers').map((t) => ({
-            id: t.id,
-          })),
-        );
-
-        // Don't associate the free tier with the post
-        const freeTier = await ghostBookshelf
-          .model('Product')
-          .findOne(
-            { type: 'free' },
-            { require: false, transacting: options.transacting ?? undefined },
-          );
-        if (freeTier) {
-          this.set(
-            'tiers',
-            this.get('tiers').filter((t) => t.id !== freeTier.id),
-          );
-        }
-      }
-
       const results = [];
       for (const op of ops) {
         results.push(await op());
@@ -1106,14 +950,6 @@ Post = ghostBookshelf.Model.extend(
 
     posts_meta: function postsMeta() {
       return this.hasOne('PostsMeta', 'post_id');
-    },
-
-    email: function email() {
-      return this.hasOne('Email', 'post_id');
-    },
-
-    newsletter: function newsletter() {
-      return this.belongsTo('Newsletter', 'newsletter_id');
     },
 
     /**
@@ -1314,9 +1150,7 @@ Post = ghostBookshelf.Model.extend(
         destroy: ['destroyAll', 'destroyBy'],
         edit: [
           'filter',
-          'email_segment',
           'force_rerender',
-          'newsletter',
           'save_revision',
           'convert_to_lexical',
         ],
@@ -1363,6 +1197,17 @@ Post = ghostBookshelf.Model.extend(
           ).length)
       ) {
         options.withRelated = _.union(['posts_meta'], options.withRelated || []);
+      }
+
+      // GhostLite dropped these relations with their tables. Callers (the admin,
+      // the frontend, older API clients) may still ask for them; they are ignored.
+      if (options.withRelated) {
+        options.withRelated = options.withRelated.filter(
+          (relation) =>
+            !REMOVED_RELATIONS.some(
+              (removed) => relation === removed || relation.startsWith(`${removed}.`),
+            ) && !relation.startsWith('count.'),
+        );
       }
 
       return options;
@@ -1499,16 +1344,6 @@ Post = ghostBookshelf.Model.extend(
       });
 
       const destroyPost = async () => {
-        // The `comments.in_reply_to_id` references form chains between a post's
-        // comments, which MySQL cannot resolve while cascade-deleting them
-        // alongside `comments.parent_id`. Clear the references first so the
-        // `comments.post_id` cascade delete can do its job
-        await ghostBookshelf
-          .knex('comments')
-          .where('post_id', options.id)
-          .update('in_reply_to_id', null)
-          .transacting(options.transacting);
-
         return ghostBookshelf.Model.destroy.call(this, options);
       };
 
@@ -1558,13 +1393,6 @@ Post = ghostBookshelf.Model.extend(
       const isAdd = action === 'add';
       const isDestroy = action === 'destroy';
 
-      if (limitService.isLimited('members')) {
-        // You can't publish a post if you're over your member limit
-        if ((isEdit && isChanging('status') && isDraft()) || (isAdd && isPublished())) {
-          await limitService.errorIfIsOverLimit('members');
-        }
-      }
-
       if (isContributor && isEdit) {
         // Only allow contributor edit if status is changing, and the post is a draft post
         hasUserPermission = !isChanging('status') && isDraft();
@@ -1600,77 +1428,7 @@ Post = ghostBookshelf.Model.extend(
     },
 
     countRelations() {
-      return {
-        signups(modelOrCollection) {
-          modelOrCollection.query('columns', 'posts.*', (qb) => {
-            qb.count('members_created_events.id')
-              .from('members_created_events')
-              .whereRaw('posts.id = members_created_events.attribution_id')
-              .as('count__signups');
-          });
-        },
-        paid_conversions(modelOrCollection) {
-          modelOrCollection.query('columns', 'posts.*', (qb) => {
-            qb.count('members_subscription_created_events.id')
-              .from('members_subscription_created_events')
-              .whereRaw('posts.id = members_subscription_created_events.attribution_id')
-              .as('count__paid_conversions');
-          });
-        },
-        /**
-         * Combination of sigups and paid conversions, but unique per member
-         */
-        conversions(modelOrCollection) {
-          modelOrCollection.query('columns', 'posts.*', (qb) => {
-            qb.count('*')
-              .from('k')
-              .with('k', (q) => {
-                q.select('member_id')
-                  .from('members_subscription_created_events')
-                  .whereRaw('posts.id = members_subscription_created_events.attribution_id')
-                  .union(function () {
-                    this.select('member_id')
-                      .from('members_created_events')
-                      .whereRaw('posts.id = members_created_events.attribution_id');
-                  });
-              })
-              .as('count__conversions');
-          });
-        },
-        clicks(modelOrCollection) {
-          modelOrCollection.query('columns', 'posts.*', (qb) => {
-            qb.countDistinct('members_click_events.member_id')
-              .from('members_click_events')
-              .join('redirects', 'members_click_events.redirect_id', 'redirects.id')
-              .whereRaw('posts.id = redirects.post_id')
-              .as('count__clicks');
-          });
-        },
-        sentiment(modelOrCollection) {
-          modelOrCollection.query('columns', 'posts.*', (qb) => {
-            qb.select(qb.client.raw('COALESCE(ROUND(AVG(score) * 100), 0)'))
-              .from('members_feedback')
-              .whereRaw('posts.id = members_feedback.post_id')
-              .as('count__sentiment');
-          });
-        },
-        negative_feedback(modelOrCollection) {
-          modelOrCollection.query('columns', 'posts.*', (qb) => {
-            qb.count('*')
-              .from('members_feedback')
-              .whereRaw('posts.id = members_feedback.post_id AND members_feedback.score = 0')
-              .as('count__negative_feedback');
-          });
-        },
-        positive_feedback(modelOrCollection) {
-          modelOrCollection.query('columns', 'posts.*', (qb) => {
-            qb.sum('score')
-              .from('members_feedback')
-              .whereRaw('posts.id = members_feedback.post_id')
-              .as('count__positive_feedback');
-          });
-        },
-      };
+      return {};
     },
   },
 );

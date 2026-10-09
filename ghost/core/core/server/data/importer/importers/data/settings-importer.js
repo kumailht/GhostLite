@@ -194,6 +194,12 @@ class SettingsImporter extends BaseImporter {
       return ['core', 'theme'].indexOf(group) === -1;
     });
 
+    // Skip settings this site doesn't have, such as members or newsletter
+    // settings from a full Ghost export.
+    this.dataToImport = _.filter(this.dataToImport, (data) =>
+      Object.hasOwn(defaultSettingsGroups, data.key),
+    );
+
     const newIsPrivate = _.find(this.dataToImport, { key: 'is_private' });
     const oldIsPrivate = _.find(this.existingData, { key: 'is_private' });
 

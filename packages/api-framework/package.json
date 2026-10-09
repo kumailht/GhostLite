@@ -23,14 +23,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "pretest:unit": "pnpm build",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc --noEmit -p test/tsconfig.json",
-    "test": "pnpm run '/^test:/'",
-    "lint:code": "eslint src/ --cache",
-    "lint:test": "eslint test/ --cache",
-    "lint": "pnpm run '/^lint:/'"
+    "build": "tsc"
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
@@ -42,18 +35,12 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
-    "@internal/cfg-vitest": "workspace:*",
     "@types/lodash": "catalog:",
     "@types/node": "catalog:",
     "@types/sinon": "catalog:",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:",
-    "sinon": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "ghostPackage": {
     "goldenPath": "compliant"

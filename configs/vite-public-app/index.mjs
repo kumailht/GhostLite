@@ -19,7 +19,7 @@
  */
 import { resolve } from 'path';
 import { defaultClientConditions } from 'vite';
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vite';
 
 /**
  * @param {Object} opts
@@ -32,8 +32,8 @@ import { defineConfig, mergeConfig } from 'vitest/config';
  * @param {string} [opts.libName] — global var name override (default: `packageName`)
  * @param {boolean} [opts.sourcemap=true]
  * @param {boolean} [opts.cssCodeSplit=true]
- * @param {import('vitest/config').UserConfig} [opts.overrides] — deep-merged onto the base config
- * @returns {import('vitest/config').UserConfig}
+ * @param {import('vite').UserConfig} [opts.overrides] — deep-merged onto the base config
+ * @returns {import('vite').UserConfig}
  */
 export function publicAppViteConfig(opts) {
   const {
@@ -87,11 +87,6 @@ export function publicAppViteConfig(opts) {
           name: libName ?? packageName,
           fileName: () => `${outputFileName}.min.js`,
         },
-      },
-      test: {
-        globals: true,
-        environment: 'jsdom',
-        testTimeout: 10000,
       },
     };
 

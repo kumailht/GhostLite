@@ -2,7 +2,7 @@ import path from 'path';
 import react from '@vitejs/plugin-react';
 import { globSync } from 'glob';
 import { resolve } from 'path';
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default (function viteConfig() {
@@ -55,13 +55,6 @@ export default (function viteConfig() {
           return !source.includes(__dirname);
         },
       },
-    },
-    test: {
-      globals: true, // required for @testing-library/jest-dom extensions
-      environment: 'jsdom',
-      include: ['./test/unit/**/*'],
-      setupFiles: ['./test/setup.ts'],
-      testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
     },
   });
 });

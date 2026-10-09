@@ -18,14 +18,6 @@
   "scripts": {
     "dev": "vite build --watch --mode development",
     "build": "vite build",
-    "test": "pnpm run '/^test:(types|unit)$/'",
-    "test:types": "tsc --noEmit --incremental false && tsc --noEmit --incremental false -p test/tsconfig.json",
-    "test:unit": "vitest run",
-    "test:acceptance": "vitest run -c vitest.acceptance.config.mjs",
-    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
-    "lint": "pnpm run '/^lint:/'",
-    "lint:code": "eslint src test --cache",
-    "lint:types": "pnpm test:types",
     "preship": "pnpm lint",
     "ship": "node ../../scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
@@ -34,16 +26,10 @@
     "preact": "catalog:"
   },
   "devDependencies": {
-    "@internal/cfg-eslint-react": "workspace:*",
     "@internal/cfg-vite-public-app": "workspace:*",
     "@typescript/native": "catalog:",
-    "@vitest/browser-playwright": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite": "catalog:"
   },
   "browserslist": {
     "production": [

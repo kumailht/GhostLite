@@ -110,16 +110,5 @@ export default (function viteConfig({mode}) {
                 }
             }
         },
-        test: {
-            globals: true, // required for @testing-library/jest-dom extensions
-            environment: 'jsdom',
-            setupFiles: './test/test-setup.ts',
-            include: ['./test/unit/**/*.test.{js,jsx,ts,tsx}'],
-            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
-                minThreads: 1,
-                maxThreads: 2
-            })
-        }
     });
 });

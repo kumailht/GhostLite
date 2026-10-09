@@ -51,13 +51,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc --noEmit -p test/tsconfig.json",
-    "test": "pnpm run '/^test:/' && pnpm translate",
-    "lint:code": "eslint src/ ./*.js --cache",
-    "lint:test": "eslint test/ --cache",
-    "lint:translations": "node ./test/i18n.lint.js",
-    "lint": "pnpm run '/^lint:/'",
     "translate": "pnpm translate:ghost && pnpm translate:portal && pnpm translate:signup-form && pnpm translate:comments && pnpm translate:search && node generate-context.js",
     "translate:ghost": "NAMESPACE=ghost i18next '../../ghost/core/core/{frontend,server,shared}/**/*.{js,jsx,ts}' '!../../ghost/core/core/frontend/public/*.min.js' '../../ghost/core/core/server/lib/email-rendering/partials/**/*.hbs' '../../ghost/core/core/server/services/email-service/email-templates/**/*.hbs' '../../ghost/core/core/server/services/comments/email-templates/**/*.hbs' '../../ghost/core/core/server/services/member-welcome-emails/email-templates/**/*.hbs' '../../ghost/core/core/server/services/gifts/**/*.{ts,hbs}'",
     "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx,ts,tsx}'",
@@ -71,17 +64,12 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
-    "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:",
     "glob": "catalog:",
     "i18next-parser": "9.4.0",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "ghostPackage": {
     "goldenPath": "exempt",

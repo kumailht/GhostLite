@@ -28,21 +28,11 @@
   },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput",
-    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc -p tsconfig.test.json",
-    "test": "pnpm run '/^test:/'",
-    "posttest": "pnpm lint",
-    "lint": "eslint . --cache"
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

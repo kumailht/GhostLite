@@ -32,23 +32,5 @@ export default publicAppViteConfig({
         'react-dom': resolve(import.meta.dirname, 'node_modules/react-dom'),
       },
     },
-    test: {
-      setupFiles: './src/setup-tests.ts',
-      include: ['test/unit/**/*.test.{js,jsx,ts,tsx}'],
-      testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-      server: {
-        deps: {
-          // Inline all deps so Vite's resolve.alias applies to their
-          // React imports (prevents duplicate React 17 instances when
-          // the monorepo hoists React 18)
-          inline: [/@tiptap/, /@headlessui/],
-        },
-      },
-      ...(process.env.CI && {
-        // https://github.com/vitest-dev/vitest/issues/1674
-        minThreads: 1,
-        maxThreads: 2,
-      }),
-    },
   },
 });

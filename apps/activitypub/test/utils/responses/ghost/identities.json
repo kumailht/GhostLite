@@ -1,9 +1,0 @@
-{
-  "identities": [
-    {
-      "id": "1",
-      "name": "Test User",
-      "handle": "@test@localhost:5173"
-    }
-  ]
-}

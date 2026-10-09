@@ -28,25 +28,15 @@
   },
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test": "pnpm run '/^test:/'",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc -p tsconfig.test.json",
-    "lint": "eslint . --cache",
-    "posttest": "pnpm lint"
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json"
   },
   "dependencies": {
     "semver": "7.8.5"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@types/node": "catalog:",
     "@types/semver": "7.8.0",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

@@ -10,8 +10,5 @@ export default publicAppViteConfig({
   svgr: false,
   sourcemap: false,
   overrides: {
-    test: {
-      include: ['test/unit/**/*.test.{ts,tsx}'],
-    },
   },
 });

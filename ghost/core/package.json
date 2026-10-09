@@ -51,30 +51,7 @@
     "migrate:create": "node bin/create-migration.js",
     "migrate:rebuild-in-development-tables": "node --import=tsx bin/rebuild-in-development-tables.ts",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
-    "build:tsc": "tsc",
-    "pretest": "pnpm build:assets",
-    "test": "pnpm test:unit",
-    "test:watch": "vitest --reporter=default",
-    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) vitest run -c vitest.config.db.ts \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts \"$1\" ;; esac; }; f",
-    "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:types && pnpm lint",
-    "test:debug": "DEBUG=ghost:test* pnpm test",
-    "test:unit": "vitest run",
-    "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
-    "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
-    "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
-    "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
-    "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
-    "test:ci:unit": "vitest run --coverage --coverage.reportsDirectory=coverage-unit --coverage.reporter=cobertura --coverage.reporter=text-summary",
-    "test:int:slow": "pnpm test:integration",
-    "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
-    "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
-    "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
-    "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
-    "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
-    "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
-    "lint:test": "eslint 'test/**/*.{js,ts}' --cache",
-    "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint": "pnpm run '/^lint:(server|shared|frontend|test)$/'"
+    "build:tsc": "tsc"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1079.0",
@@ -250,10 +227,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@internal/cfg-eslint": "workspace:*",
     "@tryghost/express-test": "2.3.16",
-    "@tryghost/webhook-mock-receiver": "2.3.16",
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/express": "catalog:",
@@ -275,33 +249,22 @@
     "@types/semver": "catalog:",
     "@types/sinon": "catalog:",
     "@types/stoppable": "catalog:",
-    "@types/supertest": "6.0.3",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "chai": "catalog:",
     "cli-progress": "3.12.0",
     "cssnano": "7.1.9",
     "esbuild": "catalog:",
-    "eslint": "catalog:",
-    "eslint-plugin-ghost": "3.5.0",
-    "globals": "17.7.0",
     "html-validate": "11.5.5",
     "inquirer": "8.2.7",
     "lodash-es": "4.18.1",
-    "nock": "catalog:",
     "nodemon": "3.1.14",
     "postcss": "catalog:",
     "postcss-cli": "11.0.1",
     "qs": "catalog:",
     "sharp": "catalog:",
-    "sinon": "catalog:",
-    "supertest": "catalog:",
     "tmp": "0.2.7",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "validator": "catalog:",
-    "vitest": "catalog:"
+    "validator": "catalog:"
   },
   "optionalDependencies": {
     "better-sqlite3": "catalog:"
@@ -326,67 +289,6 @@
       "dev": {
         "dependsOn": [
           "build:assets"
-        ]
-      },
-      "lint": {
-        "dependsOn": [
-          "^build"
-        ]
-      },
-      "test:all": {
-        "dependsOn": [
-          "build:assets"
-        ]
-      },
-      "test:unit": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ]
-      },
-      "test:e2e": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ]
-      },
-      "test:integration": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ]
-      },
-      "test:legacy": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ]
-      },
-      "test:ci:e2e": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ],
-        "outputs": [
-          "{projectRoot}/coverage-e2e/cobertura-coverage.xml"
-        ]
-      },
-      "test:ci:integration": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ],
-        "outputs": [
-          "{projectRoot}/coverage-integration/cobertura-coverage.xml"
-        ]
-      },
-      "test:ci:unit": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
-        ],
-        "outputs": [
-          "{projectRoot}/coverage-unit/cobertura-coverage.xml"
         ]
       }
     }

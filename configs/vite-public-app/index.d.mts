@@ -1,4 +1,4 @@
-import type { UserConfig } from 'vitest/config';
+import type { UserConfig } from 'vite';
 
 export interface PublicAppViteConfigOptions {
   /** Absolute root of the calling app (typically `import.meta.dirname`) */

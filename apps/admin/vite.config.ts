@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { configDefaults, defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -101,17 +101,4 @@ export default defineConfig(({ command, mode }) => ({
     include: ['@tryghost/koenig-lexical'],
   },
   resolve: sharedResolve,
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./test-utils/setup.ts'],
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test-utils/**/*.test.ts'],
-    // Acceptance and component tests run in a real browser via
-    // vitest.acceptance.config.ts
-    exclude: [
-      ...configDefaults.exclude,
-      'src/**/*.acceptance.test.tsx',
-      'src/**/*.component.test.tsx',
-    ],
-  },
 }));

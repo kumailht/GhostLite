@@ -18,13 +18,6 @@
   "scripts": {
     "dev": "vite build --watch --mode development",
     "build": "vite build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ci": "pnpm test --coverage",
-    "test:unit": "pnpm test:ci",
-    "lint:code": "eslint src test --cache",
-    "lint:types": "tsc --noEmit",
-    "lint": "pnpm run '/^lint:/'",
     "preship": "pnpm lint",
     "ship": "node ../../scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
@@ -34,26 +27,18 @@
   },
   "devDependencies": {
     "@doist/react-interpolate": "2.2.4",
-    "@internal/cfg-eslint-react": "workspace:*",
     "@internal/cfg-vite-public-app": "workspace:*",
     "@sentry/react": "catalog:",
-    "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "catalog:react17",
-    "@testing-library/user-event": "14.6.6",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
     "@types/react": "catalog:react17",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
     "dompurify": "catalog:",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
     "react": "catalog:react17",
     "react-day-picker": "catalog:",
     "react-dom": "catalog:react17",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite": "catalog:"
   },
   "browserslist": {
     "production": [
@@ -76,16 +61,6 @@
           "cwd": "apps/portal",
           "command": "vite build --watch --mode development"
         }
-      },
-      "lint": {
-        "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/metafield-types"
-            ],
-            "target": "build"
-          }
-        ]
       }
     },
     "tags": [

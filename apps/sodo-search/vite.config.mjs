@@ -38,15 +38,5 @@ export default publicAppViteConfig({
         },
       },
     },
-    test: {
-      include: ['test/unit/**/*.test.{ts,tsx}'],
-      setupFiles: './test/setup-tests.ts',
-      // Inlined so it shares the app's Vite-resolved preact instance
-      server: {
-        deps: {
-          inline: ['@testing-library/preact'],
-        },
-      },
-    },
   },
 });

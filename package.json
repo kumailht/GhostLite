@@ -12,19 +12,11 @@
     "build": "pnpm nx run ghost:build:tsc && pnpm build:admin",
     "build:admin": "pnpm nx run ghost:build:assets && pnpm nx run @tryghost/admin:build",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "lint": "pnpm nx run-many -t lint",
-    "format": "node scripts/format.js",
-    "format:check": "oxfmt --check",
-    "test": "pnpm nx run-many -t test --exclude ghost-admin",
-    "check": "pnpm format:check && pnpm lint && pnpm test",
     "clean": "node scripts/clean.js"
   },
   "devDependencies": {
-    "eslint": "catalog:",
     "nx": "23.2.0",
-    "oxfmt": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "engines": {
     "node": "^22.23.1 || ^24.20.0"

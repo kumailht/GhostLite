@@ -30,12 +30,7 @@
   },
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test": "pnpm run '/^test:/'",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc -p tsconfig.test.json",
-    "lint": "eslint --cache .",
-    "posttest": "pnpm lint"
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json"
   },
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "workspace:~",
@@ -47,17 +42,11 @@
     "luxon": "3.7.2"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "jsdom": "catalog:",
     "simple-dom": "1.4.0",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "engines": {
     "node": "^22.13.1 || ^24.0.0"

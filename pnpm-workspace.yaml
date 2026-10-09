@@ -3,7 +3,6 @@ packages:
   - 'apps/*'
   - 'koenig/*'
   - 'packages/**'
-  - '!packages/_template'
   - 'configs/*'
   - 'scripts'
 

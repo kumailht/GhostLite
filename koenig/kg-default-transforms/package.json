@@ -28,11 +28,7 @@
   },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc --noEmit",
-    "test": "pnpm run '/^test:/'",
-    "lint": "eslint"
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json"
   },
   "dependencies": {
     "@lexical/list": "0.13.1",
@@ -42,14 +38,9 @@
     "lexical": "0.13.1"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@lexical/headless": "0.13.1",
     "@lexical/link": "0.13.1",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

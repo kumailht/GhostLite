@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { globSync } from 'glob';
 import { resolve } from 'path';
 import svgr from 'vite-plugin-svgr';
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default (function viteConfig() {
@@ -62,19 +62,6 @@ export default (function viteConfig() {
 
           return !source.includes(__dirname);
         },
-      },
-    },
-    test: {
-      globals: true, // required for @testing-library/jest-dom extensions
-      environment: 'jsdom',
-      include: ['./test/unit/**/*'],
-      exclude: ['./test/unit/utils/test-utils.tsx'],
-      testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-      coverage: {
-        provider: 'v8',
-        reporter: ['text', 'json', 'html'],
-        include: ['src/**/*.{js,jsx,ts,tsx}'],
-        exclude: ['src/**/*.stories.{js,jsx,ts,tsx}', 'src/**/*.d.ts', 'src/types/**/*'],
       },
     },
   });

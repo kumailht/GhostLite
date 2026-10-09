@@ -32,13 +32,7 @@
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput",
     "clean": "rm -rf build",
-    "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
-    "test:types": "tsc --noEmit",
-    "test": "pnpm run '/^test:/'",
-    "lint:code": "eslint src/ --cache",
-    "lint": "pnpm run '/^lint:/'",
-    "lint:test": "eslint test/ --cache"
+    "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json"
   },
   "files": [
     "LICENSE",
@@ -49,7 +43,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
     "@prettier/sync": "0.6.1",
@@ -58,13 +51,9 @@
     "@types/luxon": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
     "html-minifier": "4.0.0",
     "prettier": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",

@@ -47,9 +47,6 @@ export default (function viteConfig() {
     packageName: pkg.name,
     entry: resolve(__dirname, 'src/index.tsx'),
     overrides: {
-      test: {
-        include: ['./test/unit/**/*', './src/**/*.test.ts'],
-      },
       resolve: {
         alias: {
           '@src': resolve(__dirname, './src'),

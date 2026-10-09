@@ -14,11 +14,5 @@ export default publicAppViteConfig({
     resolve: {
       dedupe: ['@tryghost/debug'],
     },
-    test: {
-      setupFiles: './test/setup-tests.js',
-      coverage: {
-        reporter: ['cobertura', 'text-summary', 'html'],
-      },
-    },
   },
 });

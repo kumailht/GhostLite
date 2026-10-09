@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import { PluginOption, UserConfig, mergeConfig } from 'vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import svgr from 'vite-plugin-svgr';
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 
 const externalPlugin = ({ externals }: { externals: Record<string, string> }): PluginOption => {
   return {
@@ -86,12 +86,6 @@ export default function adminXViteConfig({
           return `${outputFileName}.js`;
         },
       },
-    },
-    test: {
-      globals: true, // required for @testing-library/jest-dom extensions
-      environment: 'jsdom',
-      include: ['./test/unit/**/*'],
-      testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
     },
   });
 

@@ -5,60 +5,13 @@
   "description": "Repo automation scripts, invoked from local pnpm aliases",
   "license": "MIT",
   "type": "module",
-  "scripts": {
-    "lint": "eslint . --cache",
-    "test:unit": "node --test test/*.test.js test/*.test.cjs test/*.test.ts",
-    "test": "pnpm run '/^test:/'",
-    "test:types": "tsc6 --noEmit"
-  },
+  "scripts": {},
   "dependencies": {
     "semver": "catalog:",
     "typescript": "catalog:"
   },
   "devDependencies": {
-    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
-    "@types/node": "catalog:",
-    "eslint": "catalog:"
-  },
-  "nx": {
-    "namedInputs": {
-      "adminTestContracts": [
-        "{workspaceRoot}/apps/admin/package.json",
-        "{workspaceRoot}/apps/ember-admin/package.json"
-      ],
-      "adminSourceContracts": [
-        "{workspaceRoot}/apps/admin-x-framework/package.json",
-        "{workspaceRoot}/apps/shade/package.json",
-        "{workspaceRoot}/apps/admin/vite*.ts",
-        "{workspaceRoot}/apps/admin/vitest.acceptance.config.ts",
-        "{workspaceRoot}/apps/admin/tsconfig*.json",
-        "{workspaceRoot}/apps/shade/tsconfig.json"
-      ]
-    },
-    "targets": {
-      "test": {
-        "inputs": [
-          "default",
-          "^default",
-          "adminTestContracts",
-          "adminSourceContracts",
-          {
-            "runtime": "node -v"
-          }
-        ]
-      },
-      "test:unit": {
-        "inputs": [
-          "default",
-          "^default",
-          "adminTestContracts",
-          "adminSourceContracts",
-          {
-            "runtime": "node -v"
-          }
-        ]
-      }
-    }
+    "@types/node": "catalog:"
   }
 }

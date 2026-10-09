@@ -8,17 +8,7 @@ export const searchKeywords = {
   ],
   timeZone: ['general', 'time', 'date', 'site timezone', 'time zone'],
   publicationLanguage: ['general', 'publication language', 'locale'],
-  users: [
-    'general',
-    'users and permissions',
-    'roles',
-    'staff',
-    'invite people',
-    'contributors',
-    'editors',
-    'authors',
-    'administrators',
-  ],
+  siteAccess: ['general', 'site access', 'private', 'password', 'access code', 'visibility'],
   metadata: [
     'general',
     'metadata',
@@ -54,5 +44,4 @@ export const searchKeywords = {
     'structured data',
     'rich cards',
   ],
-  analytics: ['general', 'analytics', 'tracking', 'privacy', 'membership'],
 };

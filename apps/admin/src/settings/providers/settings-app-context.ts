@@ -1,8 +1,6 @@
 import { type ComponentId, type SearchService } from '@/settings/utils/search';
-import { type ZapierTemplate } from '@/settings/advanced/integrations/zapier-modal';
 import { createContext, useContext } from 'react';
 import { officialThemes } from '@/settings/data/official-themes';
-import { zapierTemplates } from '@/settings/data/zapier-templates';
 
 export type ThemeVariant = {
   category: string;
@@ -33,7 +31,6 @@ export interface UpgradeStatusType {
 
 export interface SettingsAppContextType {
   officialThemes: OfficialTheme[];
-  zapierTemplates: ZapierTemplate[];
   search: SearchService;
   upgradeStatus?: UpgradeStatusType;
   sortingState?: Sorting[];
@@ -44,7 +41,6 @@ export interface SettingsAppContextType {
 
 export const SettingsAppContext = createContext<SettingsAppContextType>({
   officialThemes,
-  zapierTemplates,
   search: {
     filter: '',
     setFilter: () => {},

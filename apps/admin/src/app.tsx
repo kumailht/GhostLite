@@ -6,8 +6,7 @@ import { UnauthorizedError } from '@tryghost/admin-x-framework/errors';
 import { EmberProvider, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
 import { useSyncEmberFullScreen } from './layout/sidebar-visibility';
-import { useEmberOwnedRouteMatcher, useSyncEmberRoutePattern } from './routes';
-import { BillingFrame } from './billing/api';
+import { useSyncEmberRoutePattern } from './routes';
 import {
   useEmberAuthSync,
   useEmberDataSync,
@@ -18,9 +17,7 @@ import {
   AdminAlerts,
   createAlertsStore,
   useServerNotifications,
-  useUpgradeStatusAlerts,
 } from './alerts';
-import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
 import { useGlobalShortcuts } from './global-shortcuts/global-shortcuts';
@@ -53,11 +50,9 @@ function App() {
   useSyncEmberRoutePattern();
   useEmberNotificationsHost(alerts);
   useServerNotifications(alerts);
-  useUpgradeStatusAlerts(alerts);
   useAuthNotice(Boolean(currentUser));
   usePreloadEditor(Boolean(currentUser));
   useGlobalShortcuts(Boolean(currentUser));
-  const isEmberOwned = useEmberOwnedRouteMatcher();
 
   return (
     <EmberProvider>
@@ -66,8 +61,6 @@ function App() {
         <AdminLayout>
           <Outlet />
           <EmberRoot />
-          <BillingFrame alerts={alerts} isEmberOwned={isEmberOwned} />
-          <DocsBotWidgetHost />
           <ClientExtensionScript />
         </AdminLayout>
       ) : bootError ? (

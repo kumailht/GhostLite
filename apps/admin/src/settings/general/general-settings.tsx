@@ -1,13 +1,12 @@
 import React from 'react';
 
-import Analytics from '@/settings/membership/analytics';
 import PublicationLanguage from './publication-language';
 import SEOMeta from './seo-meta';
 import SearchableSection from '@/settings/components/searchable-section';
 import SocialAccounts from './social-accounts';
 import TimeZone from './time-zone';
 import TitleAndDescription from './title-and-description';
-import Users from './users';
+import SiteAccess from './site-access';
 import { searchKeywords } from './search-keywords';
 
 const GeneralSettings: React.FC = () => {
@@ -18,10 +17,9 @@ const GeneralSettings: React.FC = () => {
       <TitleAndDescription keywords={searchKeywords.titleAndDescription} />
       <TimeZone keywords={searchKeywords.timeZone} />
       <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
-      <Users keywords={searchKeywords.users} />
+      <SiteAccess keywords={searchKeywords.siteAccess} />
       <SEOMeta keywords={searchKeywords.metadata} />
       <SocialAccounts keywords={searchKeywords.socialAccounts} />
-      <Analytics keywords={searchKeywords.analytics} />
     </SearchableSection>
   );
 };

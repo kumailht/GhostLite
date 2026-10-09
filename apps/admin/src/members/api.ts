@@ -1,12 +1,8 @@
 /**
- * Public surface of the members domain, consumed by the admin shell
- * (apps/admin/src/routes.tsx), the layout, and other domains. Everything
- * else in this domain is internal.
+ * The pieces of the members domain still used elsewhere: saved-view helpers
+ * shared with the posts list, member avatars and the label picker.
  */
-export { membersRouteChildren } from './routes';
-export const lazyMemberActivityScreen = () => import('./activity/member-activity');
-export { buildMembersUrl } from './member-route';
-export { formatMemberName, getMemberInitials, memberAvatarProps } from './member-format';
+export { memberAvatarProps } from './member-format';
 export {
   type SharedView,
   findMatchingSharedViewIndexes,

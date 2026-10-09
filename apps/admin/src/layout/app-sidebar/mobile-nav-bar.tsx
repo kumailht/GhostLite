@@ -46,18 +46,14 @@ export function MobileNavBar() {
 
   return (
     <div className="safe-area-inset-bottom fixed inset-x-0 bottom-0 z-50 h-[var(--mobile-navbar-height)] border-t border-sidebar-border bg-sidebar/80 backdrop-blur-md sidebar:hidden">
-      <div className="mx-auto grid size-full max-w-[300px] grid-cols-4 items-center justify-items-center px-5">
-        <MobileNavBarButton to="analytics" activeOnSubpath>
-          <LucideIcon.TrendingUp strokeWidth={ICON_STROKE_WIDTH} />
-          <span className="sr-only">Analytics</span>
-        </MobileNavBarButton>
+      <div className="mx-auto grid size-full max-w-[300px] grid-cols-3 items-center justify-items-center px-5">
         <MobileNavBarButton to="posts" activeOnSubpath>
           <LucideIcon.PenLine strokeWidth={ICON_STROKE_WIDTH} />
           <span className="sr-only">Posts</span>
         </MobileNavBarButton>
-        <MobileNavBarButton to="members" activeOnSubpath>
-          <LucideIcon.Users strokeWidth={ICON_STROKE_WIDTH} />
-          <span className="sr-only">Members</span>
+        <MobileNavBarButton to="pages" activeOnSubpath>
+          <LucideIcon.File strokeWidth={ICON_STROKE_WIDTH} />
+          <span className="sr-only">Pages</span>
         </MobileNavBarButton>
         <SidebarTrigger className="h-9 rounded-full px-8 hover:bg-transparent">
           <LucideIcon.Ellipsis strokeWidth={ICON_STROKE_WIDTH} />

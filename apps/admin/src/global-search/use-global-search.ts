@@ -1,12 +1,8 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from 'use-debounce';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useForceUpgrade } from '@/billing/api';
 // pulls in FlexSearch, so import this hook only from a lazily loaded module
 import { createSearchProvider } from './search-providers';
 import { type SearchIndexKey, searchIndexQueryOptions } from '@/shared/search-index';
@@ -42,8 +38,7 @@ function useSearchIndex(key: SearchIndexKey, enabled: boolean) {
 }
 
 /**
- * Searches staff, tags, posts, pages and any configured billing entries for the
- * Cmd-K modal. The index loads on the first non-blank term.
+ * Searches staff, tags, posts and pages for the Cmd-K modal. The index loads on the first non-blank term.
  */
 export function useGlobalSearch(term: string): {
   results: SearchResultGroup[];
@@ -57,31 +52,18 @@ export function useGlobalSearch(term: string): {
   const tags = useSearchIndex('tags', enabled);
   const users = useSearchIndex('users', enabled);
 
-  const { data: config, isLoading: isConfigLoading } = useBrowseConfig();
-  const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
   const { data: settings, isLoading: isSettingsLoading } = useBrowseSettings();
-  const forceUpgrade = useForceUpgrade();
-
-  const hostSettings = config?.config.hostSettings;
-  const canAccessBilling =
-    Boolean(forceUpgrade) ||
-    (Boolean(hostSettings?.billing?.enabled) && Boolean(currentUser && isOwnerUser(currentUser)));
   const locale = getSettingValue<string>(settings?.settings, 'locale');
 
-  // billing access and the locale decide which results exist, so wait for them too
+  // the locale decides how results are matched, so wait for it too
   const isContentLoading =
     posts.isLoading ||
     pages.isLoading ||
     tags.isLoading ||
     users.isLoading ||
-    isConfigLoading ||
-    isUserLoading ||
     isSettingsLoading;
 
-  const searchables = useMemo(
-    () => getSearchables(canAccessBilling ? hostSettings : undefined),
-    [canAccessBilling, hostSettings],
-  );
+  const searchables = useMemo(() => getSearchables(), []);
 
   const provider = useMemo(
     () =>

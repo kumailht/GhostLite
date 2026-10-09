@@ -1,28 +1,13 @@
 import React from 'react';
 
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuBadge,
-} from '@tryghost/shade/components';
-import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
+import { SidebarGroup, SidebarGroupContent, SidebarMenu } from '@tryghost/shade/components';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import {
-  canManageAutomations,
-  canManageMembers,
-  canManageTags,
-} from '@tryghost/admin-x-framework/api/users';
+import { canManageTags } from '@tryghost/admin-x-framework/api/users';
 import { NavMenuItem } from './nav-menu-item';
 import { useNavigationExpanded } from './hooks/use-navigation-preferences';
 import { NavSavedViews } from './nav-saved-views';
-import { NavMemberViews } from './nav-member-views';
-import { useMemberSidebarViews } from './member-sidebar-views';
 import { usePostNavigation } from './use-post-navigation';
-import { useIsActiveLink } from './use-is-active-link';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
   return (
@@ -42,63 +27,16 @@ function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }
   );
 }
 
-function MembersNavItemContent({
-  collapsible,
-  count,
-  isActive,
-  to,
-}: {
-  collapsible: boolean;
-  count: number | null | undefined;
-  isActive: boolean;
-  to: string;
-}) {
-  return (
-    <>
-      <NavMenuItem.Link isActive={isActive} to={to}>
-        <LucideIcon.Users
-          className={
-            collapsible
-              ? 'pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0'
-              : ''
-          }
-        />
-        <NavMenuItem.Label>Members</NavMenuItem.Label>
-      </NavMenuItem.Link>
-      {count !== null && count !== undefined && (
-        <SidebarMenuBadge>{formatNumber(count)}</SidebarMenuBadge>
-      )}
-    </>
-  );
-}
-
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
-  const { data: settingsData } = useBrowseSettings();
   const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
-  const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
   const postNavigation = usePostNavigation('posts');
   const pageNavigation = usePostNavigation('pages');
-  const memberViews = useMemberSidebarViews();
-  const hasMemberViews = memberViews.length > 0;
-  const memberCount = useMemberCount();
-  const automationsEnabled = useFeatureFlag('automations');
-  const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
-  const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
   const showTags = currentUser && canManageTags(currentUser);
-  const showMembers = currentUser && canManageMembers(currentUser);
-  const showAutomations = currentUser && canManageAutomations(currentUser);
-  const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
-  const showComments = !!showMembers && commentsEnabled !== 'off';
   const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
   const hasActivePostChild = postViews.some((view) => view.isActive);
   const postsExpanded = savedPostsExpanded;
-  const hasActiveMemberView = hasMemberViews && memberViews.some((view) => view.isActive);
-  const membersExpanded = savedMembersExpanded;
-  const membersNavActive = isMembersRouteActive
-    ? !hasActiveMemberView || !membersExpanded
-    : isMemberActivityActive;
   const postsRoute = postNavigation.mainUrl;
   const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
   return (
@@ -135,57 +73,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             </NavMenuItem>
           )}
 
-          {showMembers && (
-            <>
-              {hasMemberViews ? (
-                <NavMenuItem.Collapsible
-                  expanded={membersExpanded}
-                  id="members-submenu"
-                  onExpandedChange={setMembersExpanded}
-                >
-                  <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
-                    <MembersNavItemContent
-                      collapsible={true}
-                      count={memberCount}
-                      isActive={membersNavActive}
-                      to="members"
-                    />
-                  </NavMenuItem.CollapsibleItem>
-
-                  <NavMenuItem.CollapsibleMenu>
-                    <NavMemberViews />
-                  </NavMenuItem.CollapsibleMenu>
-                </NavMenuItem.Collapsible>
-              ) : (
-                <NavMenuItem>
-                  <MembersNavItemContent
-                    collapsible={false}
-                    count={memberCount}
-                    isActive={membersNavActive}
-                    to="members"
-                  />
-                </NavMenuItem>
-              )}
-            </>
-          )}
-
-          {showComments && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="comments" activeOnSubpath>
-                <LucideIcon.MessagesSquare />
-                <NavMenuItem.Label>Comments</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
-
-          {showAutomations && automationsEnabled && (
-            <NavMenuItem>
-              <NavMenuItem.Link to="automations" activeOnSubpath>
-                <LucideIcon.Zap />
-                <NavMenuItem.Label>Automations</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

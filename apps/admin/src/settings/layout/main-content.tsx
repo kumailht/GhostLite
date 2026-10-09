@@ -1,10 +1,9 @@
 import Settings from './settings-sections';
 import Sidebar, { SettingsHeader, SettingsSearchStatus } from './sidebar';
 import ExitSettingsButton from '@/settings/components/exit-settings-button';
-import Users from '@/settings/general/users';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { type ReactNode, useEffect } from 'react';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Stack } from '@tryghost/shade/primitives';
 import { canAccessSettings, isEditorUser } from '@tryghost/admin-x-framework/api/users';
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -12,7 +11,6 @@ import { useGlobalDirtyState, useIsMobile } from '@tryghost/shade/utils';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useExitSettings } from '@/settings/hooks/use-exit-settings';
 
-const EMPTY_KEYWORDS: string[] = [];
 const OPEN_SHADE_MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
 
 const LegacyPage: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -68,47 +66,10 @@ const MainContent: React.FC = () => {
     };
   }, [confirm, exitSettings, isDirty]);
 
-  // Contributors/Authors only see their profile modal (rendered via routing)
-  // Don't render the main settings content for them
-  if (!canAccessSettings(currentUser)) {
+  // Contributors, authors and editors only see their profile modal (rendered
+  // via routing). Don't render the main settings content for them
+  if (!canAccessSettings(currentUser) || isEditorUser(currentUser)) {
     return null;
-  }
-
-  if (isEditorUser(currentUser)) {
-    if (!admin7Settings) {
-      return (
-        <LegacyPage>
-          <div className="min-w-0 flex-1 bg-white dark:bg-gray-950">
-            <div className="h-full overflow-y-auto overscroll-y-contain" id="settings-scroller">
-              <div className="mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10">
-                <Text as="h1" className="mb-[5vmin] text-4xl" leading="supertight" weight="bold">
-                  Settings
-                </Text>
-                <Users highlight={false} keywords={EMPTY_KEYWORDS} />
-              </div>
-            </div>
-          </div>
-          <DirtyConfirmDialog {...dialogProps} />
-        </LegacyPage>
-      );
-    }
-
-    // One tree for both breakpoints, so crossing it doesn't remount the page
-    // and drop unsaved edits.
-    return (
-      <Stack className="h-full min-h-0" gap="none">
-        {isMobile && <SettingsHeader className="shrink-0 px-[5vmin] pt-4 pb-2" />}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain" id="settings-scroller">
-          <div className="mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10">
-            <Text as="h1" className="mb-[5vmin] text-4xl" leading="supertight" weight="bold">
-              Settings
-            </Text>
-            <Users highlight={false} keywords={EMPTY_KEYWORDS} />
-          </div>
-        </div>
-        <DirtyConfirmDialog {...dialogProps} />
-      </Stack>
-    );
   }
 
   if (!admin7Settings) {

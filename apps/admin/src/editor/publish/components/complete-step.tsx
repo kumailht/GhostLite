@@ -130,9 +130,9 @@ export function CompleteStep({
           ) : (
             <Inline>
               <Button className="px-5" size="lg" variant="secondary" asChild>
-                <a data-testid={publishBackToDashboard} href="#/analytics">
+                <a data-testid={publishBackToDashboard} href="#/posts">
                   <LucideIcon.ArrowLeft />
-                  Back to dashboard
+                  Back to posts
                 </a>
               </Button>
             </Inline>

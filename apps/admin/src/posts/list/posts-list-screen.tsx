@@ -22,7 +22,6 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 import { usePostActions } from './hooks/use-post-actions';
 import { usePostSelection } from './hooks/use-post-selection';
-import { canCopyGiftLink } from '@/shared/gift-link';
 import { PostCelebrationModal } from './components/post-celebration-modal';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { usePostPublishCelebration } from './hooks/use-post-publish-celebration';
@@ -43,7 +42,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { usePostsFilterState } from './hooks/use-posts-filter-state';
 import { getPostListReturnUrl, rememberStickyPostFilters } from './posts-sticky-filters';
 import { syncEmberPostListQueryParams } from '@/ember-bridge';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
@@ -54,9 +53,6 @@ import { usePostsList } from './hooks/use-posts-list';
  */
 /** The three that ask before acting. Feature and unfeature do not. */
 const CONFIRMABLE_ACTIONS: PostContextMenuKey[] = ['delete', 'unpublish', 'unschedule'];
-
-// Only needed once someone opens it, and it pulls in the gift-link API layer.
-const GiftLinkModal = lazy(() => import('@/posts/analytics/modals/gift-link-modal'));
 
 export function PostsListScreen({ resource }: { resource: PostResource }) {
   const copy = getPostResourceCopy(resource);
@@ -187,25 +183,11 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
         resource,
         isAdmin,
         membersEnabled,
-        // The gift link is filtered back in per row below, since it is the one
-        // item that depends on *which* post rather than on the selection.
-        canCopyGiftLink: true,
+        canCopyGiftLink: false,
       }),
     [menuPosts, resource, isAdmin, membersEnabled],
   );
 
-  // Ember gates this on `isSingle` — one *selected* post — not on "one loaded
-  // post". After Cmd+A on a view with a single loaded row, everything is
-  // selected, and offering to gift-link it would be wrong.
-  const giftLinkPost = isSinglePostSelected(selectionState) ? menuPosts[0] : undefined;
-  const menuGiftLinkPostId =
-    giftLinkPost && canCopyGiftLink({ user: currentUser, post: giftLinkPost })
-      ? giftLinkPost.id
-      : null;
-  // Opened from the context menu. Ember reaches the same React modal over the
-  // state bridge; here the list owns it directly, so there is one modal and
-  // one set of eligibility rules behind both implementations.
-  const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
 
   // The Ember editor writes a localStorage key on publish and navigates here;
   // this reads it. The editor stays Ember on both sides of the flag.
@@ -239,7 +221,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const runPostAction = usePostActions({
     resource,
     posts: menuPosts,
-    onShareAsGift: setGiftLinkPostId,
     onBulkAction: (key, snapshot) => {
       // Feature and unfeature apply straight away in Ember — no
       // confirmation, because they are trivially reversible.
@@ -401,7 +382,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       paidMembersEnabled={paidMembersEnabled}
                       post={item}
                       resource={resource}
-                      showGiftLink={menuGiftLinkPostId === item.id}
+                      showGiftLink={false}
                       timezone={timezone}
                       visitorCounts={visitorCounts}
                       onSelectClick={selection.onRowClick}
@@ -471,21 +452,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
             wasPublished={celebration.celebration.wasPublished}
             onClose={celebration.dismiss}
           />
-        )}
-        {giftLinkPostId && (
-          <Suspense fallback={null}>
-            <GiftLinkModal
-              postId={giftLinkPostId}
-              resource={resource}
-              source="context-menu"
-              open
-              onOpenChange={(open) => {
-                if (!open) {
-                  setGiftLinkPostId(null);
-                }
-              }}
-            />
-          </Suspense>
         )}
       </Container>
     </Box>

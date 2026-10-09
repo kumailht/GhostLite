@@ -3,7 +3,6 @@ import { SidebarContent } from '@tryghost/shade/components';
 import AppSidebarBanner from './app-sidebar-banner';
 import NavMain from './nav-main';
 import NavContent from './nav-content';
-import NavGhostPro from './nav-ghost-pro';
 import NavSettings from './nav-settings';
 import { useSidebarBannerState } from './hooks/use-sidebar-banner-state';
 
@@ -13,10 +12,6 @@ function AppSidebarContent() {
 
   if (bannerType === 'theme-errors') {
     bannerContainerClassName = 'pb-[110px]';
-  } else if (bannerType === 'upgrade') {
-    bannerContainerClassName = 'pb-[254px]';
-  } else if (bannerType === 'whats-new') {
-    bannerContainerClassName = 'pb-[180px]';
   }
 
   return (
@@ -24,7 +19,6 @@ function AppSidebarContent() {
       <div className="flex flex-col gap-2 sidebar:gap-4">
         <NavMain />
         <NavContent />
-        <NavGhostPro />
       </div>
       <div className={`flex flex-col gap-2 sidebar:gap-4 ${bannerContainerClassName}`}>
         <AppSidebarBanner banner={banner} />

@@ -16,22 +16,12 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
-import {
-  checkStripeEnabled,
-  getSettingValues,
-  useNewslettersEnabled,
-  usePaidMembersEnabled,
-} from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 
 import { searchKeywords as advancedSearchKeywords } from '@/settings/advanced/search-keywords';
-import { searchKeywords as emailSearchKeywords } from '@/settings/email/search-keywords';
-import { searchKeywords as emailsSearchKeywords } from '@/settings/email/emails-search-keywords';
 import { searchKeywords as generalSearchKeywords } from '@/settings/general/search-keywords';
-import { searchKeywords as growthSearchKeywords } from '@/settings/growth/search-keywords';
-import { searchKeywords as membershipSearchKeywords } from '@/settings/membership/search-keywords';
 import { searchKeywords as siteSearchKeywords } from '@/settings/site/search-keywords';
 
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -120,78 +110,18 @@ const PrivateBadge: React.FC = () => (
  */
 function useSearchResults() {
   const { filter, checkVisible, setNoResult } = useSearch();
-  const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-  const hasAutomations = useFeatureFlag('automations');
-  const hasCustomFields = useCustomFieldsAvailable();
-  const hasNewslettersEnabled = useNewslettersEnabled() === true;
-  const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
-  const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;
-  const visibleMembershipSearchKeywords = React.useMemo(
-    () =>
-      [
-        membershipSearchKeywords.access,
-        membershipSearchKeywords.tiers,
-        membershipSearchKeywords.portal,
-        ...(paidMembersEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
-        ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
-        ...(hasTipsAndDonations && hasStripeEnabled ? [membershipSearchKeywords.tips] : []),
-        ...(hasCustomFields ? [membershipSearchKeywords.customFields] : []),
-      ].flat(),
-    [hasStripeEnabled, hasTipsAndDonations, paidMembersEnabled, hasAutomations, hasCustomFields],
-  );
-  const visibleEmailSearchKeywords = React.useMemo(() => {
-    const keywords = hasAutomations ? emailsSearchKeywords : emailSearchKeywords;
-    return [
-      keywords.enableNewsletters,
-      ...(hasNewslettersEnabled ? [keywords.defaultRecipients] : []),
-      ...(hasAutomations
-        ? [emailsSearchKeywords.emails]
-        : hasNewslettersEnabled
-          ? [emailSearchKeywords.newsletters]
-          : []),
-      ...(hasMailgun ? [keywords.mailgun] : []),
-    ].flat();
-  }, [hasAutomations, hasNewslettersEnabled, hasMailgun]);
-  const visibleGrowthSearchKeywords = React.useMemo(
-    () =>
-      [
-        growthSearchKeywords.network,
-        growthSearchKeywords.explore,
-        growthSearchKeywords.recommendations,
-        ...(hasStripeEnabled ? [growthSearchKeywords.offers] : []),
-      ].flat(),
-    [hasStripeEnabled],
-  );
 
   useEffect(() => {
     if (
       !checkVisible(Object.values(generalSearchKeywords).flat()) &&
       !checkVisible(Object.values(siteSearchKeywords).flat()) &&
-      !checkVisible([...visibleMembershipSearchKeywords, ...visibleEmailSearchKeywords]) &&
-      !checkVisible(visibleGrowthSearchKeywords) &&
       !checkVisible(Object.values(advancedSearchKeywords).flat())
     ) {
       setNoResult(true);
     } else {
       setNoResult(false);
     }
-  }, [
-    checkVisible,
-    setNoResult,
-    filter,
-    visibleEmailSearchKeywords,
-    visibleMembershipSearchKeywords,
-    visibleGrowthSearchKeywords,
-  ]);
-
-  return {
-    visibleMembershipSearchKeywords,
-    visibleEmailSearchKeywords,
-    visibleGrowthSearchKeywords,
-  };
+  }, [checkVisible, setNoResult, filter]);
 }
 
 const NoSearchResult: React.FC<{ className?: string }> = ({ className }) => {
@@ -315,21 +245,10 @@ const Sidebar: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const { isAnyTextFieldFocused } = useFocusContext();
-  const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, [
-    'donations_enabled',
-    'is_private',
-  ]) as [boolean, boolean];
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-  const hasAutomations = useFeatureFlag('automations');
+  const { settings } = useGlobalData();
+  const [isPrivate] = getSettingValues(settings, ['is_private']) as [boolean];
   const admin7Settings = useFeatureFlag('admin7settings');
-  const hasCustomFields = useCustomFieldsAvailable();
-  const {
-    visibleMembershipSearchKeywords,
-    visibleEmailSearchKeywords,
-    visibleGrowthSearchKeywords,
-  } = useSearchResults();
+  useSearchResults();
 
   // Focus in on search field when pressing "/"
   useEffect(() => {
@@ -428,10 +347,15 @@ const Sidebar: React.FC = () => {
             onClick={handleSectionClick}
           />
           <NavItem
-            icon={<LucideIcon.UserPen />}
-            keywords={generalSearchKeywords.users}
-            navid="staff"
-            title="Staff"
+            icon={<LucideIcon.KeyRound />}
+            keywords={generalSearchKeywords.siteAccess}
+            navid="site-access"
+            title={
+              <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                <span className="min-w-0 truncate">Site access</span>
+                {isPrivate && <PrivateBadge />}
+              </span>
+            }
             onClick={handleSectionClick}
           />
           <NavItem
@@ -446,13 +370,6 @@ const Sidebar: React.FC = () => {
             keywords={generalSearchKeywords.socialAccounts}
             navid="social-accounts"
             title="Social accounts"
-            onClick={handleSectionClick}
-          />
-          <NavItem
-            icon={<LucideIcon.TrendingUp />}
-            keywords={generalSearchKeywords.analytics}
-            navid="analytics"
-            title="Analytics"
             onClick={handleSectionClick}
           />
         </NavSection>
@@ -482,140 +399,10 @@ const Sidebar: React.FC = () => {
           />
         </NavSection>
 
-        {/* Membership settings */}
-        <NavSection
-          isVisible={checkVisible([
-            ...visibleMembershipSearchKeywords,
-            ...visibleEmailSearchKeywords,
-          ])}
-          title="Membership"
-        >
-          <NavItem
-            icon={<LucideIcon.KeyRound />}
-            keywords={membershipSearchKeywords.access}
-            navid={['members', 'spam-filters']}
-            title={
-              <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                <span className="min-w-0 truncate">Access</span>
-                {isPrivate && <PrivateBadge />}
-              </span>
-            }
-            onClick={handleSectionClick}
-          />
-          <NavItem
-            icon={<LucideIcon.Banknote />}
-            keywords={membershipSearchKeywords.tiers}
-            navid="tiers"
-            title="Tiers"
-            onClick={handleSectionClick}
-          />
-          <NavItem
-            icon={<LucideIcon.SquareUserRound />}
-            keywords={membershipSearchKeywords.portal}
-            navid="portal"
-            title="Signup portal"
-            onClick={handleSectionClick}
-          />
-          {paidMembersEnabled && (
-            <NavItem
-              icon={<LucideIcon.Gift />}
-              keywords={membershipSearchKeywords.giftSubscriptions}
-              navid="gift-subscriptions"
-              title="Gift subscriptions"
-              onClick={handleSectionClick}
-            />
-          )}
-          {!hasAutomations && (
-            <NavItem
-              icon={<LucideIcon.MailPlus />}
-              keywords={membershipSearchKeywords.memberEmails}
-              navid="memberemails"
-              title="Welcome emails"
-              onClick={handleSectionClick}
-            />
-          )}
-          {hasTipsAndDonations && hasStripeEnabled && (
-            <NavItem
-              icon={<LucideIcon.PiggyBank />}
-              keywords={membershipSearchKeywords.tips}
-              navid="tips-and-donations"
-              title="Tips & donations"
-              onClick={handleSectionClick}
-            />
-          )}
-          {hasCustomFields && (
-            <NavItem
-              icon={<LucideIcon.TextCursorInput />}
-              keywords={membershipSearchKeywords.customFields}
-              navid="custom-fields"
-              title="Custom fields"
-              onClick={handleSectionClick}
-            />
-          )}
-          {hasAutomations ? (
-            <NavItem
-              icon={<LucideIcon.Mail />}
-              keywords={visibleEmailSearchKeywords}
-              navid={['enable-newsletters', 'default-recipients', 'emails', 'mailgun']}
-              title="Email"
-              onClick={handleSectionClick}
-            />
-          ) : (
-            <NavItem
-              icon={<LucideIcon.Mail />}
-              keywords={visibleEmailSearchKeywords}
-              navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']}
-              title="Newsletters"
-              onClick={handleSectionClick}
-            />
-          )}
-        </NavSection>
-
-        {/* Growth */}
-        <NavSection isVisible={checkVisible(visibleGrowthSearchKeywords)} title="Growth">
-          <NavItem
-            icon={<LucideIcon.Waypoints />}
-            keywords={growthSearchKeywords.network}
-            navid="network"
-            title="Network"
-            onClick={handleSectionClick}
-          />
-          <NavItem
-            icon={<LucideIcon.Globe />}
-            keywords={growthSearchKeywords.explore}
-            navid="explore"
-            title="Ghost Explore"
-            onClick={handleSectionClick}
-          />
-          <NavItem
-            icon={<LucideIcon.Heart />}
-            keywords={growthSearchKeywords.recommendations}
-            navid="recommendations"
-            title="Recommendations"
-            onClick={handleSectionClick}
-          />
-          {hasStripeEnabled && (
-            <NavItem
-              icon={<LucideIcon.Tag />}
-              keywords={growthSearchKeywords.offers}
-              navid="offers"
-              title="Offers"
-              onClick={handleSectionClick}
-            />
-          )}
-        </NavSection>
-
         <NavSection
           isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())}
           title="Advanced"
         >
-          <NavItem
-            icon={<LucideIcon.Blocks />}
-            keywords={advancedSearchKeywords.integrations}
-            navid="integrations"
-            title="Integrations"
-            onClick={handleSectionClick}
-          />
           <NavItem
             icon={<LucideIcon.Download />}
             keywords={advancedSearchKeywords.migrationtools}

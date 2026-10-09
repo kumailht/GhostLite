@@ -1,4 +1,3 @@
-import { ActivityPubHostLayoutProvider } from '@tryghost/activitypub/api';
 import React from 'react';
 import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -12,15 +11,7 @@ import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
-import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
-
-const networkPageChrome = {
-  contentClassName: 'max-w-[1920px]',
-  contentGutter: 'var(--page-gutter)',
-  // The floating sidebar already provides the cover's 8px left gap.
-  profileContentClassName: 'sidebar:pl-0',
-};
 
 const pageChromeClassName = [
   '[&_.max-w-page]:max-w-(--content-width)',
@@ -64,63 +55,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [settingsNavigationSlot, setSettingsNavigationSlot] = React.useState<HTMLElement | null>(
     null,
   );
-  const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
   const isSettingsRoute = useIsSettingsSidebarRoute();
-
-  // The dunning takeover is positioned against the scrollable inset, so the
-  // inset must not scroll (and must sit at the top) while the takeover is up —
-  // otherwise the covered page scrolls back into view from underneath it
-  const insetRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (dunningLocked) {
-      insetRef.current?.scrollTo?.(0, 0);
-    }
-  }, [dunningLocked, sidebarVisible, isSettingsRoute]);
-
-  // The covered regions become `inert` while the takeover is up: aria-modal is
-  // only a semantic hint, so without this the covered page stays reachable by
-  // keyboard and assistive technology. Applied through refs because React 18
-  // has no first-class inert prop. Whichever refs the active layout branch
-  // doesn't render stay null and are skipped.
-  //
-  // A layout effect on purpose: layout effects run before passive-effect
-  // cleanups, so on dismissal inert is cleared before the overlay's cleanup
-  // restores focus — focus() on a still-inert element is a silent no-op.
   const sidebarRef = React.useRef<HTMLDivElement>(null);
   const mainRef = React.useRef<HTMLElement>(null);
-  const contributorMenuRef = React.useRef<HTMLDivElement>(null);
-  React.useLayoutEffect(() => {
-    for (const region of [sidebarRef.current, mainRef.current, contributorMenuRef.current]) {
-      if (region) {
-        region.inert = dunningLocked;
-      }
-    }
-  }, [dunningLocked]);
 
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
     return (
       <div className="relative h-full bg-background">
-        {!dunningLocked && <SkipLink target={mainRef} />}
+        <SkipLink target={mainRef} />
         <main ref={mainRef} className="flex h-full flex-col overflow-y-auto focus:outline-hidden">
-          <DunningBanner />
           <div className="min-h-0 flex-1">{children}</div>
         </main>
-        <div
-          ref={contributorMenuRef}
-          className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8"
-        >
+        <div className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8">
           <ContributorUserMenu />
         </div>
-        <DunningOverlay />
       </div>
     );
   }
 
   return (
     <GlobalSearchProvider>
-      {!dunningLocked && <SkipLink target={mainRef} />}
+      <SkipLink target={mainRef} />
       <SidebarProvider
         className={cn(
           sidebarVisible &&
@@ -133,27 +90,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           (isSettingsRoute ? (
             <SettingsSidebar
               ref={sidebarRef}
-              className={cn(SIDEBAR_PANEL_CLASS_NAME, dunningLocked && 'opacity-40')}
+              className={SIDEBAR_PANEL_CLASS_NAME}
               slotRef={setSettingsNavigationSlot}
               variant="floating"
             />
           ) : (
-            <AppSidebar
-              ref={sidebarRef}
-              className={cn(SIDEBAR_PANEL_CLASS_NAME, dunningLocked && 'opacity-40')}
-              variant="floating"
-            />
+            <AppSidebar ref={sidebarRef} className={SIDEBAR_PANEL_CLASS_NAME} variant="floating" />
           ))}
         <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
         <SidebarInset
-          ref={insetRef}
           className={cn(
-            'relative bg-background sidebar:max-h-full',
-            dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+            'relative overflow-y-auto bg-background sidebar:max-h-full',
             sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
           )}
         >
-          <DunningBanner />
           <main
             ref={mainRef}
             className={cn(
@@ -162,17 +112,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               isSettingsRoute && 'min-h-0',
             )}
           >
-            <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-              <SettingsNavigationSlotContext.Provider value={settingsNavigationSlot}>
-                {children}
-              </SettingsNavigationSlotContext.Provider>
-            </ActivityPubHostLayoutProvider>
+            <SettingsNavigationSlotContext.Provider value={settingsNavigationSlot}>
+              {children}
+            </SettingsNavigationSlotContext.Provider>
           </main>
-          {/* The mobile nav sits outside the takeover's cover (fixed, above the
-            inset) and its sheet opens in a portal, so it unmounts entirely
-            rather than relying on inert */}
-          {!dunningLocked && <MobileNavBar />}
-          <DunningOverlay />
+          <MobileNavBar />
         </SidebarInset>
       </SidebarProvider>
     </GlobalSearchProvider>

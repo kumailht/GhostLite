@@ -1,22 +1,4 @@
 export const searchKeywords = {
-  integrations: [
-    'advanced',
-    'integrations',
-    'zapier',
-    'slack',
-    'unsplash',
-    'first promoter',
-    'firstpromoter',
-    'pintura',
-    'disqus',
-    'analytics',
-    'ulysses',
-    'typeform',
-    'buffer',
-    'plausible',
-    'github',
-    'webhooks',
-  ],
   migrationtools: [
     'import',
     'export',

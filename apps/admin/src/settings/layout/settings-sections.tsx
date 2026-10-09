@@ -1,26 +1,18 @@
 import React from 'react';
 
 import AdvancedSettings from '@/settings/advanced/advanced-settings';
-import EmailSettings from '@/settings/email/email-settings';
-import Emails from '@/settings/email/emails';
 import GeneralSettings from '@/settings/general/general-settings';
-import GrowthSettings from '@/settings/growth/growth-settings';
-import MembershipSettings from '@/settings/membership/membership-settings';
 import SiteSettings from '@/settings/site/site-settings';
 import { Stack } from '@tryghost/shade/primitives';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 const Settings: React.FC = () => {
-  const hasAutomations = useFeatureFlag('automations');
   const admin7Settings = useFeatureFlag('admin7settings');
 
   const sections = (
     <>
       <GeneralSettings />
       <SiteSettings />
-      <MembershipSettings />
-      {hasAutomations ? <Emails /> : <EmailSettings />}
-      <GrowthSettings />
       <AdvancedSettings />
     </>
   );

@@ -9,7 +9,6 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-  Indicator,
   SidebarMenuButton,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -19,8 +18,6 @@ import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
 import { type ThemeMode } from '@/hooks/use-theme';
 import { useThemeContext } from '@/providers/theme-context';
-import { useWhatsNew } from '@/whats-new/api';
-import { useUpgradeStatus } from './hooks/use-upgrade-status';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { UserMenuItem } from './user-menu-item';
 import { UserMenuAvatar } from './user-menu-avatar';
@@ -115,13 +112,8 @@ function UserMenuSignOut() {
   );
 }
 
-interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
-  onOpenWhatsNew?: () => void;
-}
-function UserMenu(props: UserMenuProps) {
+function UserMenu(props: React.ComponentProps<typeof DropdownMenu>) {
   const currentUser = useCurrentUser();
-  const { hasNew } = useWhatsNew();
-  const { showUpgradeBanner } = useUpgradeStatus();
 
   return (
     <DropdownMenu {...props}>
@@ -133,16 +125,6 @@ function UserMenu(props: UserMenuProps) {
         >
           <div className="relative">
             <UserMenuAvatar />
-            {hasNew && (
-              <span className="absolute -top-0.5 -right-0.5">
-                <Indicator
-                  data-testid="whats-new-avatar-badge"
-                  label="New updates available"
-                  size="sm"
-                  variant="success"
-                />
-              </span>
-            )}
           </div>
           <div className="grid flex-1 text-left text-base leading-tight">
             <span className="truncate font-semibold">{currentUser.data?.name}</span>
@@ -158,45 +140,15 @@ function UserMenu(props: UserMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className={`w-[var(--radix-dropdown-menu-trigger-width)] dark:bg-surface-elevated-2 ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
+        className="w-[var(--radix-dropdown-menu-trigger-width)] dark:bg-surface-elevated-2"
         sideOffset={10}
       >
         <UserMenuHeader email={currentUser.data?.email} name={currentUser.data?.name}>
           <UserMenuAvatar />
         </UserMenuHeader>
         <DropdownMenuSeparator />
-        <UserMenuItem
-          asChild={false}
-          data-test-nav="whatsnew"
-          onSelect={() => {
-            props.onOpenWhatsNew?.();
-          }}
-        >
-          <LucideIcon.Sparkles />
-          <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
-          {hasNew && (
-            <div className="flex flex-1 justify-end">
-              <Indicator
-                data-testid="whats-new-menu-badge"
-                label="New updates available"
-                size="sm"
-                variant="success"
-              />
-            </div>
-          )}
-        </UserMenuItem>
         <UserMenuProfile />
         <DropdownMenuSeparator />
-        <UserMenuItem>
-          <a
-            href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <LucideIcon.Book />
-            <UserMenuItem.Label>Resources & guides</UserMenuItem.Label>
-          </a>
-        </UserMenuItem>
         <UserMenuAppearance />
         <DropdownMenuSeparator />
         <UserMenuSignOut />
@@ -216,10 +168,7 @@ function UserMenu(props: UserMenuProps) {
  * - Appearance selector
  * - Sign out
  *
- * Contributors do not have access to:
- * - What's new
- * - Help center / Resources & guides
- * - Settings navigation
+ * Contributors do not have access to settings navigation.
  */
 function ContributorUserMenu() {
   const currentUser = useCurrentUser();

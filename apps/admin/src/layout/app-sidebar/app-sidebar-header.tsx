@@ -38,7 +38,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                   aria-label="Open access settings"
                   className="shrink-0"
                   state={settingsReturnToState}
-                  to="/settings/members"
+                  to="/settings/site-access"
                 >
                   <Badge
                     className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30"

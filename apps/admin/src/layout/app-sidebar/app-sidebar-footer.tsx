@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import {
   SidebarFooter,
@@ -6,12 +6,10 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@tryghost/shade/components';
-import { WhatsNewDialog } from '@/whats-new/api';
 import { UserMenu } from './user-menu';
 import { useSidebarBannerState } from './hooks/use-sidebar-banner-state';
 
 function AppSidebarFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
-  const [isWhatsNewDialogOpen, setIsWhatsNewDialogOpen] = useState(false);
   const { hasBanner } = useSidebarBannerState();
 
   return (
@@ -20,12 +18,11 @@ function AppSidebarFooter({ ...props }: React.ComponentProps<typeof SidebarFoote
         <SidebarGroup className={hasBanner ? 'pt-3' : ''}>
           <SidebarMenu>
             <SidebarMenuItem>
-              <UserMenu onOpenWhatsNew={() => setIsWhatsNewDialogOpen(true)} />
+              <UserMenu />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarFooter>
-      <WhatsNewDialog open={isWhatsNewDialogOpen} onOpenChange={setIsWhatsNewDialogOpen} />
     </>
   );
 }

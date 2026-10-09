@@ -38,8 +38,9 @@ async function updateGlobalTemplateOptions(req, res, next) {
       data: {
         site: {
           ...siteData,
-          comments_enabled: siteData.comments_enabled !== 'off',
-          comments_access: siteData.comments_enabled,
+          // GhostLite has no comments, so themes always hide their comments section.
+          comments_enabled: false,
+          comments_access: 'off',
         },
         labs: labsData,
         config: themeData,

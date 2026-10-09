@@ -298,12 +298,6 @@ module.exports = async function ghost_head(options) {
       }
     }
 
-    if (!excludeList.has('comment_counts') && settingsCache.get('comments_enabled') !== 'off') {
-      head.push(
-        `<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`,
-      );
-    }
-
     if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
       head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
     }

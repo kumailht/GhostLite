@@ -46,17 +46,6 @@ module.exports = function apiRoutes() {
   router.delete('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
   router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
-  // Comments - browseAll must come before :id routes
-  router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
-  router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
-  router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
-  router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
-  router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
-  router.get('/comments/:id/dislikes', mw.authAdminApi, http(api.commentDislikes.browse));
-  router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
-  router.post('/comments', mw.authAdminApi, http(api.comments.add));
-  router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
-
   // ## Pages
   router.get('/pages', mw.authAdminApi, http(api.pages.browse));
   router.delete('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));
@@ -256,13 +245,6 @@ module.exports = function apiRoutes() {
   );
 
   router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
-
-  router.post(
-    '/members/:id/commenting/disable',
-    mw.authAdminApi,
-    http(api.memberCommenting.disable),
-  );
-  router.post('/members/:id/commenting/enable', mw.authAdminApi, http(api.memberCommenting.enable));
 
   // ## Labels
   router.get('/labels', mw.authAdminApi, http(api.labels.browse));

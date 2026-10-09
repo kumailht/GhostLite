@@ -49,26 +49,12 @@ const filesToMinify: Array<{
   options: Pick<BuildOptions, 'bundle' | 'format' | 'target'>;
 }> = [
   {
-    src: 'core/frontend/src/comment-counts/comment-counts.js',
-    dest: 'core/frontend/public/comment-counts.min.js',
-    options: {
-      bundle: false,
-    },
-  },
-  {
     src: 'core/frontend/src/member-attribution/member-attribution.js',
     dest: 'core/frontend/public/member-attribution.min.js',
     options: {
       bundle: true,
       format: 'iife',
       target: ['es2020'],
-    },
-  },
-  {
-    src: 'core/frontend/src/admin-auth/message-handler.js',
-    dest: 'core/frontend/public/admin-auth/admin-auth.min.js',
-    options: {
-      bundle: false,
     },
   },
   {

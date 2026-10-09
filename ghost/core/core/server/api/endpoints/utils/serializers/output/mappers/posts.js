@@ -19,7 +19,6 @@ const postsMetaSchema = require('../../../../../../data/schema').tables.posts_me
 const getPostServiceInstance = require('../../../../../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
-const commentsService = require('../../../../../../services/comments');
 const memberAttribution = require('../../../../../../services/member-attribution');
 
 module.exports = async (model, frame, options = {}) => {
@@ -101,15 +100,8 @@ module.exports = async (model, frame, options = {}) => {
     gating.forPost(jsonModel, frame);
     previewRendering.forPost(jsonModel, frame);
 
-    if (jsonModel.access) {
-      if (commentsService?.api?.enabled !== 'off') {
-        jsonModel.comments = true;
-      } else {
-        jsonModel.comments = false;
-      }
-    } else {
-      jsonModel.comments = false;
-    }
+    // GhostLite has no comments; themes check this flag to show a comments section.
+    jsonModel.comments = false;
 
     // Strip any source formats
     delete jsonModel.mobiledoc;

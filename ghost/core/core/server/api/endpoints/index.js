@@ -128,10 +128,6 @@ module.exports = {
     return apiFramework.pipeline(require('./stripe-checkout-branding'), localUtils);
   },
 
-  get memberCommenting() {
-    return apiFramework.pipeline(require('./member-commenting'), localUtils);
-  },
-
   get offers() {
     return apiFramework.pipeline(require('./offers'), localUtils);
   },
@@ -224,26 +220,6 @@ module.exports = {
     return apiFramework.pipeline(require('./newsletters'), localUtils);
   },
 
-  get comments() {
-    return apiFramework.pipeline(require('./comments'), localUtils);
-  },
-
-  get commentReplies() {
-    return apiFramework.pipeline(require('./comment-replies'), localUtils);
-  },
-
-  get commentReports() {
-    return apiFramework.pipeline(require('./comment-reports'), localUtils);
-  },
-
-  get commentLikes() {
-    return apiFramework.pipeline(require('./comment-likes'), localUtils);
-  },
-
-  get commentDislikes() {
-    return apiFramework.pipeline(require('./comment-dislikes'), localUtils);
-  },
-
   get links() {
     return apiFramework.pipeline(require('./links'), localUtils);
   },
@@ -290,10 +266,6 @@ module.exports = {
 
   get offersPublic() {
     return apiFramework.pipeline(require('./offers-public'), localUtils, 'content');
-  },
-
-  get commentsMembers() {
-    return apiFramework.pipeline(require('./comments-members'), localUtils, 'members');
   },
 
   get feedbackMembers() {

@@ -12,7 +12,6 @@ const { http } = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
 
 const accountRoutes = require('./account');
-const commentRouter = require('../comments');
 const corsMiddleware = require('./middleware/cors');
 
 /**
@@ -131,9 +130,6 @@ module.exports = function setupMembersApp() {
   membersApp.post('/api/subscriptions/:id/apply-offer', function lazyApplyOfferMw(req, res, next) {
     return membersService.api.middleware.applyOfferToSubscription(req, res, next);
   });
-
-  // Comments
-  membersApp.use('/api/comments', commentRouter());
 
   // Feedback
   membersApp.post(

@@ -347,7 +347,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const tiers = require('./server/services/tiers');
   const permissions = require('./server/services/permissions');
   const postScheduling = require('./server/services/post-scheduling').default;
-  const comments = require('./server/services/comments');
   const staffService = require('./server/services/staff');
   const memberAttribution = require('./server/services/member-attribution');
   const membersEvents = require('./server/services/members-events');
@@ -422,7 +421,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       prometheusClient,
       settingsCache,
     }),
-    comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),
     mediaInliner.init(),

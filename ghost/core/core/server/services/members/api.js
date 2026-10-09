@@ -19,7 +19,6 @@ const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
-const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
 const metafieldsService = require('../members-metafields');
@@ -270,7 +269,6 @@ function createApiInstance(config) {
     sentry,
     settingsHelpers,
     urlUtils,
-    commentsService,
     emailAddressService: emailAddressService.service,
     giftService,
     // Resolved here rather than passed as the module: the members service needs

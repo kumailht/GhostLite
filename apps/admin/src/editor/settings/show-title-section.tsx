@@ -6,7 +6,7 @@ import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/us
 import {
   settingsShowTitleToggle,
   settingsShowTitleWarning,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';

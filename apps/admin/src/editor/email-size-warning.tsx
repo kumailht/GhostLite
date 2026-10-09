@@ -5,7 +5,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import {
   editorEmailSizeDetails,
   editorEmailSizeWarning,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { PublishFlowPost } from './publish/flow-post';
 import { useEmailSize } from './use-email-size';
 

@@ -8,7 +8,7 @@ import {
   publishBackToDashboard,
   publishFlowComplete,
   publishRevertToDraft,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { PostBookmark } from './post-bookmark';
 import {
   formatScheduledCompletion,

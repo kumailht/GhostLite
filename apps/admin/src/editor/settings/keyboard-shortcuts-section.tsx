@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Kbd, KbdGroup, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { settingsShortcutRow } from '@tryghost/test-data/selectors/editor';
+import { settingsShortcutRow } from '@/editor/selectors';
 import { isMacPlatform } from '@/utils/is-mac-platform';
 import {
   keyboardShortcutGroups,

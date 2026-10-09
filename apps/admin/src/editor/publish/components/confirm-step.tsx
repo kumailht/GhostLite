@@ -11,7 +11,7 @@ import {
   publishConfirm,
   publishConfirmError,
   publishFlowConfirm,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import {
   confirmButtonText,
   confirmPublishType,

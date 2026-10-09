@@ -28,7 +28,7 @@ import {
   postPreviewEmailSubject,
   postPreviewNewsletterMissing,
   postPreviewNewslettersError,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';

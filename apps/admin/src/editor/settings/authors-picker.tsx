@@ -4,7 +4,7 @@ import {
   settingsAuthorChip,
   settingsAuthorsList,
   settingsAuthorsPicker,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import { authorName, matchesAuthor, toAuthorOption, type AuthorOption } from './authors-options';
 import { SectionLoadError } from './section-load-error';

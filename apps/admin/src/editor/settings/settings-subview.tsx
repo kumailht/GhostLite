@@ -3,7 +3,7 @@ import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { SettingsNavigationRow } from './settings-navigation-row';
-import { settingsSubviewPane } from '@tryghost/test-data/selectors/editor';
+import { settingsSubviewPane } from '@/editor/selectors';
 import type { SettingsSectionId } from './sections';
 import { useSubviews } from './settings-subview-context';
 

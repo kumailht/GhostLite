@@ -7,7 +7,7 @@ import { Button } from '@tryghost/shade/components';
 import { ImageUploadActions } from '@tryghost/shade/patterns';
 import { cn } from '@tryghost/shade/utils';
 import { useFramework } from '@tryghost/admin-x-framework';
-import { unsplashSearchModal } from '@tryghost/test-data/selectors/editor';
+import { unsplashSearchModal } from '@/editor/selectors';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 
 export interface UnsplashSelection {

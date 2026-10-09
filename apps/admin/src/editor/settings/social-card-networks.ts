@@ -8,7 +8,7 @@ import {
   settingsXPreview,
   settingsXPreviewImage,
   settingsXTitleInput,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { BrandIconName } from '@/shared/brand-icon/brand-icon';
 import type { SettingsSectionId } from './sections';
 import type { SettingsTextFieldKey } from './use-settings-field';

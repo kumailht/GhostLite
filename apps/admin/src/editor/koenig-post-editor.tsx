@@ -1,6 +1,6 @@
 import { type ErrorInfo, memo, Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
-import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
+import { editorBody, editorSecondaryInstance } from '@/editor/selectors';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,

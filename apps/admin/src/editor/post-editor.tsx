@@ -28,7 +28,7 @@ import {
   titleHiddenIndicator,
   tkIndicator,
   tkIndicatorExcerpt,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig, PostType } from './card-config';
 import { FeatureImage } from './feature-image';

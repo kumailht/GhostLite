@@ -5,7 +5,7 @@ import {
   settingsTagsInput,
   settingsTagsList,
   settingsTagsToken,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { TagPicker } from '@/shared/tags/tag-picker';

@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
-import { settingsPostHistoryButton } from '@tryghost/test-data/selectors/editor';
+import { settingsPostHistoryButton } from '@/editor/selectors';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
 import type { SaveEngineState } from '@/editor/engine/save-engine';
 import { useSiteTimezone } from '@/editor/use-editor-settings';

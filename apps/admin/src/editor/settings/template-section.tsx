@@ -12,7 +12,7 @@ import { useBrowseThemes } from '@tryghost/admin-x-framework/api/themes';
 import {
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { PostType } from '@/editor/card-config';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { EditorSettingsPort } from './editor-settings-port';

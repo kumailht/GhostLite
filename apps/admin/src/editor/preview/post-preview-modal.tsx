@@ -40,7 +40,7 @@ import {
 
 import { PAID_TIERS_SEARCH_PARAMS, newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
+import { postPreviewModal, postPreviewSaveFailed } from '@/editor/selectors';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { describeRejectedAction } from '@/editor/publish/completion-message';

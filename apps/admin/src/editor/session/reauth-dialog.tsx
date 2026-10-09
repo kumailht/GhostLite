@@ -24,7 +24,7 @@ import {
   useVerifySession,
 } from '@tryghost/admin-x-framework/api/session';
 import { JSONError, UnauthorizedError } from '@tryghost/admin-x-framework/errors';
-import { editorReauthDialog } from '@tryghost/test-data/selectors/editor';
+import { editorReauthDialog } from '@/editor/selectors';
 import { ResendCodeButton } from '@/auth/api';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 

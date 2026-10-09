@@ -6,7 +6,7 @@ import {
   settingsPublishDateError,
   settingsPublishDateNote,
   settingsPublishTime,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { DateTimePicker } from '@/editor/date-time-picker';
 import { useSiteTimezone } from '@/editor/use-editor-settings';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from '@/editor/session/settings-fields';

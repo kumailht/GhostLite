@@ -1,6 +1,6 @@
 import { Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { settingsLoadError } from '@tryghost/test-data/selectors/editor';
+import { settingsLoadError } from '@/editor/selectors';
 
 export interface SectionLoadErrorProps {
   /** A whole sentence naming what could not be loaded. */

@@ -14,7 +14,7 @@ import {
   settingsMetaDescriptionInput,
   settingsMetaTitleInput,
   settingsSerpPreview,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { EditorSettingsPort } from './editor-settings-port';
 import {
   META_DESCRIPTION_RECOMMENDED,

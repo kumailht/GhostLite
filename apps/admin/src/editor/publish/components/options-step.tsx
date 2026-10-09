@@ -18,7 +18,7 @@ import {
   publishSettingEmailRecipients,
   publishSettingPublishAt,
   publishSettingPublishType,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { EmailRecipientsOptions } from './email-recipients-options';
 import { PublishAtOptions } from './publish-at-options';
 import { LimitMessage } from './limit-message';

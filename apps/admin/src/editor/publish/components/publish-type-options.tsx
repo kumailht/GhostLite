@@ -4,7 +4,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Link } from '@tryghost/admin-x-framework';
-import { publishTypeError as publishTypeErrorTestId } from '@tryghost/test-data/selectors/editor';
+import { publishTypeError as publishTypeErrorTestId } from '@/editor/selectors';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
 import type { PublishOptionsState, PublishType } from '@/editor/publish/publish-options';

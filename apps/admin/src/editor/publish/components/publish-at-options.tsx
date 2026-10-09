@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { Label, RadioGroup, RadioGroupItem } from '@tryghost/shade/components';
 import { Grid, Inline } from '@tryghost/shade/primitives';
-import { publishScheduleDate, publishScheduleTime } from '@tryghost/test-data/selectors/editor';
+import { publishScheduleDate, publishScheduleTime } from '@/editor/selectors';
 import { DateTimePicker } from '@/editor/date-time-picker';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 

@@ -9,7 +9,7 @@ import {
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getNewsletterRecipientFilter } from '@tryghost/admin-x-framework/utils/recipient-filter';
-import { publishNewsletterSelect } from '@tryghost/test-data/selectors/editor';
+import { publishNewsletterSelect } from '@/editor/selectors';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';

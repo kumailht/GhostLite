@@ -5,7 +5,7 @@ import {
   postPreviewBrowser,
   postPreviewBrowserFrame,
   postPreviewUnavailable,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { useRef, type SyntheticEvent } from 'react';
 
 import { browserPreviewUrl, type PreviewAudience, type PreviewDevice } from './preview-url';

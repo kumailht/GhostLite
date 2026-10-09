@@ -8,7 +8,7 @@ import {
   publishFlowModal,
   publishFlowPreview,
   tkReminderDialog,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { CompleteStep } from './components/complete-step';
 import { CompleteWithEmailErrorStep } from './components/complete-with-email-error-step';

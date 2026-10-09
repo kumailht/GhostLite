@@ -13,7 +13,7 @@ import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/us
 import {
   editorHeaderActions,
   editorPublishInputsError,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { PostPreviewModal, type PostPreviewModalProps } from './preview/post-preview-modal';

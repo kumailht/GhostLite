@@ -16,7 +16,7 @@ import {
   useDeleteSnippet,
   useEditSnippet,
 } from '@tryghost/admin-x-framework/api/snippets';
-import { snippetConfirmModal } from '@tryghost/test-data/selectors/editor';
+import { snippetConfirmModal } from '@/editor/selectors';
 import type { CardConfigSnippet, CardConfigSnippetInput } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { toSnippetValue } from './snippet-value';

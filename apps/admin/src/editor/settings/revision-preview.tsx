@@ -8,7 +8,7 @@ import {
   postHistoryPreviewExcerpt,
   postHistoryPreviewFeatureImage,
   postHistoryPreviewTitle,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,

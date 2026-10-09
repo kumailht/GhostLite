@@ -20,7 +20,7 @@ import { useSendTestEmail } from '@tryghost/admin-x-framework/api/email-previews
 import {
   postPreviewTestEmailError,
   postPreviewTestEmailInput,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { ReauthDialog } from '@/editor/session/reauth-dialog';
 import { useEditorSettings } from '@/editor/use-editor-settings';

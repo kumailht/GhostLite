@@ -1,5 +1,5 @@
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { publishCompleteBookmark } from '@tryghost/test-data/selectors/editor';
+import { publishCompleteBookmark } from '@/editor/selectors';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 
 export interface PostBookmarkProps {

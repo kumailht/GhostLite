@@ -11,7 +11,7 @@ import {
   settingsSlugError,
   settingsSlugInput,
   settingsUrlPreview,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { PostType } from '@/editor/card-config';
 import { normalizeManualSlug } from '@/editor/engine/slug-machine';

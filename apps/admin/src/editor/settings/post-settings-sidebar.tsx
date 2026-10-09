@@ -24,7 +24,7 @@ import {
   postSettingsSidebar,
   settingsExcerptInput,
   settingsFeaturedToggle,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
 import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';

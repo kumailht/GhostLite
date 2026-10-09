@@ -19,8 +19,7 @@
 
     /* Path aliases */
     "paths": {
-      "@/*": ["./src/*"],
-      "@test-utils/*": ["./test-utils/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Linting */
@@ -31,7 +30,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "test-utils"],
+  "include": ["src"],
   "references": [
     { "path": "../admin-x-framework/tsconfig.declaration.json" },
     { "path": "../activitypub/tsconfig.declaration.json" }

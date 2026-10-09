@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { Input } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { postPreviewEmailSubject } from '@tryghost/test-data/selectors/editor';
+import { postPreviewEmailSubject } from '@/editor/selectors';
 import type { SaveError, SaveErrorKind } from '@/editor/engine/save-engine';
 import { describeSaveError } from '@/editor/publish/completion-message';
 import {

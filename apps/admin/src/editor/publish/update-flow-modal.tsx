@@ -16,7 +16,7 @@ import {
   updateFlowModal,
   updateFlowPreviousEmail,
   updateFlowTitle,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { FailureBanner } from './components/failure-banner';
 import { createPublishOptions } from './publish-options';

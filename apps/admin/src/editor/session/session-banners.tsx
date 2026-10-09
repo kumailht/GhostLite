@@ -17,7 +17,7 @@ import {
   editorConflictBanner,
   editorConflictReloadConfirm,
   editorNewerVersionNotice,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import { ErrorLine } from '@/editor/publish/components/failure-banner';

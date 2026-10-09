@@ -37,7 +37,7 @@ import {
   editorLeaveDialog,
   editorLoadError,
   settingsMenuToggle,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import {
   type CardConfigPostSource,
   type PostCardConfig,

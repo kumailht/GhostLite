@@ -9,7 +9,7 @@ import {
   publishEmailErrorStep,
   publishRetryEmail,
   publishRetryError,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 

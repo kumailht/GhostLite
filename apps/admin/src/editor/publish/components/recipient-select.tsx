@@ -16,7 +16,7 @@ import {
   publishRecipientPaid,
   publishRecipientSegments,
   publishRecipientSpecific,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 
 export interface SegmentOption {
   /** The NQL segment, e.g. `tier:gold` or `label:vip`. */

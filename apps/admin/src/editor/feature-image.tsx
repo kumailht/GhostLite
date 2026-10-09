@@ -5,7 +5,7 @@ import {
   editorFeatureImage,
   editorFeatureImageCaption,
   featureImageTkIndicator,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';

@@ -18,7 +18,7 @@ import {
   settingsTiersList,
   settingsTiersPicker,
   settingsVisibilitySelect,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import type { PostType } from '@/editor/card-config';
 import { PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';

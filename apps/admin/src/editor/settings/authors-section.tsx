@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import { FieldError, Label } from '@tryghost/shade/components';
 import { useBrowseUsers, type User } from '@tryghost/admin-x-framework/api/users';
 import type { PostAuthor } from '@tryghost/admin-x-framework/api/posts';
-import { settingsAuthorsError } from '@tryghost/test-data/selectors/editor';
+import { settingsAuthorsError } from '@/editor/selectors';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { AUTHORS_REQUIRED } from '@/editor/session/settings-fields';
 import type { EditorSettingsPort } from './editor-settings-port';

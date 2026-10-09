@@ -8,7 +8,7 @@ import {
   editorSaveError,
   editorScheduleCountdown,
   editorStatus,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import { formatPostTime } from '@/posts/list/post-time';
 import { ErrorLine, FailureMessage } from './publish/components/failure-banner';
 import { hostLimitFailure } from './publish/completion-message';

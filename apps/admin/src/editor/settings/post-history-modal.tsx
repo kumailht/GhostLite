@@ -22,7 +22,7 @@ import {
   postHistoryPreview,
   postHistoryRestoreConfirm,
   postHistoryRevisionList,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';

@@ -22,7 +22,7 @@ import {
   settingsDeleteButton,
   settingsDeleteDialog,
   settingsDeleteError,
-} from '@tryghost/test-data/selectors/editor';
+} from '@/editor/selectors';
 import type { PostType } from '@/editor/card-config';
 import { DEFAULT_TITLE } from '@/editor/engine/save-engine';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';

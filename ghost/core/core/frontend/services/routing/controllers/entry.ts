@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import * as markdown from './entry/markdown';
-import * as giftLinks from './entry/gift-links';
 import buildCanonicalUrl from './entry/canonical-url';
 
 const debug = require('@tryghost/debug')('services:routing:controllers:entry');
@@ -60,27 +59,7 @@ export async function entryController(
   debug('entryController', res.routerOptions);
 
   try {
-    // A gift view is html-only. Redirecting before the lookup keeps the
-    // token off the read, so `.md` paths can never see an unlocked entry.
-    if (giftLinks.isGiftRequest(req) && markdown.isMdRequest(res)) {
-      return giftLinks.stripGiftAndRedirect(req, res);
-    }
-
-    // The raw gift token rides the lookup as read context; the API read
-    // verifies it against the entry and unlocks, or rejects the lookup.
-    const giftToken = giftLinks.isGiftRequest(req) ? giftLinks.giftToken(req) : null;
-
-    let lookup;
-    try {
-      lookup = await dataService.entryLookup(req.path, res.routerOptions, res.locals, {
-        giftToken,
-      });
-    } catch (err) {
-      if (giftLinks.isInvalidGiftTokenError(err)) {
-        return giftLinks.stripGiftAndRedirect(req, res);
-      }
-      throw err;
-    }
+    const lookup = await dataService.entryLookup(req.path, res.routerOptions, res.locals);
     const entry = lookup ? lookup.entry : false;
 
     if (!entry || lookup.isUnknownOption) {
@@ -102,15 +81,6 @@ export async function entryController(
     if (isPermalinkStale(req, entry)) {
       debug('redirect');
       return urlUtils.redirect301(res, buildCanonicalUrl(req, entry));
-    }
-
-    if (giftLinks.isGiftRequest(req)) {
-      if (!giftToken) {
-        return giftLinks.stripGiftAndRedirect(req, res);
-      }
-      // Reaching here means the lookup verified the token: the entry is
-      // the unlocked variant.
-      giftLinks.prepareGiftRender(res, giftToken);
     }
 
     return renderer.renderEntry(req, res)(entry);

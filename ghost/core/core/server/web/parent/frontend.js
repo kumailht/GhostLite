@@ -17,8 +17,6 @@ module.exports = (routerConfig) => {
   // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin app.
   frontendApp.use(shared.middleware.urlRedirects.frontendSSLRedirect);
 
-  frontendApp.lazyUse('/members', require('../members'));
-  frontendApp.lazyUse('/gift', require('../gift-preview'));
   frontendApp.use('/', require('../../../frontend/web')(routerConfig));
 
   return frontendApp;

@@ -87,12 +87,6 @@ module.exports = {
     getMembersValidationKey: (...args) => settingsHelpers.getMembersValidationKey(...args),
   },
 
-  // Member actions needed by the frontend's unsubscribe route. Lazy so that
-  // loading the proxy does not pull the members service in ahead of boot.
-  get members() {
-    return require('../../server/services/members');
-  },
-
   // TODO: Expose less of the API to make this safe
   api: require('../../server/api').endpoints,
 

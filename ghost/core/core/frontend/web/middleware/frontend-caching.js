@@ -3,43 +3,13 @@
  */
 const config = require('../../../shared/config');
 const shared = require('../../../server/web/shared');
-const { api } = require('../../services/proxy');
-const { isGiftRequest } = require('../../services/routing/controllers/entry/gift-links');
 const preview = require('../../services/theme-engine/preview');
 
 /**
- * Calculate the member's active tier.
- * @param {object} member - The member object.
- * @param {object} freeTier - The free tier object.
- * @returns {string|null} - The member's active tier, or null if the member has more than one active subscription.
- */
-function calculateMemberTier(member, freeTier) {
-  const activeSubscriptions = member.subscriptions.filter((sub) => sub.status === 'active');
-  if (activeSubscriptions.length === 0) {
-    return freeTier;
-  }
-  if (activeSubscriptions.length === 1) {
-    return activeSubscriptions[0].tier;
-  }
-  return null; // More than one active subscription
-}
-
-/**
- * @typedef {function(): Promise<object>} GetFreeTier
- */
-
-/**
  * Returns the frontend caching middleware.
- * @param {GetFreeTier} [getFreeTier] - Async function that takes no arguments and resolves to the free tier object.
  * @returns {Promise<import('express').RequestHandler>} Middleware function.
  */
-const getMiddleware = async (
-  getFreeTier = async () => {
-    const { tiers } = await api.tiers.browse();
-    return tiers.find((tier) => tier.type === 'free');
-  },
-) => {
-  const freeTier = await getFreeTier();
+const getMiddleware = async () => {
   /**
    * Middleware to set cache headers based on site configuration and request properties.
    * @param {import('express').Request} req
@@ -51,11 +21,8 @@ const getMiddleware = async (
       return shared.middleware.cacheControl('noCache')(req, res, next);
     }
 
-    // Caching member's content is an experimental feature, enabled via config
-    const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
     // CASE: Never cache if the blog is set to private
-    // CASE: Never cache if the request is made by a member and the site is not configured to cache members content
-    if (res.isPrivateBlog || (req.member && !shouldCacheMembersContent)) {
+    if (res.isPrivateBlog) {
       return shared.middleware.cacheControl('private')(req, res, next);
     }
 
@@ -64,29 +31,6 @@ const getMiddleware = async (
       return shared.middleware.cacheControl('noCache')(req, res, next);
     }
 
-    // CASE: never cache gift-link reads. A ?gift render holds unlocked gated
-    // content with no member cookie, so the edge would otherwise serve it to
-    // everyone.
-    if (isGiftRequest(req)) {
-      return shared.middleware.cacheControl('noCache')(req, res, next);
-    }
-
-    // CASE: Cache member's content if this feature is enabled
-    if (req.member && shouldCacheMembersContent) {
-      // Set the 'cache-control' header to 'public'
-      const memberTier = calculateMemberTier(req.member, freeTier);
-      if (!memberTier) {
-        // Member has more than one active subscription, don't cache the content
-        return shared.middleware.cacheControl('private')(req, res, next);
-      }
-      // The member is either on the free tier or has a single active subscription
-      // Cache the content based on the member's tier
-      res.set({ 'X-Member-Cache-Tier': memberTier.id });
-      return shared.middleware.cacheControl('public', {
-        maxAge: config.get('caching:frontend:maxAge'),
-      })(req, res, next);
-    }
-    // CASE: Site is not private and the request is not made by a member — cache the content
     return shared.middleware.cacheControl('public', {
       maxAge: config.get('caching:frontend:maxAge'),
     })(req, res, next);
@@ -97,5 +41,4 @@ const getMiddleware = async (
 
 module.exports = {
   getMiddleware,
-  calculateMemberTier, // exported for testing
 };

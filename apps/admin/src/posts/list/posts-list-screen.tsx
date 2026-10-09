@@ -169,7 +169,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     () => items.filter((item) => isPostSelected(selectionState, item.id)),
     [items, selectionState],
   );
-  const membersEnabled = getSettingValue<string>(settings, 'members_signup_access') !== 'none';
+  // GhostLite has no members.
+  const membersEnabled = false;
 
   // Changes on every selection change; rows read it through a stable ref
   // below so their memo holds.

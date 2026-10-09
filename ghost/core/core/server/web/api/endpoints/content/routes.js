@@ -36,11 +36,6 @@ module.exports = function apiRoutes() {
   // ## Settings
   router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
 
-  // ## Members
-  router.get('/newsletters', mw.authenticatePublic, http(api.newslettersPublic.browse));
-  router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
-  router.get('/offers/:id', mw.authenticatePublic, http(api.offersPublic.read));
-
   // ## Search index
   router.get('/search-index/posts', mw.authenticatePublic, http(api.searchIndexPublic.fetchPosts));
   router.get(

@@ -1,6 +1,9 @@
 const ghostBookshelf = require('./base');
 const logging = require('@tryghost/logging');
-const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../services/member-welcome-emails/constants');
+const MEMBER_WELCOME_EMAIL_SLUGS = {
+  free: 'member-welcome-email-free',
+  paid: 'member-welcome-email-paid',
+};
 
 const MEMBER_WELCOME_EMAIL_SLUG_SET = new Set(Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
 

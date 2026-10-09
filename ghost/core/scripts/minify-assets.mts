@@ -49,15 +49,6 @@ const filesToMinify: Array<{
   options: Pick<BuildOptions, 'bundle' | 'format' | 'target'>;
 }> = [
   {
-    src: 'core/frontend/src/member-attribution/member-attribution.js',
-    dest: 'core/frontend/public/member-attribution.min.js',
-    options: {
-      bundle: true,
-      format: 'iife',
-      target: ['es2020'],
-    },
-  },
-  {
     src: 'core/frontend/public/private.js',
     dest: 'core/frontend/public/private.min.js',
     options: {

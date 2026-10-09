@@ -13,7 +13,6 @@ const ProductsImporter = require('./products-importer');
 const StripeProductsImporter = require('./stripe-products-importer');
 const StripePricesImporter = require('./stripe-prices-importer');
 const CustomThemeSettingsImporter = require('./custom-theme-settings-importer');
-const RevueSubscriberImporter = require('./revue-subscriber-importer');
 const RolesImporter = require('./roles-importer');
 const { slugify } = require('@tryghost/string/lib');
 
@@ -39,7 +38,6 @@ const DataImporter = {
     importers.stripe_prices = new StripePricesImporter(importData.data);
     importers.posts = new PostsImporter(importData.data);
     importers.custom_theme_settings = new CustomThemeSettingsImporter(importData.data);
-    importers.revue_subscribers = new RevueSubscriberImporter(importData.data);
 
     return importData;
   },

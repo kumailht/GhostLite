@@ -8,8 +8,6 @@ type SyncExportComponent = (typeof SYNC_EXPORT_COMPONENTS)[number];
 export interface SiteExporterDeps {
   /** Full site JSON in the same shape the `/db/` download produces. */
   exportContent(): Promise<unknown>;
-  /** Members CSV as a text stream (rows already serialized). */
-  exportMembersCSV(): Promise<NodeJS.ReadableStream>;
   /** Post analytics CSV as a text stream (rows already serialized). */
   exportPostAnalyticsCSV(): Promise<NodeJS.ReadableStream>;
   /** Names of all installed themes. */
@@ -105,9 +103,6 @@ export class SiteExporter {
           archive.append(JSON.stringify(data), { name: 'export.json' });
           break;
         }
-        case 'members':
-          this.#appendStream(archive, await this.#deps.exportMembersCSV(), 'members.csv');
-          break;
         case 'analytics':
           this.#appendStream(
             archive,

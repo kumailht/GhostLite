@@ -1,6 +1,5 @@
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
-import trackEvent from '@/settings/utils/analytics';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import {
   ActionList,
@@ -16,14 +15,12 @@ import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useDeleteAllContent } from '@tryghost/admin-x-framework/api/db';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useQueryClient } from '@tryghost/admin-x-framework';
-import { useRemoveAllGiftLinks } from '@tryghost/admin-x-framework/api/gift-links';
 import { useResetAuth } from '@tryghost/admin-x-framework/api/security';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const { mutateAsync: deleteAllContent } = useDeleteAllContent();
   const { mutateAsync: resetAuth } = useResetAuth();
-  const { mutateAsync: removeAllGiftLinks } = useRemoveAllGiftLinks();
   const client = useQueryClient();
   const handleError = useHandleError();
   const { totalUsers } = useStaffUsers();
@@ -65,7 +62,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             until you reconfigure it with the new key from{' '}
             <strong>Settings → Advanced → Integrations</strong>.
           </p>
-          <p>{resetAuthStaffSentence} Your members aren&apos;t affected.</p>
+          <p>{resetAuthStaffSentence}</p>
         </>
       ),
       okLabel: 'Reset all authentication',
@@ -82,28 +79,6 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           );
           modal?.remove();
           window.location.href = getGhostPaths().adminRoot;
-        } catch (e) {
-          handleError(e);
-        }
-      },
-    });
-  };
-
-  const handleRemoveAllGiftLinks = () => {
-    confirm({
-      title: 'Reset all gift links?',
-      prompt:
-        'This immediately invalidates every active gift link across your site. Anyone holding one will lose access. New gift links can still be created afterwards.',
-      okLabel: 'Reset all gift links',
-      okRunningLabel: 'Resetting...',
-      okVariant: 'destructive',
-      onOk: async (modal) => {
-        try {
-          const response = await removeAllGiftLinks(null);
-          const count = response?.meta?.count ?? 0;
-          trackEvent('All Gift Links Reset');
-          toast.success(`Reset ${formatNumber(count)} gift ${count === 1 ? 'link' : 'links'}.`);
-          modal?.remove();
         } catch (e) {
           handleError(e);
         }
@@ -154,26 +129,6 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
               type="button"
               variant="destructive"
               onClick={handleResetAuth}
-            >
-              Reset
-            </Button>
-          </ActionListItemActions>
-        </ActionListItem>
-        <ActionListItem data-testid="reset-all-gift-links" hover={false}>
-          <ActionListItemContent className="py-3 pr-6">
-            <div>Reset all gift links</div>
-            <div className="text-sm text-muted-foreground">
-              Invalidate every active gift link across your site. Anyone holding one will lose
-              access.
-            </div>
-          </ActionListItemContent>
-          <ActionListItemActions>
-            <Button
-              aria-label="Reset all gift links"
-              size="sm"
-              type="button"
-              variant="destructive"
-              onClick={handleRemoveAllGiftLinks}
             >
               Reset
             </Button>

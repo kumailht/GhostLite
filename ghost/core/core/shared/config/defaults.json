@@ -23,7 +23,7 @@
   "privacy": false,
   "security": {
     "allowWebhookInternalIPs": false,
-    "staffDeviceVerification": true,
+    "staffDeviceVerification": false,
     "embedPreviewUrl": "https://public.ghostembeds.com/"
   },
   "useMinFiles": true,
@@ -273,23 +273,7 @@
   "compress": true,
   "preloadHeaders": false,
   "adminFrameProtection": true,
-  "sendWelcomeEmail": true,
   "stripeDirect": false,
-  "machinePayments": {
-    "x402": {
-      "enabled": true,
-      "network": "eip155:8453",
-      "stripeNetwork": "base",
-      "facilitatorUrl": "https://facilitator.xpay.sh"
-    },
-    "mpp": {
-      "secretKey": null,
-      "stripeNetwork": "tempo",
-      "tempoCurrency": "0x20c000000000000000000000b9537d11c60e8b50",
-      "testnet": false,
-      "networkId": null
-    }
-  },
   "enableStripePromoCodes": false,
   "enableTipsAndDonations": true,
   "emailAnalytics": {

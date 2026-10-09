@@ -28,7 +28,6 @@ import {
 import type { PostCardConfig, PostType } from '@/editor/card-config';
 import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
-import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
@@ -53,7 +52,6 @@ import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
 
-const MemoAccessSection = memo(AccessSection);
 const MemoAuthorsSection = memo(AuthorsSection);
 const MemoCodeInjectionSection = memo(CodeInjectionSection);
 const MemoDeleteSection = memo(DeleteSection);
@@ -171,7 +169,7 @@ export function PostSettingsSidebar({
   // The sections take the narrow port rather than the handle, so an edit they
   // cannot see does not hand them a new object.
   const session = useEditorSettingsPort(handle);
-  // Owner, Administrator and Editor manage featured and access.
+  // Owner, Administrator and Editor manage featured posts.
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
   const canTag = !!currentUser && !isContributorUser(currentUser);
   // Ember hides the authors field from Authors and Contributors alike.
@@ -202,7 +200,8 @@ export function PostSettingsSidebar({
     tags: canTag ? <MemoTagsSection session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
-    access: canManagePost ? <MemoAccessSection postType={postType} session={session} /> : null,
+    // GhostLite has no members, so every post is public and access isn't editable.
+    access: null,
     authors: canCreditOthers ? (
       <MemoAuthorsSection currentUser={currentUser} session={session} />
     ) : null,

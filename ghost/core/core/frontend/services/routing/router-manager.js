@@ -5,8 +5,6 @@ const CollectionRouter = require('./collection-router');
 const TaxonomyRouter = require('./taxonomy-router');
 const PreviewRouter = require('./preview-router');
 const ParentRouter = require('./parent-router');
-const EmailRouter = require('./email-router');
-const UnsubscribeRouter = require('./unsubscribe-router');
 
 // Frontend-internal routing domain events (RouteRegistered / RoutesReset)
 const { routingEvents } = require('./events');
@@ -89,7 +87,7 @@ class RouterManager {
    * The routers are created in a specific order. This order defines who can get a resource first or
    * who can dominant other routers.
    *
-   * 1. Preview + Unsubscribe Routers: Strongest inbuilt features, which you can never override.
+   * 1. Preview Router: Strongest inbuilt feature, which you can never override.
    * 2. Static Routes: Very strong, because you can override any urls and redirect to a static route.
    * 3. Taxonomies: Stronger than collections, because it's an inbuilt feature.
    * 4. Collections
@@ -101,16 +99,6 @@ class RouterManager {
   start(routeSettings) {
     debug('routing start', routeSettings);
     const RESOURCE_CONFIG = require(`./config`);
-
-    const unsubscribeRouter = new UnsubscribeRouter();
-    this.siteRouter.mountRouter(unsubscribeRouter.router());
-    this.registry.setRouter('unsubscribeRouter', unsubscribeRouter);
-
-    if (RESOURCE_CONFIG.QUERY.email) {
-      const emailRouter = new EmailRouter(RESOURCE_CONFIG);
-      this.siteRouter.mountRouter(emailRouter.router());
-      this.registry.setRouter('emailRouter', emailRouter);
-    }
 
     const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
     this.siteRouter.mountRouter(previewRouter.router());

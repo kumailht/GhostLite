@@ -6,7 +6,6 @@ import {
 } from '@/posts/list/post-filter-query';
 import {
   type PostFilterOption,
-  VISIBILITY_OPTIONS,
   getTypeOptions,
 } from '@/posts/list/post-filter-fields';
 import { LEGACY_FEATURED_TYPE, splitTypeParam } from '@/posts/list/post-query-params';
@@ -61,10 +60,6 @@ function withUnknownOptions(
   return [...options, ...unknown.map((value) => ({ value, label: `Unknown ${noun}` }))];
 }
 
-function singleValue(value: string | null | undefined): string[] {
-  return value ? [value] : [];
-}
-
 export function buildPostFilterFields({
   resource,
   authorValueSource,
@@ -106,18 +101,8 @@ export function buildPostFilterFields({
     return [typeField, featuredField];
   }
 
-  const fields: FilterFieldConfig<string>[] = [
-    typeField,
-    featuredField,
-    {
-      key: 'visibility',
-      label: 'Access',
-      type: 'select',
-      icon: <LucideIcon.Lock className="size-4" />,
-      operators: IS_ONLY,
-      options: withUnknownOptions(VISIBILITY_OPTIONS, singleValue(params.visibility), 'access'),
-    },
-  ];
+  // GhostLite has no members, so there is no access filter: every post is public.
+  const fields: FilterFieldConfig<string>[] = [typeField, featuredField];
 
   if (!authorScoped) {
     fields.push({

@@ -2,13 +2,11 @@ const _ = require('lodash');
 
 const mapTag = require('./tags');
 const mapUser = require('./users');
-const mapEmail = require('./emails');
 const { stripEmailAccounting } = require('../utils/strip-email-accounting');
 
 const clean = require('../utils/clean');
 const date = require('../utils/date');
 const extraAttrs = require('../utils/extra-attrs');
-const gating = require('../utils/post-gating');
 const previewRendering = require('../utils/preview-rendering');
 const url = require('../utils/url');
 
@@ -16,14 +14,9 @@ const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
 
-const getPostServiceInstance = require('../../../../../../services/posts/posts-service-instance');
-const postsService = getPostServiceInstance();
 
-const memberAttribution = require('../../../../../../services/member-attribution');
 
 module.exports = async (model, frame, options = {}) => {
-  const { tiers: tiersData } = options || {};
-
   // NOTE: `model` is now overloaded and may be a bookshelf model or a POJO
   let jsonModel = model;
   if (typeof model.toJSON === 'function') {
@@ -73,31 +66,11 @@ module.exports = async (model, frame, options = {}) => {
     }
   });
 
-  // Attach tiers to custom nql visibility filter
-  if (jsonModel.visibility) {
-    if (['members', 'public'].includes(jsonModel.visibility) && jsonModel.tiers) {
-      jsonModel.tiers = tiersData || [];
-    }
-
-    if (jsonModel.visibility === 'paid' && jsonModel.tiers) {
-      jsonModel.tiers = tiersData ? tiersData.filter((t) => t.type === 'paid') : [];
-    }
-
-    if (jsonModel.visibility === 'tiers' && Array.isArray(jsonModel.tiers)) {
-      jsonModel.tiers = jsonModel.tiers.filter((t) => t.type === 'paid');
-    }
-
-    if (!['members', 'public', 'paid', 'tiers'].includes(jsonModel.visibility)) {
-      const tiers = await postsService.getProductsFromVisibilityFilter(jsonModel.visibility);
-
-      jsonModel.visibility = 'tiers';
-      jsonModel.tiers = tiers;
-    }
-  }
-
   if (utils.isContentAPI(frame)) {
     date.forPost(jsonModel);
-    gating.forPost(jsonModel, frame);
+    // GhostLite has no members, so every post is public and readable in full.
+    jsonModel.visibility = 'public';
+    jsonModel.access = true;
     previewRendering.forPost(jsonModel, frame);
 
     // GhostLite has no comments; themes check this flag to show a comments section.
@@ -106,11 +79,6 @@ module.exports = async (model, frame, options = {}) => {
     // Strip any source formats
     delete jsonModel.mobiledoc;
     delete jsonModel.lexical;
-
-    // Add outbound link tagging if we have the HTML
-    if (jsonModel.html) {
-      jsonModel.html = await memberAttribution.outboundLinkTagger.addToHtml(jsonModel.html);
-    }
   }
 
   // Transforms post/page metadata to flat structure
@@ -148,10 +116,6 @@ module.exports = async (model, frame, options = {}) => {
 
       if (relation === 'authors' && jsonModel.authors) {
         jsonModel.authors = jsonModel.authors.map((author) => mapUser(author, frame));
-      }
-
-      if (relation === 'email' && jsonModel.email) {
-        jsonModel.email = mapEmail(jsonModel.email, frame);
       }
 
       if (relation === 'email' && _.isEmpty(jsonModel.email)) {

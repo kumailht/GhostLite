@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const security = require('@tryghost/security');
 const exporter = require('../../data/exporter');
-const membersService = require('../../services/members');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const routeSettings = require('../../services/route-settings');
 const customRedirects = require('../../services/custom-redirects');
@@ -19,9 +18,6 @@ const {
 } = require('../../services/exports/export-components');
 const { getExportFileName } = require('./utils/csv-export-filename');
 const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
-const {
-  createCSVTransform: createMembersCSVTransform,
-} = require('./utils/serializers/output/members-csv-transform');
 const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
@@ -84,15 +80,8 @@ function createSiteExporter() {
   return new SiteExporter({
     // Same shape the `/db/` download produces, so the file stays importable
     exportContent: async () => ({ db: [await exporter.doExport()] }),
-    // `limit: 'all'` keeps both CSV exporters on their unfiltered
-    // streaming path — without it the members exporter materialises every
-    // id into a WHERE IN and the posts exporter caps at its default page
-    exportMembersCSV: async () =>
-      toCSVStream(
-        'members',
-        await membersService.export({ limit: 'all' }),
-        createMembersCSVTransform(),
-      ),
+    // `limit: 'all'` keeps the CSV exporter on its unfiltered streaming
+    // path — without it the posts exporter caps at its default page
     // Same restricted-fields guard the `/posts/export/` endpoint applies
     exportPostAnalyticsCSV: async () =>
       toCSVStream(

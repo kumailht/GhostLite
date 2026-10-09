@@ -153,24 +153,6 @@ async function initCore({ ghostServer, config }) {
   await i18n.init();
   debug('End: i18n');
 
-  // Gift links service: wires the (knex-backed) repository once the DB is ready.
-  debug('Begin: Gift Links Service');
-  const giftLinksService = require('./server/services/gift-links');
-  giftLinksService.init();
-  debug('End: Gift Links Service');
-
-  // Member metafields service: knex-backed, wired once the DB is ready.
-  debug('Begin: Member Metafields Service');
-  const memberMetafieldsService = require('./server/services/members-metafields');
-  memberMetafieldsService.init();
-  debug('End: Member Metafields Service');
-
-  // Stripe Checkout config service: knex-backed, wired once the DB is ready.
-  debug('Begin: Stripe Checkout Config Service');
-  const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');
-  stripeCheckoutConfigService.init();
-  debug('End: Stripe Checkout Config Service');
-
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');
@@ -204,11 +186,6 @@ async function initServicesForFrontend({ bootLogger }) {
   await customRedirects.init();
   debug('End: Redirects');
 
-  debug('Begin: Link Redirects');
-  const linkRedirects = require('./server/services/link-redirection');
-  await linkRedirects.init();
-  debug('End: Link Redirects');
-
   debug('Begin: Themes');
   // customThemeSettingsService.api must be initialized before any theme activation occurs
   const customThemeSettingsService = require('./server/services/custom-theme-settings');
@@ -219,11 +196,6 @@ async function initServicesForFrontend({ bootLogger }) {
   await themeService.init();
   bootLogger.metric('theme-service-init', themeServiceStart);
   debug('End: Themes');
-
-  debug('Begin: Offers');
-  const offers = require('./server/services/offers');
-  await offers.init();
-  debug('End: Offers');
 
   debug('End: initServicesForFrontend');
 }
@@ -337,130 +309,45 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
+async function initServices({ jobsService }) {
   debug('Begin: initServices');
 
   debug('Begin: Services');
-  const identityTokens = require('./server/services/identity-tokens');
-  const stripe = require('./server/services/stripe');
-  const members = require('./server/services/members');
-  const tiers = require('./server/services/tiers');
   const permissions = require('./server/services/permissions');
   const postScheduling = require('./server/services/post-scheduling').default;
-  const staffService = require('./server/services/staff');
-  const memberAttribution = require('./server/services/member-attribution');
-  const membersEvents = require('./server/services/members-events');
-  const linkTracking = require('./server/services/link-tracking');
-  const audienceFeedback = require('./server/services/audience-feedback');
-  const emailSuppressionList = require('./server/services/email-suppression-list');
-  const emailService = require('./server/services/email-service');
-  const emailAnalytics = require('./server/services/email-analytics');
   const tagsPublic = require('./server/services/tags-public');
   const postsPublic = require('./server/services/posts-public');
   const mediaInliner = require('./server/services/media-inliner');
   const contentImport = require('./server/services/content-import');
-  const donationService = require('./server/services/donations');
-  const giftService = require('./server/services/gifts');
-  const machinePaymentsService = require('./server/services/machine-payments');
   const emailAddressService = require('./server/services/email-address');
-  const domainEvents = require('@tryghost/domain-events');
-  const { automationsService } = require('./server/services/automations');
-  const automationsApi = require('./server/services/automations/automations-api');
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
-  const assert = require('node:assert/strict');
-  const metrics = require('@tryghost/metrics');
-  const db = require('./server/data/db');
-  const models = require('./server/models');
-  const urlUtils = require('./shared/url-utils').default;
-  const settingsCache = require('./shared/settings-cache');
-  const internalKeys = require('./server/services/internal-keys').default;
-
-  // Initialize things that other services depend on first.
+  // The email address service picks the "from" address for staff mail
+  // (password resets, invites), so it is initialised before anything sends mail.
   emailAddressService.init();
-  const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
-  await stripe.init();
-  giftService.init({
-    apiUrl,
-    schedulerAdapter,
-    internalKeys,
-  });
-  const giftDeliveryService = giftService.deliveryService;
-  assert(giftDeliveryService, 'Gift delivery service should be initialized');
-  if (ghostServer) {
-    ghostServer.registerCleanupTask(async () => {
-      await stripe.shutdown();
-    }, 'Stripe');
-  }
 
   await Promise.all([
-    identityTokens.init(),
-    memberAttribution.init(),
-    staffService.init(),
-    members.init(),
-    tiers.init(),
     tagsPublic.init(),
     postsPublic.init(),
-    membersEvents.init(),
     permissions.init(),
-    audienceFeedback.init(),
-    emailService.init({ ghostServer, jobsService }),
-    emailAnalytics.init({
-      automationsApi,
-      config,
-      db,
-      domainEvents,
-      emailSuppressionList,
-      giftDeliveryService,
-      membersRepository: members.api.members,
-      models,
-      metrics,
-      prometheusClient,
-      settingsCache,
-    }),
-    linkTracking.init(),
-    emailSuppressionList.init(),
     mediaInliner.init(),
     contentImport.init(),
-    donationService.init(),
-    machinePaymentsService.init(),
   ]);
 
   debug('Begin: Register job handlers');
   const registerJobHandlers =
     require('./server/services/jobs-service/register-job-handlers').default;
-  const memberJobs = require('./server/services/members/jobs');
-  const membersService = require('./server/services/members');
-  memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
-  assert(giftService.service, 'Gift service should be initialized');
-  assert(membersService.handleImportJob, 'Members service should be initialized');
-  assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
-    gifts: emailAnalytics.getGifts(),
-    automations: emailAnalytics.getAutomations(),
-    newsletters: emailAnalytics.getNewsletters(),
     jobsService,
-    memberJobs,
-    giftService: giftService.service,
     mediaInliner: mediaInliner.getInstance(),
-    membersService,
-    emailService: emailService.service,
     siteImporter,
   });
   await jobsService.start();
   debug('End: Register job handlers');
-
-  await automationsService.init({
-    domainEvents,
-    apiUrl,
-    schedulerAdapter,
-    internalKeys,
-    siteUuid: settingsCache.get('site_uuid'),
-  });
 
   if (schedulerAdapter.rescheduleOnBoot) {
     await postScheduling.rescheduleAll();
@@ -491,64 +378,7 @@ async function initBackgroundServices({ config }) {
     return;
   }
 
-  // Resume any newsletter sends interrupted by a prior container shutdown.
-  // Runs before activitypub.init so an activitypub failure can't disable recovery.
-  try {
-    const emailService = require('./server/services/email-service');
-    await emailService.service.resumeInterruptedSends();
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
-  // sends sequentially and must not hold up the remaining background services.
-  const giftService = require('./server/services/gifts');
-  giftService.recoverPendingDeliveries();
-
   const jobsService = require('./server/services/jobs-service').getInstance();
-
-  // Runs before activitypub.init for the same reason as the send recovery
-  // above: gifts would otherwise go uncleaned for the life of the process
-  // if an unrelated background service fails.
-  try {
-    const giftJobs = require('./server/services/gifts/jobs');
-    await giftJobs.scheduleGiftCleanupJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  // Runs before activitypub.init for the same reason as the gift cleanup
-  // above: reminders would otherwise go unsent for the life of the process
-  // if an unrelated background service fails.
-  try {
-    const giftJobs = require('./server/services/gifts/jobs');
-    await giftJobs.scheduleGiftReminderJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  // Runs before activitypub.init for the same reason as the gift cleanup
-  // above: tokens and expired comped subscriptions would otherwise go
-  // uncleaned for the life of the process if an unrelated background
-  // service fails.
-  try {
-    const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleTokenCleanupJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  try {
-    const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
 
   try {
     const signingKeys = require('./server/services/signing-keys');
@@ -556,25 +386,6 @@ async function initBackgroundServices({ config }) {
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
-  }
-
-  // Load email analytics recurring jobs. Runs before activitypub.init for the
-  // same reason as the schedules above. Each failure is logged rather than
-  // thrown so one failed registration cannot hide a sibling's or stop the
-  // remaining background services from starting.
-  if (config.get('backgroundJobs:emailAnalytics')) {
-    const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-    const results = await Promise.allSettled([
-      emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
-      emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
-      emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
-    ]);
-    const logging = require('@tryghost/logging');
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        logging.error(result.reason);
-      }
-    }
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
@@ -710,7 +521,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     const jobsService = require('./server/services/jobs-service').init();
 
-    await initServices({ ghostServer, config, prometheusClient, jobsService });
+    await initServices({ jobsService });
 
     debug('End: Load Ghost Services & Apps');
 

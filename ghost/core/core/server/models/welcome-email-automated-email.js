@@ -2,9 +2,7 @@ const ghostBookshelf = require('./base');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils').default;
 const lexicalLib = require('../lib/lexical');
-const {
-  DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
-} = require('../services/member-welcome-emails/constants');
+const DEFAULT_EMAIL_DESIGN_SETTING_SLUG = 'default-automated-email';
 
 const WelcomeEmailAutomatedEmail = ghostBookshelf.Model.extend({
   tableName: 'welcome_email_automated_emails',

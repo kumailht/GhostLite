@@ -19,16 +19,17 @@ class SettingsHelpers {
     this.limitService = limitService;
   }
 
+  // GhostLite has no members, so every members setting reads as off.
   isMembersEnabled() {
-    return this.settingsCache.get('members_signup_access') !== 'none';
+    return false;
   }
 
   isMembersInviteOnly() {
-    return this.settingsCache.get('members_signup_access') === 'invite';
+    return false;
   }
 
   allowSelfSignup() {
-    return this.settingsCache.get('members_signup_access') === 'all';
+    return false;
   }
 
   /**
@@ -82,7 +83,7 @@ class SettingsHelpers {
   }
 
   arePaidMembersEnabled() {
-    return this.isMembersEnabled() && this.isStripeConnected();
+    return false;
   }
 
   getFirstpromoterId() {
@@ -178,7 +179,7 @@ class SettingsHelpers {
   }
 
   areDonationsEnabled() {
-    return this.isStripeConnected() && this.config.get('enableTipsAndDonations');
+    return false;
   }
 
   createUnsubscribeUrl(uuid, options = {}) {

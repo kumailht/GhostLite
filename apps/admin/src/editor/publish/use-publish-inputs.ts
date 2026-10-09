@@ -1,10 +1,7 @@
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useCallback, useEffect, useMemo } from 'react';
 import { z } from 'zod';
-import { newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { isSessionInvalid } from '@/editor/session/error-mapping';
 import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
@@ -58,6 +55,8 @@ const DEFAULT_SITE: PublishSiteInput = {
   memberCount: null,
   newsletters: [],
 };
+const NO_NEWSLETTERS = { newsletters: [] };
+
 const DEFAULT_USER: PublishUserInput = { isAdmin: false, isAuthorOrContributor: false };
 
 function stringSetting(settings: z.infer<typeof settingSchema>[], key: string): string | null {
@@ -109,7 +108,8 @@ export function assemblePublishInputs(boundaryData: {
 
   return {
     site: {
-      membersEnabled: stringSetting(settings, 'members_signup_access') !== 'none',
+      // GhostLite has no members, so the publish flow never offers email.
+      membersEnabled: false,
       mailgunConfigured: configuredInSettings || configData.config.mailgunIsConfigured === true,
       editorDefaultEmailRecipients: defaultRecipients.data,
       editorDefaultEmailRecipientsFilter: stringSetting(
@@ -179,43 +179,11 @@ export function usePublishInputs(): PublishInputs {
   });
   const currentUserQuery = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const currentUser = currentUserQuery.data;
-  const newslettersQuery = useBrowseNewsletters({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: newslettersSearchParams(currentUser),
-    // The params depend on the role, so the browse waits for the user.
-    enabled: currentUser !== undefined,
-  });
-  const {
-    fetchNextPage: fetchNextNewsletterPage,
-    hasNextPage: hasNextNewsletterPage,
-    isError: newslettersError,
-    isFetchingNextPage: isFetchingNextNewsletterPage,
-  } = newslettersQuery;
-
-  // Core caps `limit=all`, so the response can still contain a next page.
-  // The publish machine must see every newsletter before it chooses a default.
-  useEffect(() => {
-    if (hasNextNewsletterPage && !isFetchingNextNewsletterPage && !newslettersError) {
-      void fetchNextNewsletterPage();
-    }
-  }, [
-    fetchNextNewsletterPage,
-    hasNextNewsletterPage,
-    isFetchingNextNewsletterPage,
-    newslettersError,
-  ]);
-  // Site-wide total, the way Ember's publish options read it.
-  const {
-    count: memberCount,
-    isLoading: memberCountLoading,
-    isFetching: memberCountFetching,
-    error: memberCountError,
-    refetch: refetchMemberCount,
-  } = useMembersCount('', { requestOptions: EDITOR_REQUEST_OPTIONS });
+  // GhostLite has no newsletters or members, so publishing never sends email.
+  const newslettersData = NO_NEWSLETTERS;
+  const memberCount = 0;
   const settingsData = settingsQuery.data;
   const configData = configQuery.data;
-  const newslettersData = newslettersQuery.data;
 
   const assembled = useMemo(
     () =>
@@ -234,21 +202,11 @@ export function usePublishInputs(): PublishInputs {
     settingsQuery.isLoading ||
     configQuery.isLoading ||
     configQuery.isFetching ||
-    newslettersQuery.isLoading ||
-    newslettersQuery.isFetching ||
-    newslettersQuery.hasNextPage ||
-    newslettersQuery.isFetchingNextPage ||
     currentUserQuery.isLoading ||
-    currentUserQuery.isFetching ||
-    memberCountLoading ||
-    memberCountFetching;
+    currentUserQuery.isFetching;
   const error = useMemo(() => {
     const queryError =
-      settingsQuery.error ??
-      configQuery.error ??
-      newslettersQuery.error ??
-      currentUserQuery.error ??
-      memberCountError;
+      settingsQuery.error ?? configQuery.error ?? currentUserQuery.error;
 
     if (queryError) {
       return publishInputError(queryError);
@@ -264,16 +222,10 @@ export function usePublishInputs(): PublishInputs {
     configQuery.error,
     currentUserQuery.error,
     isLoading,
-    memberCountError,
-    newslettersQuery.error,
     settingsQuery.error,
   ]);
   const queryError =
-    settingsQuery.error ??
-    configQuery.error ??
-    newslettersQuery.error ??
-    currentUserQuery.error ??
-    memberCountError;
+    settingsQuery.error ?? configQuery.error ?? currentUserQuery.error;
 
   useEffect(() => {
     reportInputError(queryError);
@@ -283,11 +235,9 @@ export function usePublishInputs(): PublishInputs {
     void Promise.all([
       settingsQuery.refetch(),
       configQuery.refetch(),
-      newslettersQuery.refetch(),
       currentUserQuery.refetch(),
-      refetchMemberCount(),
     ]);
-  }, [configQuery, currentUserQuery, newslettersQuery, refetchMemberCount, settingsQuery]);
+  }, [configQuery, currentUserQuery, settingsQuery]);
 
   return {
     site: assembled.site,

@@ -1,6 +1,5 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:posts');
 const mappers = require('./mappers');
-const tiersService = require('../../../../../services/tiers');
 const { createCSVTransform } = require('./posts-csv-transform');
 const { createCSVStreamResponse } = require('./stream-csv-response');
 
@@ -23,32 +22,9 @@ module.exports = {
     }
     const posts = [];
 
-    const tiersPage = await tiersService.api.browse({});
-    const tiers =
-      tiersPage.data?.map((model) => {
-        const json = model.toJSON();
-        return {
-          id: json.id,
-          name: json.name,
-          slug: json.slug,
-          active: json.status === 'active',
-          welcome_page_url: json.welcomePageURL,
-          visibility: json.visibility,
-          trial_days: json.trialDays,
-          description: json.description,
-          type: json.type,
-          currency: json.type === 'paid' ? json.currency?.toLowerCase() : null,
-          monthly_price: json.monthlyPrice,
-          yearly_price: json.yearlyPrice,
-          created_at: json.createdAt,
-          updated_at: json.updatedAt,
-          monthly_price_id: null,
-          yearly_price_id: null,
-        };
-      }) || [];
     if (models.meta) {
       for (const model of models.data) {
-        const post = await mappers.posts(model, frame, { tiers });
+        const post = await mappers.posts(model, frame);
         posts.push(post);
       }
       frame.response = {
@@ -58,7 +34,7 @@ module.exports = {
 
       return;
     }
-    const post = await mappers.posts(models, frame, { tiers });
+    const post = await mappers.posts(models, frame);
     frame.response = {
       posts: [post],
     };

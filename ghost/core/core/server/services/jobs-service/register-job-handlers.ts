@@ -1,46 +1,15 @@
-import EmailAnalyticsGiftFetchLatestJob from '../email-analytics/jobs/email-analytics-gift-fetch-latest-job';
-import EmailAnalyticsAutomationFetchLatestJob from '../email-analytics/jobs/email-analytics-automation-fetch-latest-job';
-import EmailAnalyticsFetchLatestJob from '../email-analytics/jobs/email-analytics-fetch-latest-job';
-import type { EmailAnalyticsServiceWrapper } from '../email-analytics/email-analytics-service-wrapper';
 import { JobsService } from './jobs-service';
-import type { JobHandlingOptions } from './jobs-service';
-import type { GiftService } from '../gifts/gift-service';
-import CleanTokensJob from '../members/jobs/clean-tokens-job';
-import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
-import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
-import SendGiftRemindersJob from '../gifts/jobs/send-gift-reminders-job';
 import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
-import MembersImportJob from '../members/jobs/members-import-job';
-import type EmailService from '../email-service/email-service';
-import SendEmailJob from '../email-service/jobs/send-email-job';
 import CheckSigningKeysJob from '../signing-keys/check-signing-keys-job';
 import * as signingKeys from '../signing-keys';
 
-
-// Keep newsletter sends independent of imports and other shared work. Two sends
-// can progress at once, each with its own two batch workers, so a long send or
-// retry does not hold up every other newsletter.
-const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
-
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
-  gifts: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
-  automations: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
-  newsletters: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
-  memberJobs: {
-    cleanTokens(): Promise<number>;
-    cleanExpiredComped(): Promise<unknown>;
-  };
-  giftService: GiftService;
   mediaInliner: ExternalMediaInliner;
-  membersService: {
-    handleImportJob(job: MembersImportJob): Promise<void>;
-  };
-  emailService: EmailService;
   siteImporter: {
     executeImport(job: ContentImportJob): Promise<unknown>;
   };
@@ -48,47 +17,9 @@ interface RegisterJobHandlersDependencies {
 
 export default function registerJobHandlers({
   jobsService,
-  gifts,
-  automations,
-  newsletters,
-  memberJobs,
-  giftService,
   mediaInliner,
-  membersService,
-  emailService,
   siteImporter,
 }: RegisterJobHandlersDependencies): void {
-  // Each email analytics pipeline fetches on its own five-minute tick and the
-  // wrapper skips a tick while its previous fetch is still running. The second
-  // slot lets an overlapping tick reach that guard and be skipped straight away
-  // instead of queueing behind the running fetch and firing late.
-  for (const [JobClass, pipeline] of [
-    [EmailAnalyticsFetchLatestJob, newsletters],
-    [EmailAnalyticsAutomationFetchLatestJob, automations],
-    [EmailAnalyticsGiftFetchLatestJob, gifts],
-  ] as const) {
-    jobsService.handle(JobClass, () => pipeline.startFetch(), {
-      queue: JobClass.type,
-      concurrency: 2,
-    });
-  }
-
-  jobsService.handle(CleanTokensJob, async () => {
-    await memberJobs.cleanTokens();
-  });
-
-  jobsService.handle(CleanExpiredCompedJob, async () => {
-    await memberJobs.cleanExpiredComped();
-  });
-
-  jobsService.handle(CleanGiftsJob, async () => {
-    await giftService.cleanup();
-  });
-
-  jobsService.handle(SendGiftRemindersJob, async () => {
-    await giftService.processReminders();
-  });
-
   jobsService.handle(ExternalMediaInlinerJob, async (job) => {
     await mediaInliner.inline(job.domains);
   });
@@ -101,19 +32,7 @@ export default function registerJobHandlers({
     await siteImporter.executeImport(job);
   });
 
-  jobsService.handle(MembersImportJob, async (job) => {
-    await membersService.handleImportJob(job);
-  });
-
   jobsService.handle(CheckSigningKeysJob, async () => {
     await signingKeys.getInstance().check();
   });
-
-  jobsService.handle(
-    SendEmailJob,
-    async (job) => {
-      await emailService.handleSendEmailJob(job);
-    },
-    EMAIL_QUEUE,
-  );
 }

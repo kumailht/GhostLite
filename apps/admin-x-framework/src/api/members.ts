@@ -242,7 +242,8 @@ export function useMembersCount(
   const currentUserQuery = useCurrentUser({ requestOptions });
   const { data: currentUser } = currentUserQuery;
   const canFetch = Boolean(currentUser && canManageMembers(currentUser));
-  const enabled = canFetch && filter !== null && filter !== undefined;
+  // GhostLite has no members: the count is never fetched, so it stays unknown.
+  const enabled = false && canFetch && filter !== null && filter !== undefined;
 
   const result = useBrowseMembersCountQuery({
     // order/page pin the same cheap, stable request shape the Ember cache used

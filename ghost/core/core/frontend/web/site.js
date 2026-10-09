@@ -1,8 +1,6 @@
 const debug = require('@tryghost/debug')('frontend');
 const path = require('path');
 const express = require('../../shared/express');
-const DomainEvents = require('@tryghost/domain-events');
-const { MemberPageViewEvent } = require('../../shared/events');
 
 // App requires
 const config = require('../../shared/config');
@@ -13,10 +11,7 @@ const serveFavicon = require('./routers/serve-favicon');
 const servePublicFiles = require('./routers/serve-public-file');
 const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
-const membersService = require('../../server/services/members');
-const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
-const linkRedirectsHandler = require('./routers/link-redirects');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -49,10 +44,6 @@ module.exports = function setupSiteApp(routerConfig) {
   // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
   siteApp.use(mw.cors);
 
-  siteApp.use(offersService.middleware);
-
-  linkRedirectsHandler(siteApp);
-
   // you can extend Ghost with a custom redirects file
   // see https://github.com/TryGhost/Ghost/issues/7707
   siteApp.use(customRedirects.middleware);
@@ -74,7 +65,6 @@ module.exports = function setupSiteApp(routerConfig) {
   const { createLlmsService } = require('../services/llms/service');
   const { createLlmsHandler } = require('../services/llms/handler');
   const { createLlmsDiscovery } = require('./middleware/llms-discovery');
-  const machinePaymentsService = require('../../server/services/machine-payments');
 
   const llmsService = createLlmsService({
     settingsCache,
@@ -85,7 +75,6 @@ module.exports = function setupSiteApp(routerConfig) {
   });
 
   siteApp.set('llmsService', llmsService);
-  siteApp.set('machinePaymentsService', machinePaymentsService);
 
   const llmsHandler = createLlmsHandler({
     llmsService,
@@ -106,15 +95,6 @@ module.exports = function setupSiteApp(routerConfig) {
   // Serve site files using the storage adapter
   siteApp.use(STATIC_FILES_URL_PREFIX, adapterManager.getAdapter('storage:files').serve());
 
-  // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
-  siteApp.use(
-    '/members/.well-known',
-    shared.middleware.cacheControl('public', { maxAge: config.get('caching:wellKnown:maxAge') }),
-    function lazyWellKnownMw(req, res, next) {
-      return membersService.api.middleware.wellKnown(req, res, next);
-    },
-  );
-
   // setup middleware for internal apps
   // @TODO: refactor this to be a proper app middleware hook for internal apps
   config.get('apps:internal').forEach((appName) => {
@@ -125,9 +105,6 @@ module.exports = function setupSiteApp(routerConfig) {
     }
   });
 
-  // Serve IndexNow API key verification file (/{key}.txt)
-  siteApp.use(mw.serveIndexNowKey);
-
   // Theme static assets/files
   siteApp.use(mw.staticTheme());
 
@@ -137,9 +114,6 @@ module.exports = function setupSiteApp(routerConfig) {
   sitemapHandler(siteApp);
 
   llmsHandler.mountLlmsRoutes(siteApp);
-
-  // Global handling for member session, ensures a member is logged in to the frontend
-  siteApp.use(membersService.middleware.loadMemberSession);
 
   // Theme middleware
   // This should happen AFTER any shared assets are served, as it only changes things to do with templates
@@ -160,19 +134,6 @@ module.exports = function setupSiteApp(routerConfig) {
     } catch {
       return next();
     }
-  });
-
-  siteApp.use(function memberPageViewMiddleware(req, res, next) {
-    if (req.member) {
-      // This event needs memberLastSeenAt to avoid doing un-necessary database queries when updating `last_seen_at`
-      DomainEvents.dispatch(
-        MemberPageViewEvent.create(
-          { url: req.url, memberId: req.member.id, memberLastSeenAt: req.member.last_seen_at },
-          new Date(),
-        ),
-      );
-    }
-    next();
   });
 
   debug('General middleware done');

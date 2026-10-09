@@ -36,13 +36,6 @@ export const QUERY = {
     controller: 'previews',
     resource: 'previews',
   },
-  email: {
-    controller: 'emailPost',
-    resource: 'email_posts',
-    options: {
-      slug: '%s',
-    },
-  },
 } as const;
 
 export const TAXONOMIES = {

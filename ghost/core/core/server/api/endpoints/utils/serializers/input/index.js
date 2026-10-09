@@ -7,10 +7,6 @@ module.exports = {
     return require('./exports');
   },
 
-  get emails() {
-    return require('./emails');
-  },
-
   get integrations() {
     return require('./integrations');
   },
@@ -39,31 +35,7 @@ module.exports = {
     return require('./tags');
   },
 
-  get members() {
-    return require('./members');
-  },
-
   get media() {
     return require('./media');
-  },
-
-  get tiers() {
-    return require('./tiers');
-  },
-
-  get webhooks() {
-    return require('./webhooks');
-  },
-
-  get mentions() {
-    return require('./mentions');
-  },
-
-  get comments() {
-    return require('./comments');
-  },
-
-  get member_commenting() {
-    return require('./member-commenting');
   },
 };

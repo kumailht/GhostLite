@@ -19,6 +19,29 @@ pnpm dev         # build the admin, then run Ghost at http://localhost:2368
 Open http://localhost:2368/ghost/ to create the admin account. Data lives in
 `ghost/core/content/data/ghost-dev.db`; delete it to start over.
 
+## Email
+
+GhostLite only sends email for staff password resets (and staff invites). To
+enable it, add SMTP settings to `ghost/core/config.local.json`:
+
+```json
+{
+  "mail": {
+    "from": "blog@example.com",
+    "transport": "SMTP",
+    "options": {
+      "host": "smtp.example.com",
+      "port": 587,
+      "auth": { "user": "USERNAME", "pass": "PASSWORD" }
+    }
+  }
+}
+```
+
+Without it, everything else works; only "Forgot password" fails. For local
+development, a catcher such as [Mailpit](https://mailpit.axllent.org/) on port
+1025 works with the default development config.
+
 ## Scripts
 
 | Command            | What it does                                     |

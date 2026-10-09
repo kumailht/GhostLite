@@ -20,7 +20,7 @@ import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 export type ExportMode = 'sync' | 'async';
 
-type ExportComponentKey = 'content' | 'members' | 'analytics' | 'themes' | 'routes' | 'media';
+type ExportComponentKey = 'content' | 'analytics' | 'themes' | 'routes' | 'media';
 
 type ExportComponent = {
   key: ExportComponentKey;
@@ -34,19 +34,13 @@ const EXPORT_COMPONENTS: ExportComponent[] = [
   {
     key: 'content',
     label: 'Content & settings',
-    description: 'Posts, pages, tags, tiers and settings (JSON)',
-    defaultChecked: true,
-  },
-  {
-    key: 'members',
-    label: 'Members',
-    description: 'All members with labels and subscription status (CSV)',
+    description: 'Posts, pages, tags and settings (JSON)',
     defaultChecked: true,
   },
   {
     key: 'analytics',
-    label: 'Post analytics',
-    description: 'Sends, opens, clicks and conversions per post (CSV)',
+    label: 'Posts list',
+    description: 'Every post with its details (CSV)',
     defaultChecked: true,
   },
   {

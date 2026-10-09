@@ -30,39 +30,24 @@ const messages = {
 // Admin no longer reads admin7Pill or selfServeArchives; they stay enabled for
 // older Admin builds during independent deployments.
 const GA_FEATURES = [
-  'automationAnalytics',
-  'automationRunAnalytics',
   'admin7Pill',
   'selfServeArchives',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
-  'superEditors',
   'editorExcerpt',
-  'additionalPaymentMethods',
   'navigationIcons',
 ];
 
 // These features are considered private they live in the private tab of the labs settings page
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
-  'automations',
-  'automationsArchive',
-  'automationsPerTier',
-  'stripeAutomaticTax',
-  'importMemberTier',
   'csvContentImporter',
   'admin7settings',
-  'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
-  'membersCustomFields',
-  'stripeCheckoutCollection',
-  'stripeCheckoutDesign',
-  'paywallImprovements',
-  'machinePayments',
   'navigationUrlSuggestions',
 ];
 

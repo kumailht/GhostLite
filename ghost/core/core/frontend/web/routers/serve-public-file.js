@@ -198,17 +198,6 @@ function servePublicFiles(siteApp) {
     ),
   );
 
-  // Member attribution
-  siteApp.get(
-    '/public/member-attribution.min.js',
-    createPublicFileMiddleware(
-      'static',
-      'public/member-attribution.min.js',
-      'application/javascript',
-      config.get('caching:publicAssets:maxAge'),
-    ),
-  );
-
   // Private page runtime
   siteApp.get(
     '/public/private.js',

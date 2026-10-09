@@ -15,19 +15,11 @@ module.exports = {
     return require('./previews');
   },
 
-  get email() {
-    return require('./email-post');
-  },
-
   get channel() {
     return require('./channel');
   },
 
   get static() {
     return require('./static');
-  },
-
-  get unsubscribe() {
-    return require('./unsubscribe');
   },
 };

@@ -1,5 +1,4 @@
 export const SYNC_EXPORT_COMPONENTS = [
-  'members',
   'analytics',
   'content',
   'themes',

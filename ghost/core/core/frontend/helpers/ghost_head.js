@@ -7,7 +7,6 @@ const {
   config,
   blogIcon,
   urlUtils,
-  settingsHelpers,
 } = require('../services/proxy');
 const metaData = require('../meta');
 const { escapeExpression, SafeString } = require('../services/handlebars');
@@ -23,24 +22,13 @@ const { cardAssets } = require('../services/assets-minification');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
-const { styles: templateStyles } = require('./tpl/styles');
-const labs = require('../../shared/labs');
 const { getMarkdownUrl } = require('../services/llms/markdown');
-const { isPurchasableEntry, isMachinePaymentsEnabled } = require('../../shared/machine-payments');
 
 /**
  * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
  */
 
 const { get: getMetaData, getAssetUrl } = metaData;
-
-function isMachinePaymentsFeatureEnabled() {
-  return isMachinePaymentsEnabled({
-    labs,
-    settingsCache,
-    isStripeConnected: () => settingsHelpers.isStripeConnected(),
-  });
-}
 
 function shouldOutputMarkdownAlternate({ context, post }) {
   if (
@@ -53,11 +41,7 @@ function shouldOutputMarkdownAlternate({ context, post }) {
     return false;
   }
 
-  if (post.visibility === 'public') {
-    return true;
-  }
-
-  return isPurchasableEntry(post) && isMachinePaymentsFeatureEnabled();
+  return true;
 }
 
 function getMarkdownAlternateLink({ context, post, canonicalUrl }) {
@@ -128,20 +112,6 @@ function finaliseStructuredData(meta) {
   });
 
   return head;
-}
-
-function getMembersHelper(excludeList) {
-  if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
-    return '';
-  }
-  let membersHelper = '';
-  if (!excludeList.has('cta_styles')) {
-    membersHelper += `<style id="gh-members-styles">${templateStyles}</style>`;
-  }
-  if (settingsCache.get('paid_members_enabled')) {
-    membersHelper += `<script async src="https://js.stripe.com/v3/"></script>`;
-  }
-  return membersHelper;
 }
 
 /**
@@ -284,7 +254,6 @@ module.exports = async function ghost_head(options) {
         '">',
     );
 
-    head.push(getMembersHelper(excludeList));
     // @TODO do this in a more "frameworky" way
 
     if (!excludeList.has('card_assets')) {
@@ -296,10 +265,6 @@ module.exports = async function ghost_head(options) {
           `<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`,
         );
       }
-    }
-
-    if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
-      head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
     }
 
     if (options.data.site.accent_color) {

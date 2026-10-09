@@ -1,19 +1,15 @@
 const _ = require('lodash');
-const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const moment = require('moment');
 const models = require('../../models');
-const mail = require('../../lib/mail');
 
 const messages = {
   setupAlreadyCompleted: 'Setup has already been completed.',
   setupMustBeCompleted: 'Setup must be completed before making this request.',
   setupUnableToRun: 'Database missing fixture data. Please reset database and try again.',
   sampleBlogDescription: 'Thoughts, stories and ideas.',
-  yourNewGhostBlog: 'Your New Ghost Site',
-  unableToSendWelcomeEmail: 'Unable to send welcome email, your site will continue to function.',
   failedThemeInstall: "Theme {themeName} didn't install because of the error: {error}",
 };
 
@@ -178,38 +174,6 @@ async function doFixtures(data) {
   return data;
 }
 
-function sendWelcomeEmail(email, mailAPI) {
-  if (config.get('sendWelcomeEmail')) {
-    const data = {
-      ownerEmail: email,
-    };
-
-    return mail.utils.generateContent({ data: data, template: 'welcome' }).then(async (content) => {
-      const message = {
-        to: email,
-        subject: tpl(messages.yourNewGhostBlog),
-        html: content.html,
-        text: content.text,
-      };
-
-      const payload = {
-        mail: [
-          {
-            message: message,
-            options: {},
-          },
-        ],
-      };
-
-      await mailAPI.send(payload, { context: { internal: true } }).catch((err) => {
-        err.context = tpl(messages.unableToSendWelcomeEmail);
-        logging.error(err);
-      });
-    });
-  }
-  return Promise.resolve();
-}
-
 async function installTheme(data, api) {
   const { theme: themeName } = data.userData;
 
@@ -251,5 +215,4 @@ module.exports = {
   doProductAndNewsletter: doTiersAndNewsletter,
   installTheme: installTheme,
   doFixtures: doFixtures,
-  sendWelcomeEmail: sendWelcomeEmail,
 };

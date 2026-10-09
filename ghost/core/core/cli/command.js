@@ -1,4 +1,4 @@
-// Register the tsx CommonJS loader so dev-only CLI commands (generate-data,
+// Register the tsx CommonJS loader so dev-only CLI commands (
 // repl, timetravel) can require TypeScript modules directly. These commands run
 // via bare `node index.js <command>`, which — unlike `pnpm dev` (nodemon
 // --import=tsx) or the production build (tsc) — has no TS resolution otherwise.

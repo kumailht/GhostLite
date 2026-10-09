@@ -79,12 +79,7 @@ const controller = {
         .then((data) => {
           return auth.setup.doSettings(data, api.settings);
         })
-        .then((user) => {
-          auth.setup.sendWelcomeEmail(user.get('email'), api.mail).catch((err) => {
-            logging.error(err);
-          });
-          return user;
-        });
+        .then((user) => user);
     },
   },
 

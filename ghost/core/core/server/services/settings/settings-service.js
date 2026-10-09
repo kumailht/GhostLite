@@ -12,17 +12,10 @@ const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const { generatePrivateSiteAccessCode } = require('./private-site-access-code');
 const { obfuscatedSetting, isSecretSetting, hideValueIfSecret } = require('./settings-utils');
-const mail = require('../../lib/mail');
-const SingleUseTokenProvider = require('../members/single-use-token-provider');
-const urlUtils = require('../../../shared/url-utils').default;
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
-const emailAddressService = require('../email-address');
 
-const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
-const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
-const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
 const getSettingsOverrides = () => {
   const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
@@ -45,15 +38,6 @@ const getSettingsBREADServiceInstance = () => {
     settingsCache: SettingsCache,
     labsService: labs,
     limitsService: limits,
-    mail,
-    singleUseTokenProvider: new SingleUseTokenProvider({
-      SingleUseTokenModel: models.SingleUseToken,
-      validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
-      validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-      maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
-    }),
-    urlUtils,
-    emailAddressService: emailAddressService,
   });
 };
 

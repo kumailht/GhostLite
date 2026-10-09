@@ -7,30 +7,6 @@ const localUtils = require('./utils');
 // but that's not the problem the index.js max - line eslint "proxy" rule is there to solve.
 
 module.exports = {
-  get automations() {
-    return apiFramework.pipeline(require('./automations').controller, localUtils);
-  },
-
-  get automationPerformanceStats() {
-    return apiFramework.pipeline(require('./automation-performance-stats'), localUtils);
-  },
-
-  get automationRuns() {
-    return apiFramework.pipeline(require('./automation-runs'), localUtils);
-  },
-
-  get automationRunHistory() {
-    return apiFramework.pipeline(require('./automation-run-history'), localUtils);
-  },
-
-  get automationActionLinks() {
-    return apiFramework.pipeline(require('./automation-action-links'), localUtils);
-  },
-
-  get automationEmailPreviews() {
-    return apiFramework.pipeline(require('./automation-email-previews'), localUtils);
-  },
-
   get authentication() {
     return apiFramework.pipeline(require('./authentication'), localUtils);
   },
@@ -41,10 +17,6 @@ module.exports = {
 
   get exports() {
     return apiFramework.pipeline(require('./exports'), localUtils);
-  },
-
-  get identities() {
-    return apiFramework.pipeline(require('./identities'), localUtils);
   },
 
   get integrations() {
@@ -96,54 +68,6 @@ module.exports = {
     return apiFramework.pipeline(require('./settings'), localUtils);
   },
 
-  get automatedEmails() {
-    return apiFramework.pipeline(require('./automated-emails'), localUtils);
-  },
-
-  get automatedEmailDesign() {
-    return apiFramework.pipeline(require('./automated-email-design'), localUtils);
-  },
-
-  get membersStripeConnect() {
-    return apiFramework.pipeline(require('./members-stripe-connect'), localUtils);
-  },
-
-  get members() {
-    return apiFramework.pipeline(require('./members'), localUtils);
-  },
-
-  get membersMetafields() {
-    return apiFramework.pipeline(require('./member-metafields'), localUtils);
-  },
-
-  get stripeCheckoutConfig() {
-    return apiFramework.pipeline(require('./stripe-checkout-config'), localUtils);
-  },
-
-  get stripeCheckoutPreview() {
-    return apiFramework.pipeline(require('./stripe-checkout-preview'), localUtils);
-  },
-
-  get stripeCheckoutBranding() {
-    return apiFramework.pipeline(require('./stripe-checkout-branding'), localUtils);
-  },
-
-  get offers() {
-    return apiFramework.pipeline(require('./offers'), localUtils);
-  },
-
-  get tiers() {
-    return apiFramework.pipeline(require('./tiers'), localUtils);
-  },
-
-  get memberSigninUrls() {
-    return apiFramework.pipeline(require('./member-signin-urls.js'), localUtils);
-  },
-
-  get labels() {
-    return apiFramework.pipeline(require('./labels'), localUtils);
-  },
-
   get images() {
     return apiFramework.pipeline(require('./images'), localUtils);
   },
@@ -168,10 +92,6 @@ module.exports = {
     return apiFramework.pipeline(require('./previews'), localUtils);
   },
 
-  get emailPost() {
-    return apiFramework.pipeline(require('./email-post'), localUtils);
-  },
-
   get oembed() {
     return apiFramework.pipeline(require('./oembed'), localUtils);
   },
@@ -186,14 +106,6 @@ module.exports = {
 
   get actions() {
     return apiFramework.pipeline(require('./actions'), localUtils);
-  },
-
-  get email_previews() {
-    return apiFramework.pipeline(require('./email-previews'), localUtils);
-  },
-
-  get emails() {
-    return apiFramework.pipeline(require('./emails'), localUtils);
   },
 
   get site() {
@@ -214,14 +126,6 @@ module.exports = {
 
   get serializers() {
     return require('./utils/serializers');
-  },
-
-  get newsletters() {
-    return apiFramework.pipeline(require('./newsletters'), localUtils);
-  },
-
-  get links() {
-    return apiFramework.pipeline(require('./links'), localUtils);
   },
 
   get searchIndex() {
@@ -254,42 +158,6 @@ module.exports = {
 
   get authorsPublic() {
     return apiFramework.pipeline(require('./authors-public'), localUtils, 'content');
-  },
-
-  get tiersPublic() {
-    return apiFramework.pipeline(require('./tiers-public'), localUtils, 'content');
-  },
-
-  get newslettersPublic() {
-    return apiFramework.pipeline(require('./newsletters-public'), localUtils, 'content');
-  },
-
-  get offersPublic() {
-    return apiFramework.pipeline(require('./offers-public'), localUtils, 'content');
-  },
-
-  get feedbackMembers() {
-    return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
-  },
-
-  get membersAccount() {
-    return apiFramework.pipeline(require('./members-account'), localUtils, 'members');
-  },
-
-  get memberMetafieldsMembers() {
-    return apiFramework.pipeline(require('./member-metafields-members'), localUtils, 'members');
-  },
-
-  get giftsMembers() {
-    return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
-  },
-
-  get giftLinks() {
-    return apiFramework.pipeline(require('./gift-links'), localUtils);
-  },
-
-  get gifts() {
-    return apiFramework.pipeline(require('./gifts'), localUtils);
   },
 
   get searchIndexPublic() {

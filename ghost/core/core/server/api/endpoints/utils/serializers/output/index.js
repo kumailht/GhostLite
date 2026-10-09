@@ -12,18 +12,6 @@ module.exports = {
     return require('./default');
   },
 
-  get comments() {
-    return require('./comments');
-  },
-
-  get member_commenting() {
-    return require('./member-commenting');
-  },
-
-  get members_account() {
-    return require('./members-account');
-  },
-
   get authentication() {
     return require('./authentication');
   },
@@ -38,10 +26,6 @@ module.exports = {
 
   get pages() {
     return require('./pages');
-  },
-
-  get gift_links() {
-    return require('./gift-links');
   },
 
   get redirects() {
@@ -76,30 +60,6 @@ module.exports = {
     return require('./mail');
   },
 
-  get members() {
-    return require('./members');
-  },
-
-  get members_metafields() {
-    return require('./member-metafields');
-  },
-
-  get tiers() {
-    return require('./tiers');
-  },
-
-  get checkout_config() {
-    return require('./stripe-checkout-config');
-  },
-
-  get checkout_preview() {
-    return require('./stripe-checkout-preview');
-  },
-
-  get checkout_branding() {
-    return require('./stripe-checkout-branding');
-  },
-
   get images() {
     return require('./images');
   },
@@ -118,14 +78,6 @@ module.exports = {
 
   get previews() {
     return require('./previews');
-  },
-
-  get email_post() {
-    return require('./email-posts');
-  },
-
-  get emails() {
-    return require('./emails');
   },
 
   get oembed() {
@@ -148,20 +100,8 @@ module.exports = {
     return require('./custom-theme-settings');
   },
 
-  get slack() {
-    return require('./slack');
-  },
-
   get session() {
     return require('./session');
-  },
-
-  get members_stripe_connect() {
-    return require('./members-stripe-connect');
-  },
-
-  get links() {
-    return require('./links');
   },
 
   get search_index() {

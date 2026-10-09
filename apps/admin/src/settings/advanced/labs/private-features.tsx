@@ -14,37 +14,6 @@ type Feature = {
 
 const features: Feature[] = [
   {
-    title: 'Automations',
-    description:
-      'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
-    flag: 'automations',
-  },
-  {
-    title: 'Archive automations',
-    description: 'Let members archive and restore automations.',
-    flag: 'automationsArchive',
-  },
-  {
-    title: 'Automations per tier',
-    description: 'Allow automations to be configured for individual tiers.',
-    flag: 'automationsPerTier',
-  },
-  {
-    title: 'Automation run analytics',
-    description: 'Track run-level analytics for automations.',
-    flag: 'automationRunAnalytics',
-  },
-  {
-    title: 'Stripe Automatic Tax (private beta)',
-    description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
-    flag: 'stripeAutomaticTax',
-  },
-  {
-    title: 'Import Member Tier',
-    description: 'Enables tier to be specified when importing members',
-    flag: 'importMemberTier',
-  },
-  {
     title: 'CSV Content Importer',
     description: 'Enables importing posts from CSV files in the Universal Importer',
     flag: 'csvContentImporter',
@@ -53,12 +22,6 @@ const features: Feature[] = [
     title: 'Admin 7 · Settings navigation',
     description: 'Preview Settings in the Admin navigation shell.',
     flag: 'admin7settings',
-  },
-  {
-    title: 'Email Unique ID',
-    description:
-      'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
-    flag: 'emailUniqueid',
   },
   {
     title: 'Updated theme translation (beta)',
@@ -76,35 +39,6 @@ const features: Feature[] = [
     description:
       'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication',
-  },
-  {
-    title: 'Member custom fields',
-    description:
-      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
-    flag: 'membersCustomFields',
-  },
-  {
-    title: 'Stripe checkout collection',
-    description:
-      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
-    flag: 'stripeCheckoutCollection',
-  },
-  {
-    title: 'Stripe checkout design',
-    description:
-      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
-    flag: 'stripeCheckoutDesign',
-  },
-  {
-    title: 'Paywall improvements',
-    description: 'Enables paywall usability, discoverability and email customization improvements',
-    flag: 'paywallImprovements',
-  },
-  {
-    title: 'Machine payments',
-    description:
-      'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
-    flag: 'machinePayments',
   },
   {
     title: 'Navigation URL suggestions',

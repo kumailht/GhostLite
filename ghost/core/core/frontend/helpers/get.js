@@ -33,12 +33,6 @@ const RESOURCES = {
   authors: {
     alias: 'authorsPublic',
   },
-  tiers: {
-    alias: 'tiersPublic',
-  },
-  newsletters: {
-    alias: 'newslettersPublic',
-  },
 };
 
 // Short forms of paths which we should understand

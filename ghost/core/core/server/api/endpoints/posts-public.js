@@ -6,7 +6,6 @@ const postsPublicService = require('../../services/posts-public');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 const { rejectPostsContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
-const { generateGiftKeyData, applyGiftAccess } = require('./utils/gift-link-access');
 const { generateOptionsData, generateAuthData } = require('./utils/public-cache-keys');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers', 'sentiment'];
@@ -86,7 +85,6 @@ const controller = {
       return {
         options: generateOptionsData(frame, ['include', 'fields', 'formats', 'absolute_urls']),
         auth: generateAuthData(frame),
-        gift: await generateGiftKeyData(frame),
         method: 'read',
         identifier: {
           id: frame.data.id,
@@ -126,8 +124,6 @@ const controller = {
           message: tpl(messages.postNotFound),
         });
       }
-
-      await applyGiftAccess(frame, model);
 
       return model;
     },

@@ -284,26 +284,6 @@ module.exports = {
       }),
     );
 
-    // Web analytics
-    fields.push(
-      new CalculatedField({
-        key: 'web_analytics_enabled',
-        type: 'boolean',
-        group: 'analytics',
-        fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers),
-        dependents: ['web_analytics'],
-      }),
-    );
-    fields.push(
-      new CalculatedField({
-        key: 'web_analytics_configured',
-        type: 'boolean',
-        group: 'analytics',
-        fn: settingsHelpers.isWebAnalyticsConfigured.bind(settingsHelpers),
-        dependents: ['web_analytics'],
-      }),
-    );
-
     return fields;
   },
 

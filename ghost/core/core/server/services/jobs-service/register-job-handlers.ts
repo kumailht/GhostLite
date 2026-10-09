@@ -15,7 +15,6 @@ import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
 import MembersImportJob from '../members/jobs/members-import-job';
-import TinybirdSyncJob from '../tinybird-sync/jobs/tinybird-sync-job';
 import type EmailService from '../email-service/email-service';
 import SendEmailJob from '../email-service/jobs/send-email-job';
 import CheckSigningKeysJob from '../signing-keys/check-signing-keys-job';
@@ -45,9 +44,6 @@ interface RegisterJobHandlersDependencies {
   siteImporter: {
     executeImport(job: ContentImportJob): Promise<unknown>;
   };
-  tinybirdSync: {
-    sync(): Promise<void>;
-  };
 }
 
 export default function registerJobHandlers({
@@ -61,7 +57,6 @@ export default function registerJobHandlers({
   membersService,
   emailService,
   siteImporter,
-  tinybirdSync,
 }: RegisterJobHandlersDependencies): void {
   // Each email analytics pipeline fetches on its own five-minute tick and the
   // wrapper skips a tick while its previous fetch is still running. The second
@@ -120,13 +115,5 @@ export default function registerJobHandlers({
       await emailService.handleSendEmailJob(job);
     },
     EMAIL_QUEUE,
-  );
-
-  jobsService.handle(
-    TinybirdSyncJob,
-    async () => {
-      await tinybirdSync.sync();
-    },
-    { queue: TinybirdSyncJob.type, concurrency: 1 },
   );
 }

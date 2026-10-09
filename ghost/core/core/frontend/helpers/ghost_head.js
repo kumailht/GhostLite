@@ -144,43 +144,6 @@ function getMembersHelper(excludeList) {
   return membersHelper;
 }
 
-function getTinybirdTrackerScript(dataRoot) {
-  const preview = dataRoot?.context?.includes('preview');
-  if (preview) {
-    return '';
-  }
-
-  const src = getAssetUrl('public/ghost-stats.min.js', false);
-
-  const env = config.get('env');
-
-  const statsConfig = config.get('tinybird:tracker');
-  const localConfig = config.get('tinybird:tracker:local');
-  const localEnabled = localConfig?.enabled ?? false;
-
-  const endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
-  const token = localEnabled ? localConfig.token : statsConfig.token;
-  const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
-
-  const tbParams = _.map(
-    {
-      site_uuid: settingsCache.get('site_uuid'),
-      post_uuid: dataRoot.post?.uuid,
-      post_type: dataRoot.context?.includes('post')
-        ? 'post'
-        : dataRoot.context?.includes('page')
-          ? 'page'
-          : null,
-      member_uuid: dataRoot.member?.uuid,
-      member_status: dataRoot.member?.status,
-      gift_link: dataRoot._giftLink || '',
-    },
-    (value, key) => `tb_${key}="${value}"`,
-  ).join(' ');
-
-  return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" ${token && env !== 'production' ? `data-token="${token}"` : ''} ${tbParams}></script>`;
-}
-
 /**
  * **NOTE**
  * Express adds `_locals`, see https://github.com/expressjs/express/blob/4.15.4/lib/response.js#L962.
@@ -343,15 +306,6 @@ module.exports = async function ghost_head(options) {
 
     if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
       head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
-    }
-
-    // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
-    if (settingsHelpers.isWebAnalyticsEnabled()) {
-      head.push(getTinybirdTrackerScript(dataRoot));
-      // Set a flag in response locals to indicate tracking script is being served
-      if (dataRoot._locals) {
-        dataRoot._locals.ghostAnalytics = true;
-      }
     }
 
     if (options.data.site.accent_color) {

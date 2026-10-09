@@ -1,13 +1,8 @@
 const { isPlainObject, omit } = require('lodash');
 const config = require('../../../../../shared/config');
-const settingsCache = require('../../../../../shared/settings-cache');
 const labs = require('../../../../../shared/labs');
 const databaseInfo = require('../../../../data/db/info');
 const ghostVersion = require('@tryghost/version');
-
-const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];
-
-const tinybirdLocalStatsPayloadProperties = ['enabled', 'endpoint', 'datasource'];
 
 const sanitizeHostSettings = (hostSettings) => {
   if (!isPlainObject(hostSettings)) {
@@ -15,37 +10,6 @@ const sanitizeHostSettings = (hostSettings) => {
   }
 
   return omit(hostSettings, ['export.webhookSecret', 'emailVerification.webhookSecret']);
-};
-
-const copyPayloadProperties = (target, source, properties) => {
-  for (const property of properties) {
-    if (Object.hasOwn(source, property)) {
-      target[property] = source[property];
-    }
-  }
-};
-
-const getTinybirdStatsPayload = (statsConfig, siteUuid) => {
-  const statsPayload = {};
-
-  copyPayloadProperties(statsPayload, statsConfig, tinybirdStatsPayloadProperties);
-
-  statsPayload.id = siteUuid;
-
-  if (isPlainObject(statsConfig.local)) {
-    const localStatsPayload = {};
-    copyPayloadProperties(
-      localStatsPayload,
-      statsConfig.local,
-      tinybirdLocalStatsPayloadProperties,
-    );
-
-    if (Object.keys(localStatsPayload).length > 0) {
-      statsPayload.local = localStatsPayload;
-    }
-  }
-
-  return statsPayload;
 };
 
 module.exports = function getConfigProperties() {
@@ -66,12 +30,6 @@ module.exports = function getConfigProperties() {
     pintura: config.get('pintura'),
     security: config.get('security'),
   };
-
-  if (config.get('tinybird') && config.get('tinybird:stats')) {
-    const statsConfig = config.get('tinybird:stats');
-    const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
-    configProperties.stats = getTinybirdStatsPayload(statsConfig, siteUuid);
-  }
 
   if (config.get('featurebase')) {
     // Expose only the public featurebase config properties

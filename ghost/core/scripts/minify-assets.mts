@@ -56,15 +56,6 @@ const filesToMinify: Array<{
     },
   },
   {
-    src: 'core/frontend/src/ghost-stats/ghost-stats.js',
-    dest: 'core/frontend/public/ghost-stats.min.js',
-    options: {
-      bundle: true,
-      format: 'iife',
-      target: ['es2020'],
-    },
-  },
-  {
     src: 'core/frontend/src/member-attribution/member-attribution.js',
     dest: 'core/frontend/public/member-attribution.min.js',
     options: {

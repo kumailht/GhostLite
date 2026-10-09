@@ -43,7 +43,6 @@ import { usePostsFilterState } from './hooks/use-posts-filter-state';
 import { rememberStickyPostFilters } from './posts-sticky-filters';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
-import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
 
 /**
@@ -81,8 +80,9 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // whole list on every modifier keypress.
   const metricsSettings = useMemo(
     () => ({
-      webAnalyticsEnabled: getSettingValue<boolean>(settings, 'web_analytics_enabled') === true,
-      membersTrackSources: getSettingValue<boolean>(settings, 'members_track_sources') === true,
+      // GhostLite has no web analytics or member attribution.
+      webAnalyticsEnabled: false,
+      membersTrackSources: false,
       emailTrackOpens: getSettingValue<boolean>(settings, 'email_track_opens') === true,
       emailTrackClicks: getSettingValue<boolean>(settings, 'email_track_clicks') === true,
       membersSignupAccess: getSettingValue<string>(settings, 'members_signup_access') ?? 'all',
@@ -239,12 +239,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
 
   runPostActionRef.current = runPostAction;
 
-  const { visitorCounts, memberCounts } = usePostAnalyticsCounts({
-    items,
-    webAnalyticsEnabled: metricsSettings.webAnalyticsEnabled,
-    membersTrackSources: metricsSettings.membersTrackSources,
-  });
-
   return (
     <Box ref={listRef} className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
@@ -371,7 +365,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       hasAdminAccess={isAdmin}
                       isContributor={isContributor}
                       isSelected={selection.isSelected(item.id)}
-                      memberCounts={memberCounts}
                       menuEnabled={selection.enabled}
                       menuOnAction={stableRunPostAction}
                       menuOnOpenChange={selection.getContextMenuOpenHandler(item.id)}
@@ -381,7 +374,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       resource={resource}
                       showGiftLink={false}
                       timezone={timezone}
-                      visitorCounts={visitorCounts}
                       onSelectClick={selection.onRowClick}
                       onSelectMouseDown={selection.onRowMouseDown}
                     />

@@ -168,10 +168,6 @@ module.exports = {
     return require('./search-index');
   },
 
-  get tinybird() {
-    return require('./tinybird');
-  },
-
   get featurebase() {
     return require('./featurebase');
   },

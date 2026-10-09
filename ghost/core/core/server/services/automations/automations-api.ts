@@ -1,7 +1,6 @@
 // @ts-expect-error This module lacks type definitions.
 import domainEvents from '@tryghost/domain-events';
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
@@ -13,12 +12,6 @@ import settingsCache from '../../../shared/settings-cache';
 import { knex } from '../../data/db';
 // @ts-expect-error This module lacks type definitions.
 import lexicalLib from '../../lib/lexical';
-// @ts-expect-error This module lacks type definitions.
-import requestExternal from '../../lib/request-external';
-// @ts-expect-error This module lacks type definitions.
-import { create as createTinybirdClient } from '../stats/utils/tinybird';
-// @ts-expect-error This module lacks type definitions.
-import TinybirdServiceWrapper from '../tinybird';
 import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
 import {
   browseMemberSearch,
@@ -39,6 +32,7 @@ import {
   fetchAutomationPerformanceStats,
   fetchAutomationRuns,
   fetchAutomationStats,
+  type TinybirdClient,
 } from './tinybird-automation-stats';
 
 const MAX_AUTOMATION_ACTIONS = 50;
@@ -157,26 +151,9 @@ const repository = createDatabaseAutomationsRepository({
   ),
 });
 
-function getTinybirdClient() {
-  if (!config.get('tinybird:stats')) {
-    return null;
-  }
-  try {
-    const tinybirdService = TinybirdServiceWrapper.instance;
-    if (!tinybirdService?.getToken()?.token) {
-      return null;
-    }
-    return createTinybirdClient({
-      config,
-      // Fall back to MySQL after the first failed attempt.
-      request: requestExternal.extend({ retry: { limit: 0 } }),
-      settingsCache,
-      tinybirdService,
-    });
-  } catch (error) {
-    logging.error('Error preparing Tinybird automation stats client:', error);
-    return null;
-  }
+// GhostLite has no Tinybird analytics, so stats always come from the database.
+function getTinybirdClient(): TinybirdClient | null {
+  return null;
 }
 
 export async function browse() {

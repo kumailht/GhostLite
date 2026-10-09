@@ -129,7 +129,6 @@ test/functional/*.png
 /ghost/core/core/frontend/public/ghost.min.css
 /ghost/core/core/frontend/public/comment-counts.min.js
 /ghost/core/core/frontend/public/member-attribution.min.js
-/ghost/core/core/frontend/public/ghost-stats.min.js
 /ghost/core/core/frontend/public/private.min.js
 /ghost/core/core/frontend/public/cards.manifest.json
 # Caddyfile - for local development with ssl + caddy
@@ -149,14 +148,6 @@ Caddyfile
 # Typescript build artifacts
 tsconfig.tsbuildinfo
 
-# Admin X
-
-# Tinybird
-.tinyb
-.venv
-.diff_tmp
-temp*.sql
-
 # Docker pnpm Cache
 .pnpmhash
 
@@ -175,7 +166,5 @@ yalc.lock
 *.local.md
 .claude/settings.local.json
 .mcp.local.json
-
-.env.tinybird
 
 .nx/migrate-runs

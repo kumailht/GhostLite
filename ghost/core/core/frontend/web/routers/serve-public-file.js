@@ -184,17 +184,6 @@ function servePublicFiles(siteApp) {
     ),
   );
 
-  // Traffic analytics tracking script
-  siteApp.get(
-    '/public/ghost-stats.min.js',
-    createPublicFileMiddleware(
-      'static',
-      'public/ghost-stats.min.js',
-      'application/javascript',
-      config.get('caching:publicAssets:maxAge'),
-    ),
-  );
-
   // Card assets (assembled in memory per active theme)
   siteApp.get(
     '/public/cards.min.css',

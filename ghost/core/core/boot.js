@@ -364,7 +364,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
   const emailAddressService = require('./server/services/email-address');
-  const statsService = require('./server/services/stats');
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -429,7 +428,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     mediaInliner.init(),
     contentImport.init(),
     donationService.init(),
-    statsService.init(),
     machinePaymentsService.init(),
   ]);
 
@@ -438,7 +436,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     require('./server/services/jobs-service/register-job-handlers').default;
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
-  const tinybirdSync = require('./server/services/tinybird-sync');
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
@@ -455,7 +452,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     membersService,
     emailService: emailService.service,
     siteImporter,
-    tinybirdSync,
   });
   await jobsService.start();
   debug('End: Register job handlers');
@@ -581,14 +577,6 @@ async function initBackgroundServices({ config }) {
         logging.error(result.reason);
       }
     }
-  }
-
-  try {
-    const tinybirdSync = require('./server/services/tinybird-sync');
-    await tinybirdSync.scheduleJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).

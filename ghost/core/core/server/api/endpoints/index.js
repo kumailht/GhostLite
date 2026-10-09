@@ -208,16 +208,8 @@ module.exports = {
     return apiFramework.pipeline(require('./snippets'), localUtils);
   },
 
-  get stats() {
-    return apiFramework.pipeline(require('./stats'), localUtils);
-  },
-
   get customThemeSettings() {
     return apiFramework.pipeline(require('./custom-theme-settings'), localUtils);
-  },
-
-  get tinybird() {
-    return apiFramework.pipeline(require('./tinybird'), localUtils);
   },
 
   get featurebase() {

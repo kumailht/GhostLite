@@ -1,0 +1,17 @@
+
+
+The overall plan is to remove as much from Ghost as possible to make GhostLite which focuses only on blogging.
+
+We will rip out one layer at a time and test along the way.
+
+We don't need almost all features other than blogging (with media uploads & post management), some sort of simple login to for the admin author,
+rss, and some basic theming support. The rest can all come out.
+
+We also want the default db to sqlite and sqlite will be a first class citizen, we'll leave mysql as an option for people who want it
+
+We no longer want docker/tests/docs/linting/precommit hooks/really anything that isn't the most simplest setup.
+
+I'll let you drive the ripping out process, while guiding you along the way.
+
+The plan is this: 
+- You'll think of the next layer to rip out, I'll say yes or no, and then we move on to the next layer

@@ -12,12 +12,6 @@
     "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
-    "@pnpm/releasing.versioning": "catalog:",
-    "@pnpm/workspace.workspace-manifest-reader": "catalog:",
-    "camelcase-keys": "10.0.3",
-    "execa": "catalog:",
-    "js-yaml": "catalog:",
-    "picomatch": "4.0.5",
     "semver": "catalog:",
     "typescript": "catalog:"
   },

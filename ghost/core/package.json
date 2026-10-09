@@ -30,7 +30,6 @@
     "content/themes/source/",
     "!content/themes/source/pnpm-lock.yaml",
     "bin/",
-    "scripts/prune.mts",
     "types/",
     "index.js",
     "loggingrc.js",
@@ -43,7 +42,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "node scripts/pack.mjs",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node scripts/minify-assets.mts",
@@ -323,18 +321,6 @@
       "build:tsc": {
         "dependsOn": [
           "^build"
-        ]
-      },
-      "archive": {
-        "dependsOn": [
-          "build:assets",
-          "build:tsc",
-          {
-            "projects": [
-              "@tryghost/admin"
-            ],
-            "target": "build"
-          }
         ]
       },
       "dev": {

@@ -134,7 +134,6 @@ test/functional/*.png
 /ghost/core/core/frontend/public/cards.manifest.json
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
-!docker/dev-gateway/Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
@@ -204,9 +203,6 @@ yalc.lock
 # useful for keeping local plans etc
 /ai
 
-# Amp generates thread-specific portal state at runtime
-/.amp/portals/
-
 # direnv environment loader files
 .envrc
 
@@ -215,17 +211,6 @@ yalc.lock
 .claude/settings.local.json
 .mcp.local.json
 
-# e2e test suite
-/e2e/test-results
-/e2e/playwright-report
-/e2e/blob-report
-/e2e/json-report
-/e2e/shard-plan
-/e2e/build
-/e2e/playwright
-/e2e/data
 .env.tinybird
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
 
 .nx/migrate-runs

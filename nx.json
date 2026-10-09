@@ -41,7 +41,13 @@
     "test:unit": {
       "cache": true,
       "dependsOn": ["build"],
-      "inputs": ["default", "^default", { "runtime": "node -v" }]
+      "inputs": [
+        "default",
+        "^default",
+        {
+          "runtime": "node -v"
+        }
+      ]
     },
     "test:types": {
       "cache": true,
@@ -57,6 +63,5 @@
     }
   },
   "cacheDirectory": ".nxcache",
-  "analytics": true,
-  "nxCloudId": "6a146249a88a39d9ffa5046c"
+  "analytics": false
 }

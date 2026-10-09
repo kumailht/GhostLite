@@ -1,4 +1,0 @@
-services:
-  ghost-dev:
-    ports:
-      - '2369:2368'

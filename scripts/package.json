@@ -2,7 +2,7 @@
   "name": "@internal/scripts",
   "version": "0.0.0",
   "private": true,
-  "description": "Repo automation scripts, invoked from CI workflows and local pnpm aliases",
+  "description": "Repo automation scripts, invoked from local pnpm aliases",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -12,12 +12,8 @@
     "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
-    "@octokit/core": "catalog:",
-    "@octokit/plugin-retry": "catalog:",
-    "@octokit/plugin-throttling": "catalog:",
     "@pnpm/releasing.versioning": "catalog:",
     "@pnpm/workspace.workspace-manifest-reader": "catalog:",
-    "@sentry/bundler-plugin-core": "catalog:",
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
     "js-yaml": "catalog:",
@@ -28,7 +24,6 @@
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
-    "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:"
   },
@@ -36,8 +31,7 @@
     "namedInputs": {
       "adminTestContracts": [
         "{workspaceRoot}/apps/admin/package.json",
-        "{workspaceRoot}/apps/ember-admin/package.json",
-        "{workspaceRoot}/.github/workflows/ci.yml"
+        "{workspaceRoot}/apps/ember-admin/package.json"
       ],
       "adminSourceContracts": [
         "{workspaceRoot}/apps/admin-x-framework/package.json",

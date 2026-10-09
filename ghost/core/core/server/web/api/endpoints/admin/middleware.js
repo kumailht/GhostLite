@@ -57,7 +57,6 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
     posts: ['GET', 'PUT', 'DELETE', 'POST'],
     pages: ['GET', 'PUT', 'DELETE', 'POST'],
     images: ['POST'],
-    webhooks: ['POST', 'PUT', 'DELETE'],
     actions: ['GET'],
     tags: ['GET', 'PUT', 'DELETE', 'POST'],
     labels: ['GET', 'PUT', 'DELETE', 'POST'],

@@ -112,12 +112,7 @@ const features: Feature[] = [
       'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
     flag: 'navigationUrlSuggestions',
   },
-  {
-    title: 'Apps',
-    description:
-      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
-    flag: 'apps',
-  },
+
 ];
 
 const AlphaFeatures: React.FC = () => {

@@ -7,7 +7,6 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
 const limits = require('../../../../services/limits');
-const appInstallations = require('../../../../services/app-installations');
 
 const shared = require('../../../shared');
 
@@ -46,8 +45,6 @@ module.exports = function apiRoutes() {
   router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
   router.delete('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
   router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
-
-  router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
   // Comments - browseAll must come before :id routes
   router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
@@ -241,30 +238,6 @@ module.exports = function apiRoutes() {
   metafieldsRouter.put('/:namespace/:key', http(api.membersMetafields.edit));
   metafieldsRouter.delete('/:namespace/:key', http(api.membersMetafields.destroy));
 
-  // ## Apps
-  // Everything about apps sits behind the private `apps` flag, asked once here so a route
-  // added below is guarded by being there. The table is still in development, so it only
-  // exists in development and testing databases: anywhere else the routes answer as if
-  // the flag were off, whatever the flag says.
-  //
-  // Authenticated as a route here rather than inside the mount, for the same reason as
-  // the members metafields router above.
-  const appsRouter = express.Router('admin api apps');
-  router.all(['/apps', '/apps/*'], mw.authAdminApi);
-  router.use('/apps', appsRouter);
-  appsRouter.use(labs.enabledMiddleware('apps'));
-  // Answers as if apps did not exist wherever the table does not.
-  appsRouter.use((req, res, next) => {
-    next(appInstallations.isAvailable() ? undefined : new errors.NotFoundError());
-  });
-
-  appsRouter.post('/installations/preview', http(api.appInstallationPreviews.add));
-  appsRouter.get('/installations', http(api.appInstallations.browse));
-  appsRouter.post('/installations', http(api.appInstallations.add));
-  appsRouter.get('/installations/:id', http(api.appInstallations.read));
-  appsRouter.put('/installations/:id', http(api.appInstallations.edit));
-  appsRouter.delete('/installations/:id', http(api.appInstallations.destroy));
-
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));
   router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
   router.delete('/members/:id', mw.authAdminApi, http(api.members.destroy));
@@ -432,9 +405,6 @@ module.exports = function apiRoutes() {
   router.get('/exports/download', mw.authAdminApi, http(api.exports.download));
   router.post('/exports', mw.authAdminApi, http(api.exports.add));
 
-  // ## Slack
-  router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
-
   // ## Tinybird
   router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
@@ -530,11 +500,6 @@ module.exports = function apiRoutes() {
     http(api.redirects.upload),
   );
 
-  // ## Webhooks (RESTHooks)
-  router.post('/webhooks', mw.authAdminApi, http(api.webhooks.add));
-  router.put('/webhooks/:id', mw.authAdminApi, http(api.webhooks.edit));
-  router.delete('/webhooks/:id', mw.authAdminApi, http(api.webhooks.destroy));
-
   // ## Oembed (fetch response from oembed provider)
   router.get('/oembed', mw.authAdminApi, http(api.oembed.read));
 
@@ -585,21 +550,6 @@ module.exports = function apiRoutes() {
 
   router.get('/links', mw.authAdminApi, http(api.links.browse));
   router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
-
-  // Recommendations
-  router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
-  router.get('/recommendations/:id', mw.authAdminApi, http(api.recommendations.read));
-  router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
-  router.post('/recommendations/check', mw.authAdminApi, http(api.recommendations.check));
-  router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
-  router.delete('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
-
-  // Incoming recommendations
-  router.get(
-    '/incoming_recommendations',
-    mw.authAdminApi,
-    http(api.incomingRecommendations.browse),
-  );
 
   // Feedback
   router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));

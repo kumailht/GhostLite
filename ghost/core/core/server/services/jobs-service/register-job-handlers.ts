@@ -15,26 +15,12 @@ import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
 import MembersImportJob from '../members/jobs/members-import-job';
-import UpdateCheckJob from '../update-check/jobs/update-check-job';
 import TinybirdSyncJob from '../tinybird-sync/jobs/tinybird-sync-job';
-import type MentionController from '../mentions/mention-controller';
-import type MentionSendingService from '../mentions/mention-sending-service';
-import ProcessWebmentionJob from '../mentions/process-webmention-job';
-import SendWebmentionsJob from '../mentions/send-webmentions-job';
 import type EmailService from '../email-service/email-service';
 import SendEmailJob from '../email-service/jobs/send-email-job';
 import CheckSigningKeysJob from '../signing-keys/check-signing-keys-job';
 import * as signingKeys from '../signing-keys';
 
-const updateCheck = require('../update-check');
-
-// Webmention processing fetches external pages and is triggered by
-// unauthenticated requests, so webmention jobs run in their own lane where a
-// flood cannot occupy the shared workers. The concurrency matches the old
-// dedicated mentions job queue. Every webmention job type must register with
-// this shared declaration so none can declare the queue with a different
-// concurrency.
-const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrency: 3 };
 
 // Keep newsletter sends independent of imports and other shared work. Two sends
 // can progress at once, each with its own two batch workers, so a long send or
@@ -52,8 +38,6 @@ interface RegisterJobHandlersDependencies {
   };
   giftService: GiftService;
   mediaInliner: ExternalMediaInliner;
-  mentionsController: MentionController;
-  mentionsSendingService: MentionSendingService;
   membersService: {
     handleImportJob(job: MembersImportJob): Promise<void>;
   };
@@ -74,8 +58,6 @@ export default function registerJobHandlers({
   memberJobs,
   giftService,
   mediaInliner,
-  mentionsController,
-  mentionsSendingService,
   membersService,
   emailService,
   siteImporter,
@@ -128,29 +110,9 @@ export default function registerJobHandlers({
     await membersService.handleImportJob(job);
   });
 
-  jobsService.handle(UpdateCheckJob, async () => {
-    await updateCheck({ rethrowErrors: true });
-  });
-
   jobsService.handle(CheckSigningKeysJob, async () => {
     await signingKeys.getInstance().check();
   });
-
-  jobsService.handle(
-    ProcessWebmentionJob,
-    async (job) => {
-      await mentionsController.processWebmention(job);
-    },
-    WEBMENTIONS_QUEUE,
-  );
-
-  jobsService.handle(
-    SendWebmentionsJob,
-    async (job) => {
-      await mentionsSendingService.sendWebmentions(job);
-    },
-    WEBMENTIONS_QUEUE,
-  );
 
   jobsService.handle(
     SendEmailJob,

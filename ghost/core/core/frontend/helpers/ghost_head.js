@@ -144,17 +144,6 @@ function getMembersHelper(excludeList) {
   return membersHelper;
 }
 
-function getWebmentionDiscoveryLink() {
-  try {
-    const siteUrl = urlUtils.getSiteUrl();
-    const webmentionUrl = new URL('webmentions/receive/', siteUrl);
-    return `<link href="${webmentionUrl.href}" rel="webmention">`;
-  } catch (err) {
-    logging.warn(err);
-    return '';
-  }
-}
-
 function getTinybirdTrackerScript(dataRoot) {
   const preview = dataRoot?.context?.includes('preview');
   if (preview) {
@@ -333,12 +322,6 @@ module.exports = async function ghost_head(options) {
     );
 
     head.push(getMembersHelper(excludeList));
-    try {
-      head.push(getWebmentionDiscoveryLink());
-    } catch (err) {
-      logging.warn(err);
-    }
-
     // @TODO do this in a more "frameworky" way
 
     if (!excludeList.has('card_assets')) {

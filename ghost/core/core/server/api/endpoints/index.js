@@ -76,16 +76,8 @@ module.exports = {
     return apiFramework.pipeline(require('./slugs'), localUtils);
   },
 
-  get webhooks() {
-    return apiFramework.pipeline(require('./webhooks'), localUtils);
-  },
-
   get posts() {
     return apiFramework.pipeline(require('./posts'), localUtils);
-  },
-
-  get mentions() {
-    return apiFramework.pipeline(require('./mentions'), localUtils);
   },
 
   get invites() {
@@ -188,10 +180,6 @@ module.exports = {
     return apiFramework.pipeline(require('./oembed'), localUtils);
   },
 
-  get slack() {
-    return apiFramework.pipeline(require('./slack'), localUtils);
-  },
-
   get config() {
     return apiFramework.pipeline(require('./config'), localUtils);
   },
@@ -268,14 +256,6 @@ module.exports = {
     return apiFramework.pipeline(require('./links'), localUtils);
   },
 
-  get recommendations() {
-    return apiFramework.pipeline(require('./recommendations'), localUtils);
-  },
-
-  get incomingRecommendations() {
-    return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
-  },
-
   get searchIndex() {
     return apiFramework.pipeline(require('./search-index'), localUtils);
   },
@@ -340,24 +320,12 @@ module.exports = {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
   },
 
-  get appInstallations() {
-    return apiFramework.pipeline(require('./app-installations'), localUtils);
-  },
-
-  get appInstallationPreviews() {
-    return apiFramework.pipeline(require('./app-installation-previews'), localUtils);
-  },
-
   get giftLinks() {
     return apiFramework.pipeline(require('./gift-links'), localUtils);
   },
 
   get gifts() {
     return apiFramework.pipeline(require('./gifts'), localUtils);
-  },
-
-  get recommendationsPublic() {
-    return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
   },
 
   get searchIndexPublic() {

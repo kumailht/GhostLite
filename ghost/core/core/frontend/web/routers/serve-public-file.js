@@ -251,18 +251,6 @@ function servePublicFiles(siteApp) {
     ),
   );
 
-  // Recommendations well-known
-  siteApp.get(
-    '/.well-known/recommendations.json',
-    createPublicFileMiddleware(
-      'built',
-      '.well-known/recommendations.json',
-      'application/json',
-      config.get('caching:publicAssets:maxAge'),
-      { disableServerCache: true },
-    ),
-  );
-
   // Serve robots.txt if not found in theme (and blog is not private)
   const defaultRobotsTxtMiddleware = createPublicFileMiddleware(
     'static',

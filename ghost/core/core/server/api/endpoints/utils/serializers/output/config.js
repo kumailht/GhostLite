@@ -22,7 +22,6 @@ module.exports = {
       'pintura',
       'stats',
       'security',
-      'exploreTestimonialsUrl',
       'featurebase',
       'docsbot',
     ];

@@ -170,19 +170,6 @@ module.exports = {
   },
 
   /**
-   * Blocks webmention spam
-   */
-
-  webmentionsLimiter(req, res, next) {
-    return spamPrevention.webmentionsBlock().getMiddleware({
-      ignoreIP: false,
-      key(_req, _res, _next) {
-        return _next('webmention_blocked');
-      },
-    })(req, res, next);
-  },
-
-  /**
    * Blocks preview email spam
    */
 

@@ -3,7 +3,6 @@ const {
   SubscriptionCancelledEvent,
   SubscriptionActivatedEvent,
 } = require('../../../shared/events');
-const MilestoneCreatedEvent = require('../milestones/milestone-created-event');
 
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
@@ -106,10 +105,6 @@ class StaffService {
 
   /** @private */
   async handleEvent(type, event) {
-    if (type === MilestoneCreatedEvent && event.data.milestone) {
-      await this.emails.notifyMilestoneReceived(event.data);
-    }
-
     if (!['api', 'member'].includes(event.data.source)) {
       return;
     }
@@ -199,15 +194,6 @@ class StaffService {
           e,
           `Failed to notify paid member subscription cancel - ${event?.data?.memberId}`,
         );
-      }
-    });
-
-    // Trigger email when a new milestone is reached
-    this.DomainEvents.subscribe(MilestoneCreatedEvent, async (event) => {
-      try {
-        await this.handleEvent(MilestoneCreatedEvent, event);
-      } catch (e) {
-        this.logging.error(e, `Failed to notify milestone`);
       }
     });
   }

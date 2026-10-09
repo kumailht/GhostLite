@@ -559,14 +559,8 @@ const User = ghostBookshelf.Model.extend(
         filter += '+paid_subscription_started_notification:true';
       } else if (type === 'paid-canceled') {
         filter += '+paid_subscription_canceled_notification:true';
-      } else if (type === 'mention-received') {
-        filter += '+mention_notifications:true';
-      } else if (type === 'milestone-received') {
-        filter += '+milestone_notifications:true';
       } else if (type === 'donation') {
         filter += '+donation_notifications:true';
-      } else if (type === 'recommendation-received') {
-        filter += '+recommendation_notifications:true';
       } else if (type === 'gift-subscriptions') {
         filter += '+gift_subscription_notifications:true';
       }

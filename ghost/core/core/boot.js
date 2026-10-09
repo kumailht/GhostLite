@@ -165,12 +165,6 @@ async function initCore({ ghostServer, config }) {
   memberMetafieldsService.init();
   debug('End: Member Metafields Service');
 
-  // App installations service: knex-backed, wired once the DB is ready.
-  debug('Begin: App Installations Service');
-  const appInstallationsService = require('./server/services/app-installations');
-  appInstallationsService.init();
-  debug('End: App Installations Service');
-
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
   const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');
@@ -352,9 +346,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const members = require('./server/services/members');
   const tiers = require('./server/services/tiers');
   const permissions = require('./server/services/permissions');
-  const indexnow = require('./server/services/indexnow-ping').default;
-  const slack = require('./server/services/slack-ping').default;
-  const webhooks = require('./server/services/webhooks');
   const postScheduling = require('./server/services/post-scheduling').default;
   const comments = require('./server/services/comments');
   const staffService = require('./server/services/staff');
@@ -365,19 +356,15 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
-  const mentionsService = require('./server/services/mentions');
   const tagsPublic = require('./server/services/tags-public');
   const postsPublic = require('./server/services/posts-public');
-  const slackNotifications = require('./server/services/slack-notifications');
   const mediaInliner = require('./server/services/media-inliner');
   const contentImport = require('./server/services/content-import');
   const donationService = require('./server/services/donations');
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService = require('./server/services/recommendations');
   const emailAddressService = require('./server/services/email-address');
   const statsService = require('./server/services/stats');
-  const explorePingService = require('./server/services/explore-ping');
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -414,7 +401,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await Promise.all([
     identityTokens.init(),
     memberAttribution.init(),
-    mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
     tiers.init(),
@@ -422,8 +408,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     postsPublic.init(),
     membersEvents.init(),
     permissions.init(),
-    indexnow.init(),
-    slack.init(),
     audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
@@ -439,17 +423,13 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       prometheusClient,
       settingsCache,
     }),
-    webhooks.listen(),
     comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),
-    slackNotifications.init(),
     mediaInliner.init(),
     contentImport.init(),
     donationService.init(),
-    recommendationsService.init(),
     statsService.init(),
-    explorePingService.init(),
     machinePaymentsService.init(),
   ]);
 
@@ -462,8 +442,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
-  assert(mentionsService.controller, 'Mentions controller should be initialized');
-  assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
   assert(membersService.handleImportJob, 'Members service should be initialized');
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
@@ -474,8 +452,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     memberJobs,
     giftService: giftService.service,
     mediaInliner: mediaInliner.getInstance(),
-    mentionsController: mentionsService.controller,
-    mentionsSendingService: mentionsService.sendingService,
     membersService,
     emailService: emailService.service,
     siteImporter,
@@ -607,9 +583,6 @@ async function initBackgroundServices({ config }) {
     }
   }
 
-  const activitypub = require('./server/services/activitypub');
-  await activitypub.init();
-
   try {
     const tinybirdSync = require('./server/services/tinybird-sync');
     await tinybirdSync.scheduleJob(jobsService);
@@ -618,20 +591,9 @@ async function initBackgroundServices({ config }) {
     logging.error(err);
   }
 
-  try {
-    const updateCheck = require('./server/services/update-check');
-    await updateCheck.scheduleJobs(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
   const remoteFlags = require('./server/services/remote-flags');
   remoteFlags.init(config);
-
-  const milestonesService = require('./server/services/milestones');
-  milestonesService.initAndRun();
 
   debug('End: initBackgroundServices');
 }

@@ -71,12 +71,6 @@
       "lifetime": 3600,
       "freeRetries": 99
     },
-    "webmentions_block": {
-      "minWait": 100000,
-      "maxWait": 100000,
-      "lifetime": 3600,
-      "freeRetries": 3
-    },
     "email_preview_block": {
       "minWait": 360000,
       "maxWait": 360000,

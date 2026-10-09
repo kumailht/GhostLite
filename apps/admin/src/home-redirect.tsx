@@ -8,7 +8,7 @@ const HomeRedirect = () => {
     return null;
   }
 
-  return <Navigate to="/posts" crossApp replace />;
+  return <Navigate to="/posts" replace />;
 };
 
 export default HomeRedirect;

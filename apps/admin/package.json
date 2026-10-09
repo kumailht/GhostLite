@@ -29,7 +29,6 @@
     "@svg-maps/world": "2.0.0",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-virtual": "catalog:",
-    "@tryghost/activitypub": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",
     "@tryghost/checkout": "workspace:*",
@@ -85,7 +84,6 @@
     "@typescript/native": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "d3-geo": "catalog:",
-    "sirv": "3.0.2",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
@@ -98,7 +96,6 @@
       ]
     },
     "implicitDependencies": [
-      "ghost-admin",
       "@internal/scripts"
     ],
     "targets": {
@@ -115,24 +112,10 @@
           "@tryghost/shade:dev"
         ]
       },
-      "dev:ember": {
-        "continuous": true,
-        "executor": "nx:run-commands",
-        "options": {
-          "cwd": "apps/admin",
-          "command": "vite"
-        },
-        "dependsOn": [
-          "ghost-admin:dev",
-          "@tryghost/admin-x-framework:dev",
-          "@tryghost/shade:dev"
-        ]
-      },
       "build:dev": {
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
               "@tryghost/app-contracts",
               "@tryghost/checkout",
@@ -146,12 +129,6 @@
               "@tryghost/shade"
             ],
             "target": "build"
-          },
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build:dev"
           }
         ]
       },
@@ -173,13 +150,7 @@
           "{workspaceRoot}/ghost/core/core/built/embed-renderer"
         ],
         "dependsOn": [
-          "^build",
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "assemble:assets": {

@@ -63,9 +63,7 @@ const PRIVATE_FEATURES = [
   'stripeCheckoutDesign',
   'paywallImprovements',
   'machinePayments',
-  'editorReact',
   'navigationUrlSuggestions',
-  'billingReact',
   'apps',
 ];
 

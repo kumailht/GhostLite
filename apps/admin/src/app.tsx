@@ -3,16 +3,7 @@ import { Outlet } from '@tryghost/admin-x-framework';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { UnauthorizedError } from '@tryghost/admin-x-framework/errors';
-import { EmberProvider, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
-import { useSyncEmberFullScreen } from './layout/sidebar-visibility';
-import { useSyncEmberRoutePattern } from './routes';
-import {
-  useEmberAuthSync,
-  useEmberDataSync,
-  useEmberListReturnSync,
-  useEmberNotificationsHost,
-} from './ember-bridge';
 import {
   AdminAlerts,
   createAlertsStore,
@@ -43,43 +34,27 @@ function App() {
   useAccentColorProperties();
   useDocumentTitle();
   usePrivateSiteLogin();
-  useEmberAuthSync();
-  useEmberDataSync();
-  useEmberListReturnSync();
-  useSyncEmberFullScreen();
-  useSyncEmberRoutePattern();
-  useEmberNotificationsHost(alerts);
   useServerNotifications(alerts);
   useAuthNotice(Boolean(currentUser));
   usePreloadEditor(Boolean(currentUser));
   useGlobalShortcuts(Boolean(currentUser));
 
   return (
-    <EmberProvider>
+    <>
       <AdminAlerts store={alerts} />
       {currentUser ? (
         <AdminLayout>
           <Outlet />
-          <EmberRoot />
           <ClientExtensionScript />
         </AdminLayout>
       ) : bootError ? (
-        <>
-          <BootError error={bootError} />
-          <EmberRoot />
-        </>
+        <BootError error={bootError} />
       ) : isSignedOut ? (
-        <>
-          <SignedOutApp />
-          <EmberRoot />
-        </>
+        <SignedOutApp />
       ) : (
-        <>
-          <BootLoader />
-          <EmberRoot />
-        </>
+        <BootLoader />
       )}
-    </EmberProvider>
+    </>
   );
 }
 

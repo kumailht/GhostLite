@@ -141,9 +141,6 @@ Caddyfile
 /playwright-report
 /test-results
 
-# Admin
-/apps/ember-admin/dist
-
 # Build files
 /apps/*/build
 /ghost/*/build

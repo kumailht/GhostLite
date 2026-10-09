@@ -32,7 +32,6 @@
   },
   "include": ["src"],
   "references": [
-    { "path": "../admin-x-framework/tsconfig.declaration.json" },
-    { "path": "../activitypub/tsconfig.declaration.json" }
+    { "path": "../admin-x-framework/tsconfig.declaration.json" }
   ]
 }

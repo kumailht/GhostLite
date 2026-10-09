@@ -6,7 +6,7 @@ export interface LocaleDataEntry {
   [key: string]: unknown;
 }
 
-export type Namespace = 'ghost' | 'portal' | 'signup-form' | 'comments' | 'search' | 'theme';
+export type Namespace = 'ghost' | 'theme';
 
 /** One namespace's translations, as loaded from a locale JSON file. */
 export type TranslationResource = Record<string, unknown>;

@@ -104,10 +104,6 @@ module.exports = {
     return apiFramework.pipeline(require('./settings'), localUtils);
   },
 
-  get announcements() {
-    return apiFramework.pipeline(require('./announcements'), localUtils);
-  },
-
   get automatedEmails() {
     return apiFramework.pipeline(require('./automated-emails'), localUtils);
   },

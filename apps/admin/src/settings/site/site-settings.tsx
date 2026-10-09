@@ -1,4 +1,3 @@
-import AnnouncementBar from './announcement-bar';
 import ChangeTheme from './change-theme';
 import DesignSetting from './design-setting';
 import Navigation from './navigation';
@@ -13,7 +12,6 @@ const SiteSettings: React.FC = () => {
         <DesignSetting keywords={searchKeywords.design} />
         <ChangeTheme keywords={searchKeywords.theme} />
         <Navigation keywords={searchKeywords.navigation} />
-        <AnnouncementBar keywords={searchKeywords.announcementBar} />
       </SearchableSection>
     </>
   );

@@ -14,5 +14,4 @@ export const searchKeywords = {
   ],
   theme: ['theme', 'template', 'upload'],
   navigation: ['site', 'navigation', 'menus', 'primary', 'secondary', 'links'],
-  announcementBar: ['site', 'announcement bar', 'important', 'banner'],
 };

@@ -34,7 +34,6 @@ interface LanguageUtils {
 
 // Merge quirk preserved verbatim from the original implementation:
 // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
-// If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
 export function mergeDefaultExport(res: TranslationResource): TranslationResource {
   const nested = res.default;
   return {
@@ -71,13 +70,13 @@ export function createI18n({
   generateThemeResources: GenerateThemeResources;
   generateResources: GenerateResources;
 }) {
-  return (lng = 'en', ns: Namespace | string = 'portal', options: I18nOptions = {}) => {
+  return (lng = 'en', ns: Namespace | string = 'ghost', options: I18nOptions = {}) => {
     const i18nextInstance = i18next.createInstance();
     const interpolation: { prefix: string; suffix: string; escapeValue?: boolean } = {
       prefix: '{',
       suffix: '}',
     };
-    if (ns === 'theme' || ns === 'portal') {
+    if (ns === 'theme') {
       interpolation.escapeValue = false;
     }
     // Load a locale's strings the first time i18next is about to resolve against

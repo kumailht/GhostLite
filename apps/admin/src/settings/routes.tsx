@@ -29,10 +29,6 @@ export const settingsRouteChildren: RouteObject[] = [
   // valid editor URL.
   { path: 'theme/edit/*', element: <Navigate to="/settings/theme" replace /> },
   { path: 'navigation/edit', lazy: lazyComponent(() => import('./site/navigation-modal')) },
-  {
-    path: 'announcement-bar/edit',
-    lazy: lazyComponent(() => import('./site/announcement-bar-modal')),
-  },
   { path: 'staff/invite', lazy: lazyComponent(() => import('./general/invite-user-modal')) },
   {
     path: 'staff/:slug',
@@ -120,10 +116,6 @@ export const settingsRouteChildren: RouteObject[] = [
   // The edit flow opens from the recommendations list with the loaded record
   // (never URL-driven); the legacy route only ever redirected back in effect.
   { path: 'recommendations/edit', element: <Navigate to="/settings/recommendations" replace /> },
-  {
-    path: 'embed-signup-form/show',
-    lazy: lazyComponent(() => import('./growth/embed-signup/embed-signup-form-modal')),
-  },
   // The offers container owns list/add/edit/retention/success views and
   // reads the path to pick between them.
   {

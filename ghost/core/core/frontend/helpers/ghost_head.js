@@ -7,7 +7,6 @@ const {
   config,
   blogIcon,
   urlUtils,
-  getFrontendKey,
   settingsHelpers,
 } = require('../services/proxy');
 const metaData = require('../meta');
@@ -25,7 +24,6 @@ const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const { styles: templateStyles } = require('./tpl/styles');
-const { getFrontendAppConfig, getDataAttributes } = require('../utils/frontend-apps');
 const labs = require('../../shared/labs');
 const { getMarkdownUrl } = require('../services/llms/markdown');
 const { isPurchasableEntry, isMachinePaymentsEnabled } = require('../../shared/machine-payments');
@@ -132,36 +130,11 @@ function finaliseStructuredData(meta) {
   return head;
 }
 
-function getMembersHelper(data, frontendKey, excludeList) {
-  // Do not load Portal if both Memberships and Tips & Donations and Recommendations are disabled
-  if (
-    !settingsCache.get('members_enabled') &&
-    !settingsCache.get('donations_enabled') &&
-    !settingsCache.get('recommendations_enabled')
-  ) {
+function getMembersHelper(excludeList) {
+  if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
     return '';
   }
   let membersHelper = '';
-  if (!excludeList.has('portal')) {
-    const { scriptUrl } = getFrontendAppConfig('portal');
-
-    if (scriptUrl) {
-      const colorString =
-        _.has(data, 'site._preview') && data.site.accent_color ? data.site.accent_color : '';
-      const attributes = {
-        i18n: true,
-        ghost: urlUtils.getSiteUrl(),
-        key: frontendKey,
-        api: urlUtils.urlFor('api', { type: 'content' }, true),
-        locale: settingsCache.get('locale') || 'en',
-      };
-      if (colorString) {
-        attributes['accent-color'] = colorString;
-      }
-      const dataAttributes = getDataAttributes(attributes);
-      membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
-    }
-  }
   if (!excludeList.has('cta_styles')) {
     membersHelper += `<style id="gh-members-styles">${templateStyles}</style>`;
   }
@@ -169,107 +142,6 @@ function getMembersHelper(data, frontendKey, excludeList) {
     membersHelper += `<script async src="https://js.stripe.com/v3/"></script>`;
   }
   return membersHelper;
-}
-
-function getSearchHelper(frontendKey) {
-  const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
-  const { scriptUrl, stylesUrl } = getFrontendAppConfig('sodoSearch');
-
-  if (!scriptUrl) {
-    return '';
-  }
-
-  const attrs = {
-    key: frontendKey,
-    styles: stylesUrl,
-    'sodo-search': adminUrl,
-    locale: settingsCache.get('locale') || 'en',
-  };
-  const dataAttrs = getDataAttributes(attrs);
-  const helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
-
-  return helper;
-}
-
-function getAnnouncementBarHelper(data) {
-  const preview = data?.site?._preview;
-  const isFilled =
-    settingsCache.get('announcement_content') &&
-    settingsCache.get('announcement_visibility').length;
-
-  if (!isFilled && !preview) {
-    return '';
-  }
-
-  const { scriptUrl } = getFrontendAppConfig('announcementBar');
-  const siteUrl = urlUtils.getSiteUrl();
-  const announcementUrl = new URL('members/api/announcement/', siteUrl);
-  const attrs = {
-    'announcement-bar': siteUrl,
-    'api-url': announcementUrl,
-  };
-
-  if (preview) {
-    const searchParam = new URLSearchParams(preview);
-    const announcement = searchParam.get('announcement');
-    const announcementBackground = searchParam.has('announcement_bg')
-      ? searchParam.get('announcement_bg')
-      : '';
-    const announcementVisibility = searchParam.has('announcement_vis');
-
-    if (!announcement || !announcementVisibility) {
-      return '';
-    }
-    attrs.announcement = escapeExpression(announcement);
-    attrs['announcement-background'] = escapeExpression(announcementBackground);
-    attrs.preview = true;
-  }
-
-  const dataAttrs = getDataAttributes(attrs);
-  const helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
-
-  return helper;
-}
-
-function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
-  if (!dataRoot._locals?.staffFrontendToolsEnabled || excludeList.has('admin_toolbar')) {
-    return '';
-  }
-
-  const { scriptUrl } = getFrontendAppConfig('adminToolbar');
-  const context = dataRoot._locals?.context || dataRoot.context || [];
-  const entry = dataRoot.post || dataRoot.page;
-  const resourceId = entry?.id;
-  const resourceSlug = context.includes('tag') ? dataRoot.tag?.slug : '';
-  const isHome = context.includes('home');
-  let resourceType = '';
-
-  if (resourceId) {
-    resourceType = context.includes('page') || entry.type === 'page' ? 'page' : 'post';
-  } else if (resourceSlug) {
-    resourceType = 'tag';
-  }
-
-  const attrs = {
-    'ghost-admin-toolbar': escapeExpression(urlUtils.urlFor('admin', true)),
-    'site-title': escapeExpression(siteTitle || settingsCache.get('title') || 'Ghost'),
-    'resource-type': resourceType || undefined,
-    'resource-id': resourceId ? escapeExpression(resourceId) : undefined,
-    'resource-slug': resourceSlug ? escapeExpression(resourceSlug) : undefined,
-    'page-context': isHome ? 'home' : undefined,
-    'site-analytics-enabled':
-      isHome && settingsCache.get('web_analytics_enabled') === true ? 'true' : undefined,
-    'activitypub-enabled':
-      isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
-    'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
-    'comments-enabled':
-      resourceType === 'post' && settingsCache.get('comments_enabled') === 'off'
-        ? 'false'
-        : undefined,
-  };
-  const dataAttrs = getDataAttributes(attrs);
-
-  return `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 }
 
 function getWebmentionDiscoveryLink() {
@@ -390,7 +262,6 @@ module.exports = async function ghost_head(options) {
      *   - it should not break anything
      */
     const meta = await getMetaData(dataRoot, dataRoot);
-    const frontendKey = await getFrontendKey();
 
     debug('end fetch');
 
@@ -461,17 +332,7 @@ module.exports = async function ghost_head(options) {
         '">',
     );
 
-    head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
-    if (!excludeList.has('search')) {
-      head.push(getSearchHelper(frontendKey));
-    }
-    if (!excludeList.has('announcement')) {
-      head.push(getAnnouncementBarHelper(options.data));
-    }
-    const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
-    if (adminToolbarHelper) {
-      head.push(adminToolbarHelper);
-    }
+    head.push(getMembersHelper(excludeList));
     try {
       head.push(getWebmentionDiscoveryLink());
     } catch (err) {

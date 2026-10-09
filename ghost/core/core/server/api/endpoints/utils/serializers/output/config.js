@@ -20,7 +20,6 @@ module.exports = {
       'hostSettings',
       'klipy',
       'pintura',
-      'signupForm',
       'stats',
       'security',
       'exploreTestimonialsUrl',

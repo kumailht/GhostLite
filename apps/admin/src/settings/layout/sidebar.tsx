@@ -161,7 +161,6 @@ function useSearchResults() {
         growthSearchKeywords.network,
         growthSearchKeywords.explore,
         growthSearchKeywords.recommendations,
-        growthSearchKeywords.embedSignupForm,
         ...(hasStripeEnabled ? [growthSearchKeywords.offers] : []),
       ].flat(),
     [hasStripeEnabled],
@@ -481,13 +480,6 @@ const Sidebar: React.FC = () => {
             title="Navigation"
             onClick={handleSectionClick}
           />
-          <NavItem
-            icon={<LucideIcon.Megaphone />}
-            keywords={siteSearchKeywords.announcementBar}
-            navid="announcement-bar"
-            title="Announcement bar"
-            onClick={handleSectionClick}
-          />
         </NavSection>
 
         {/* Membership settings */}
@@ -600,13 +592,6 @@ const Sidebar: React.FC = () => {
             keywords={growthSearchKeywords.recommendations}
             navid="recommendations"
             title="Recommendations"
-            onClick={handleSectionClick}
-          />
-          <NavItem
-            icon={<LucideIcon.ClipboardType />}
-            keywords={growthSearchKeywords.embedSignupForm}
-            navid="embed-signup-form"
-            title="Signup forms"
             onClick={handleSectionClick}
           />
           {hasStripeEnabled && (

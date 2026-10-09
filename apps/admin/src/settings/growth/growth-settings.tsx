@@ -1,4 +1,3 @@
-import EmbedSignupForm from './embed-signup/embed-signup-form';
 import Explore from './explore';
 import Network from './network';
 import Offers from './offers';
@@ -16,7 +15,6 @@ const GrowthSettings: React.FC = () => {
     searchKeywords.network,
     searchKeywords.explore,
     searchKeywords.recommendations,
-    searchKeywords.embedSignupForm,
     ...(hasStripeEnabled ? [searchKeywords.offers] : []),
   ].flat();
 
@@ -25,7 +23,6 @@ const GrowthSettings: React.FC = () => {
       <Network keywords={searchKeywords.network} />
       <Explore keywords={searchKeywords.explore} />
       <Recommendations keywords={searchKeywords.recommendations} />
-      <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
       {hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
     </SearchableSection>
   );

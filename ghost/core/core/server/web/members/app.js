@@ -13,7 +13,6 @@ const api = require('../../api').endpoints;
 
 const accountRoutes = require('./account');
 const commentRouter = require('../comments');
-const announcementRouter = require('../announcement');
 const corsMiddleware = require('./middleware/cors');
 
 /**
@@ -163,9 +162,6 @@ module.exports = function setupMembersApp() {
     middleware.loadMemberSession,
     http(api.giftsMembers.redeem),
   );
-
-  // Announcement
-  membersApp.use('/api/announcement', middleware.loadMemberSession, announcementRouter());
 
   // Recommendations
   membersApp.post(

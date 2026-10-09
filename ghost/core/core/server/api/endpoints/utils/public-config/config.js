@@ -64,7 +64,6 @@ module.exports = function getConfigProperties() {
     hostSettings: sanitizeHostSettings(config.get('hostSettings')),
     klipy: config.get('klipy'),
     pintura: config.get('pintura'),
-    signupForm: config.get('signupForm'),
     security: config.get('security'),
   };
 

@@ -15,10 +15,6 @@ export type Config = {
     url: string;
     version: string;
   };
-  signupForm: {
-    url: string;
-    version: string;
-  };
   enableDeveloperExperiments: boolean;
   database: string;
   blogUrl?: string;

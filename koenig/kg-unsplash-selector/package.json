@@ -19,9 +19,7 @@
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "VITE_APP_DEV=true vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "tsc && vite build"
   },
   "devDependencies": {
     "@types/react": "catalog:",
@@ -40,10 +38,5 @@
   "peerDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:"
-  },
-  "nx": {
-    "tags": [
-      "playwright"
-    ]
   }
 }

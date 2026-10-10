@@ -42,7 +42,6 @@
     "luxon": "3.7.2"
   },
   "devDependencies": {
-    "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
     "simple-dom": "1.4.0",

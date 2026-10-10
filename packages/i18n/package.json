@@ -32,7 +32,7 @@
   "scripts": {
     "build": "tsc",
     "translate": "pnpm translate:ghost && node generate-context.js",
-    "translate:ghost": "NAMESPACE=ghost i18next '../../ghost/core/core/{frontend,server,shared}/**/*.{js,jsx,ts}' '!../../ghost/core/core/frontend/public/*.min.js' '../../ghost/core/core/server/lib/email-rendering/partials/**/*.hbs' '../../ghost/core/core/server/services/email-service/email-templates/**/*.hbs' '../../ghost/core/core/server/services/comments/email-templates/**/*.hbs' '../../ghost/core/core/server/services/member-welcome-emails/email-templates/**/*.hbs' '../../ghost/core/core/server/services/gifts/**/*.{ts,hbs}'"
+    "translate:ghost": "NAMESPACE=ghost i18next '../../ghost/core/core/{frontend,server,shared}/**/*.{js,jsx,ts}' '!../../ghost/core/core/frontend/public/*.min.js'"
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
@@ -43,7 +43,6 @@
     "@internal/cfg-typescript": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "glob": "catalog:",
     "i18next-parser": "9.4.0",
     "typescript": "catalog:"
   },
@@ -52,9 +51,6 @@
     "reason": "Ships 3.5MB of runtime locale JSON that tsc cannot emit into build/, so files cannot be limited to [\"build\"]."
   },
   "nx": {
-    "tags": [
-      "i18n"
-    ],
     "targets": {
       "build": {
         "outputs": [

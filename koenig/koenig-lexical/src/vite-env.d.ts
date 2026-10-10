@@ -21,4 +21,3 @@ declare module '@tryghost/helpers' {
 }
 declare module 'pluralize';
 declare module 'react-slider';
-declare module 'react-highlight';

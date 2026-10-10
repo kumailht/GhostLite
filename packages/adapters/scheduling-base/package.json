@@ -31,7 +31,6 @@
   "devDependencies": {
     "@internal/cfg-typescript": "workspace:",
     "@types/node": "catalog:",
-    "@types/sinon": "catalog:",
     "@typescript/native": "catalog:",
     "typescript": "catalog:"
   },

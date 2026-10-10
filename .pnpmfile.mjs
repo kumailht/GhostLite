@@ -86,28 +86,6 @@ function readPackage(pkg) {
     delete pkg.dependencies?.['apache-arrow'];
   }
 
-  // these deps pull in typescript as an optional peer dep, which ends up
-  // being included in Ghost's production image because of the way pnpm hoists
-  // optional peers. We don't want to ship ts in the prod image so we delete
-  // it from the manifest
-  //
-  // NOTE: auto-install-peers: false doesn't solve the problem here unfortunately,
-  // and it causes more issues with other deps
-  if (['viem', 'ox', 'abitype'].includes(pkg.name)) {
-    delete pkg.peerDependencies?.typescript;
-    delete pkg.peerDependenciesMeta?.typescript;
-  }
-
-  // abitype's zod peer is only used by its `abitype/zod` subpath, which nothing
-  // in the tree imports. Left in place it peer-forks abitype and everything
-  // above it: mppx resolves that chain against zod 4 and @x402/* against zod 3,
-  // so ghost's production closure carried two identical copies of viem (~2.9k
-  // files each), ox and abitype.
-  if (pkg.name === 'abitype') {
-    delete pkg.peerDependencies?.zod;
-    delete pkg.peerDependenciesMeta?.zod;
-  }
-
   return pkg;
 }
 

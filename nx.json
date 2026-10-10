@@ -5,12 +5,8 @@
       "{projectRoot}/**/*",
       "sharedGlobals"
     ],
-    "reactAdminDependency": [
-      "default"
-    ],
     "sharedGlobals": [
       "{workspaceRoot}/.npmrc",
-      "{workspaceRoot}/ghost/tsconfig.json",
       "{workspaceRoot}/package.json",
       "{workspaceRoot}/pnpm-workspace.yaml",
       "{workspaceRoot}/pnpm-lock.yaml"
@@ -38,12 +34,6 @@
         "{projectRoot}/umd"
       ],
       "cache": true
-    },
-    "dev": {
-      "dependsOn": [
-        "^dev"
-      ],
-      "continuous": true
     }
   },
   "cacheDirectory": ".nxcache",

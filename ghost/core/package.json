@@ -47,10 +47,6 @@
     "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node scripts/minify-assets.mts",
     "build:assets:cards": "node scripts/build-card-assets.mts",
-    "generate-golden-email": "node bin/generate-golden-email.js",
-    "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
-    "migrate:create": "node bin/create-migration.js",
-    "migrate:rebuild-in-development-tables": "node --import=tsx bin/rebuild-in-development-tables.ts",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc"
   },
@@ -95,7 +91,6 @@
     "@tryghost/nodemailer": "2.3.16",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
-    "@tryghost/pretty-cli": "3.3.16",
     "@tryghost/request": "catalog:",
     "@tryghost/security": "3.3.16",
     "@tryghost/social-urls": "0.1.64",
@@ -111,7 +106,6 @@
     "bookshelf": "1.2.0",
     "bookshelf-relations": "3.0.0",
     "bson-objectid": "catalog:",
-    "chalk": "4.1.2",
     "charset": "1.0.1",
     "cheerio": "catalog:",
     "compression": "1.8.2",
@@ -142,7 +136,6 @@
     "image-size": "2.0.4",
     "intl-messageformat": "5.4.3",
     "ipaddr.js": "catalog:",
-    "jose": "catalog:",
     "js-yaml": "catalog:",
     "jsdom": "catalog:",
     "jsonc-parser": "catalog:",
@@ -190,9 +183,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@tryghost/express-test": "2.3.16",
     "@types/bookshelf": "1.2.9",
-    "@types/common-tags": "1.8.4",
     "@types/express": "catalog:",
     "@types/express-brute": "catalog:",
     "@types/fs-extra": "11.0.4",
@@ -200,33 +191,22 @@
     "@types/jsdom": "catalog:",
     "@types/jsonwebtoken": "9.0.10",
     "@types/lodash": "4.17.25",
-    "@types/lodash-es": "4.17.12",
     "@types/luxon": "catalog:",
     "@types/mime-types": "3.0.1",
     "@types/nconf": "catalog:",
     "@types/node": "catalog:",
     "@types/on-headers": "1.0.4",
     "@types/papaparse": "5.5.2",
-    "@types/probability-distributions": "catalog:",
     "@types/sanitize-html": "catalog:",
     "@types/semver": "catalog:",
-    "@types/sinon": "catalog:",
     "@types/stoppable": "catalog:",
     "@typescript/native": "catalog:",
-    "cli-progress": "3.12.0",
     "cssnano": "7.1.9",
     "esbuild": "catalog:",
-    "html-validate": "11.5.5",
-    "inquirer": "8.2.7",
-    "lodash-es": "4.18.1",
     "nodemon": "3.1.14",
     "postcss": "catalog:",
     "postcss-cli": "11.0.1",
-    "qs": "catalog:",
-    "sharp": "catalog:",
-    "tmp": "0.2.7",
-    "typescript": "catalog:",
-    "validator": "catalog:"
+    "typescript": "catalog:"
   },
   "overrides": {
     "cron-validate": "1.4.5"
@@ -236,18 +216,10 @@
     "node": "^22.23.1 || ^24.20.0"
   },
   "nx": {
-    "tags": [
-      "i18n"
-    ],
     "targets": {
       "build:tsc": {
         "dependsOn": [
           "^build"
-        ]
-      },
-      "dev": {
-        "dependsOn": [
-          "build:assets"
         ]
       }
     }

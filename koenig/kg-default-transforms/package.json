@@ -38,8 +38,6 @@
     "lexical": "0.13.1"
   },
   "devDependencies": {
-    "@lexical/headless": "0.13.1",
-    "@lexical/link": "0.13.1",
     "@typescript/native": "catalog:",
     "typescript": "catalog:"
   }

@@ -43,16 +43,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@lexical/headless": "0.13.1",
-    "@lexical/html": "0.13.1",
-    "@prettier/sync": "0.6.1",
-    "@types/jsdom": "catalog:",
-    "@types/lodash": "catalog:",
     "@types/luxon": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "html-minifier": "4.0.0",
-    "prettier": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {

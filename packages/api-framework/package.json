@@ -38,7 +38,6 @@
     "@internal/cfg-typescript": "workspace:*",
     "@types/lodash": "catalog:",
     "@types/node": "catalog:",
-    "@types/sinon": "catalog:",
     "@typescript/native": "catalog:",
     "typescript": "catalog:"
   },

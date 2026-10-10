@@ -33,7 +33,6 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "simple-dom": "1.4.0",
     "typescript": "catalog:"
   },
   "engines": {

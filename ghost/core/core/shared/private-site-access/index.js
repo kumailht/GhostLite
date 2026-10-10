@@ -6,7 +6,9 @@ const privateSession = session({
   name: 'ghost-private',
   maxAge: 30 * 24 * 60 * 60 * 1000,
   signed: false,
-  sameSite: 'none',
+  // Lax, not None: browsers drop SameSite=None cookies on plain HTTP, and
+  // nothing embeds the site cross-origin any more (that was for comments).
+  sameSite: 'lax',
 });
 
 function getAccessCode() {

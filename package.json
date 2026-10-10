@@ -9,9 +9,9 @@
   "scripts": {
     "bootstrap": "pnpm install && git submodule update --init --recursive",
     "dev": "pnpm build:admin && pnpm --filter ghost dev",
+    "start": "pnpm build:admin && pnpm --filter ghost start",
     "build": "pnpm nx run ghost:build:tsc && pnpm build:admin",
     "build:admin": "pnpm nx run ghost:build:assets && pnpm nx run @tryghost/admin:build",
-    "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "clean": "node scripts/clean.js"
   },
   "devDependencies": {

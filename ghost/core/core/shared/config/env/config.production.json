@@ -1,11 +1,8 @@
 {
   "database": {
-    "client": "mysql",
+    "client": "better-sqlite3",
     "connection": {
-      "host": "127.0.0.1",
-      "user": "root",
-      "password": "",
-      "database": "ghost"
+      "filename": "content/data/ghost.db"
     }
   },
   "paths": {
@@ -16,6 +13,6 @@
     "rotation": {
       "enabled": true
     },
-    "transports": ["file"]
+    "transports": ["stdout", "file"]
   }
 }

@@ -43,6 +43,7 @@
   },
   "scripts": {
     "dev": "nodemon index.js",
+    "start": "NODE_ENV=production node --conditions=source --import=tsx index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node scripts/minify-assets.mts",
     "build:assets:cards": "node scripts/build-card-assets.mts",
@@ -109,6 +110,7 @@
     "@tryghost/version": "2.3.16",
     "@tryghost/zip": "3.5.15",
     "archiver": "8.0.0",
+    "better-sqlite3": "catalog:",
     "body-parser": "catalog:",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "3.0.0",
@@ -188,6 +190,7 @@
     "terser": "5.48.0",
     "tiny-glob": "0.2.9",
     "tldts": "catalog:",
+    "tsx": "catalog:",
     "type-fest": "catalog:",
     "ua-parser-js": "1.0.41",
     "zod": "catalog:"
@@ -228,12 +231,8 @@
     "qs": "catalog:",
     "sharp": "catalog:",
     "tmp": "0.2.7",
-    "tsx": "catalog:",
     "typescript": "catalog:",
     "validator": "catalog:"
-  },
-  "optionalDependencies": {
-    "better-sqlite3": "catalog:"
   },
   "overrides": {
     "cron-validate": "1.4.5"

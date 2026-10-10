@@ -38,10 +38,10 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     onClose();
     confirm({
       title: 'Import in progress',
-      // CSV imports don't send a completion email yet, so don't promise one
+      // CSV imports don't report back yet, so don't promise a notice
       prompt: isCSV
         ? `Your import is being processed, and imported posts will appear on your site as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`
-        : `Your import is being processed, and you'll receive a confirmation email as soon as it’s complete. Usually this only takes a few minutes, but larger imports may take longer.`,
+        : `Your import is being processed. When it’s done, a notice with the result appears at the top of the admin (refresh to see it), and you’ll also get an email if email is set up. Usually this only takes a few minutes, but larger imports may take longer.`,
       cancelLabel: '',
       okLabel: 'Got it',
       onOk: (confirmModal) => confirmModal?.remove(),
@@ -171,7 +171,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       okLabel=""
       size={csvImport ? 'lg' : 'sm'}
       testId="universal-import-modal"
-      title={csvImport ? 'Map CSV fields' : 'Universal import'}
+      title={csvImport ? 'Map CSV fields' : 'Import content'}
       onClose={onClose}
     >
       <Stack className="py-4">
@@ -201,9 +201,9 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 'Reading import file...'
               ) : (
                 <>
-                  Select any {csvContentImporter ? 'JSON, zip or CSV' : 'JSON or zip'} file that
-                  contains <br />
-                  posts and settings
+                  Select a GhostLite or Ghost export ({csvContentImporter ? 'zip, JSON or CSV' : 'zip or JSON'})
+                  <br />
+                  with posts, uploads and settings
                 </>
               )}
             </div>

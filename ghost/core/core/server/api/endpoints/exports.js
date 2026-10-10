@@ -19,6 +19,7 @@ const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
+const adapterManager = require('../../services/adapter-manager').default;
 
 const postsService = getPostServiceInstance();
 
@@ -88,6 +89,13 @@ function createSiteExporter() {
         }),
         createPostsCSVTransform(),
       ),
+    listUploadDirectories: () =>
+      ['images', 'media', 'files']
+        .map((type) => ({
+          dir: adapterManager.getAdapter(`storage:${type}`).storagePath,
+          zipPath: `content/${type}`,
+        }))
+        .filter(({ dir }) => dir && fs.existsSync(dir)),
     listThemes: () => Object.keys(themeList.getAll()),
     zipTheme: zipThemeToTempFile,
     exportRoutesYaml: () => routeSettings.api.download(),

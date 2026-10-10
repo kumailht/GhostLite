@@ -5,12 +5,11 @@ const urlUtils = require('../../../shared/url-utils').default;
 const { GhostMailer } = require('../../lib/mail');
 const adapterManager = require('../../services/adapter-manager').default;
 const ImportManager = require('./import-manager');
-const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
-const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const { createContentFileHandlers, createContentFileImporters } = require('./content-files');
+const SiteFileRestorer = require('./site-files');
 
 let instance;
 
@@ -22,12 +21,34 @@ module.exports = {
     instance = new ImportManager({
       jobsService,
       importsStorage: adapterManager.getAdapter('storage:imports'),
-      handlers: [...createContentFileHandlers(), RevueHandler, JSONHandler, MarkdownHandler],
-      importers: [...createContentFileImporters(), RevueImporter, DataImporter],
+      handlers: [...createContentFileHandlers(), JSONHandler, MarkdownHandler],
+      importers: [...createContentFileImporters(), DataImporter],
       mailer: new GhostMailer(),
       config,
       urlUtils,
       logging,
+      // Required lazily: these services load the importer's own dependencies
+      siteFileRestorer: new SiteFileRestorer({
+        get themeService() {
+          return require('../../services/themes');
+        },
+        get routeSettings() {
+          return require('../../services/route-settings');
+        },
+        get customRedirects() {
+          return require('../../services/custom-redirects');
+        },
+        parseYaml: (content) =>
+          require('../../services/custom-redirects/redirect-config-parser').parseYaml(content),
+        get models() {
+          return require('../../models');
+        },
+      }),
+      notify: (notification) =>
+        require('../../api').endpoints.notifications.add(
+          { notifications: [notification] },
+          { context: { internal: true } },
+        ),
     });
     return instance;
   },

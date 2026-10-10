@@ -102,11 +102,16 @@ Ghost is running, use SQLite's backup command instead of copying the file:
 sqlite3 ghost/core/content/data/ghost.db ".backup ghost-backup.db"
 ```
 
-You can also export your posts, tags, and settings from **Settings → Migration
-tools** in the admin. The export doesn't include uploaded images, so keep a copy
-of `content/images/` as well. The same screen imports an export from GhostLite
-or from a full Ghost site; GhostLite brings in the posts and skips anything it
-doesn't support.
+You can also export the whole site from **Settings → Migration tools** in the
+admin: one zip with your posts, pages, uploads, settings, themes, routes and
+redirects (password hashes and the private-site access code are left out).
+Importing that zip on another GhostLite site restores all of it. The same screen
+imports exports from a full Ghost site too; GhostLite brings in the posts and
+skips anything it doesn't support.
+
+When an import finishes, a notice with the result appears at the top of the
+admin. A site with many uploads makes a large zip: if Ghost runs behind nginx,
+raise `client_max_body_size` so the import upload isn't rejected.
 
 ## Themes
 

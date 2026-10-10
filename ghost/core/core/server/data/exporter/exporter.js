@@ -55,6 +55,9 @@ const doExport = async function doExport(options) {
     tables.forEach((name, i) => {
       if (name === 'settings') {
         exportData.data[name] = getSettingsTableData(tableData[i]);
+      } else if (name === 'users' && tableData[i]) {
+        // Password hashes stay out of the file; imported staff get a new password anyway
+        exportData.data[name] = tableData[i].map(({ password: _password, ...user }) => user);
       } else {
         exportData.data[name] = tableData[i];
       }

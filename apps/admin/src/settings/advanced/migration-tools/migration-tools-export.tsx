@@ -1,31 +1,43 @@
 import ExportAllModal from './export-all-modal';
 import React from 'react';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { blobDownloadFromEndpoint } from '@tryghost/admin-x-framework/helpers';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { type ChecklistItem, MigrationChecklist } from './migration-checklist';
+
+const EXPORT_CHECKLIST: ChecklistItem[] = [
+  {
+    status: 'included',
+    label: 'Posts and pages, with their tags and authors',
+  },
+  {
+    status: 'included',
+    label: 'Images, video, audio and files you uploaded',
+  },
+  {
+    status: 'included',
+    label: 'Site settings and staff accounts',
+    note: 'without passwords',
+  },
+  {
+    status: 'optional',
+    label: 'Themes, routes and redirects',
+  },
+  {
+    status: 'optional',
+    label: 'Posts list as a spreadsheet (CSV)',
+  },
+  {
+    status: 'excluded',
+    label: 'Post revision history, integrations and API keys',
+  },
+  {
+    status: 'excluded',
+    label: 'Private-site access code',
+  },
+];
 
 const MigrationToolsExport: React.FC = () => {
-  const [isExportingPosts, setIsExportingPosts] = React.useState(false);
   const [exportAllOpen, setExportAllOpen] = React.useState(false);
-  const handleError = useHandleError();
-
-
-  const exportPosts = async () => {
-    if (isExportingPosts) {
-      return;
-    }
-
-    setIsExportingPosts(true);
-
-    try {
-      await blobDownloadFromEndpoint('/posts/export/?limit=1000', 'posts.analytics.csv');
-    } catch (e) {
-      handleError(e);
-    } finally {
-      setIsExportingPosts(false);
-    }
-  };
 
   return (
     <>
@@ -38,29 +50,10 @@ const MigrationToolsExport: React.FC = () => {
           onClick={() => setExportAllOpen(true)}
         >
           <LucideIcon.PackageOpen />
-          All data
-        </Button>
-        <Button
-          className="h-9 font-semibold"
-          data-testid="post-analytics-export-button"
-          disabled={isExportingPosts}
-          type="button"
-          variant="secondary"
-          onClick={() => void exportPosts()}
-        >
-          {isExportingPosts ? (
-            <>
-              <LoadingIndicator size="sm" />
-              <span className="sr-only">Loading...</span>
-            </>
-          ) : (
-            <>
-              <LucideIcon.TrendingUp />
-              Post analytics
-            </>
-          )}
+          Export site
         </Button>
       </div>
+      <MigrationChecklist items={EXPORT_CHECKLIST} title="What an export contains" />
       <ExportAllModal open={exportAllOpen} onOpenChange={setExportAllOpen} />
     </>
   );

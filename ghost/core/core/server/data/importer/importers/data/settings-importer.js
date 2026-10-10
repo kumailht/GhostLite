@@ -15,6 +15,12 @@ const defaultSettingsGroups = Object.fromEntries(
   ),
 );
 const ignoredSettings = [
+  // the private-site access code and switch are site-specific, so a restore
+  // never locks the site behind a code nobody knows
+  'password',
+  'is_private',
+  // activated after its theme is restored, so the site never points at a missing theme
+  'active_theme',
   'slack_url',
   'members_from_address',
   'members_support_address',
@@ -99,17 +105,7 @@ class SettingsImporter extends BaseImporter {
   beforeImport() {
     debug('beforeImport');
 
-    const activeTheme = _.find(this.dataToImport, { key: 'active_theme' });
-
-    // We don't import themes. You have to upload the theme first.
-    if (activeTheme) {
-      this.problems.push({
-        message: 'Theme not imported, please upload in Settings - Design',
-        help: this.modelName,
-        context: JSON.stringify(activeTheme),
-      });
-    }
-
+    // The active theme is restored with the export's themes (see site-files.js), not as a setting
     // Don't import any old, deprecated or excluded settings
     this.dataToImport = _.filter(this.dataToImport, (data) => {
       return !_.includes(ignoredSettings, data.key);

@@ -33,6 +33,14 @@ const replaceImage = function (markdown, image) {
 const preProcessPosts = function (data, contentFile) {
   _.each(data.posts, function (post) {
     post.markdown = replaceImage(post.markdown, contentFile);
+    // A file renamed on import (its name was taken) must be renamed in the
+    // editor content too; lexical and mobiledoc hold paths as plain strings
+    if (post.lexical) {
+      post.lexical = replaceImage(post.lexical, contentFile);
+    }
+    if (post.mobiledoc) {
+      post.mobiledoc = replaceImage(post.mobiledoc, contentFile);
+    }
     if (post.html) {
       post.html = replaceImage(post.html, contentFile);
     }

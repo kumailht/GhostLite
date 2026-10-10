@@ -8,7 +8,12 @@ type SyncExportComponent = (typeof SYNC_EXPORT_COMPONENTS)[number];
 export interface SiteExporterDeps {
   /** Full site JSON in the same shape the `/db/` download produces. */
   exportContent(): Promise<unknown>;
-  /** Post analytics CSV as a text stream (rows already serialized). */
+  /**
+   * Local upload folders and the path each sits at inside the zip. The paths
+   * match the site's `/content/...` URLs, which is what the importer reads.
+   */
+  listUploadDirectories(): Array<{ dir: string; zipPath: string }>;
+  /** Posts list CSV as a text stream (rows already serialized). */
   exportPostAnalyticsCSV(): Promise<NodeJS.ReadableStream>;
   /** Names of all installed themes. */
   listThemes(): string[];
@@ -103,12 +108,11 @@ export class SiteExporter {
           archive.append(JSON.stringify(data), { name: 'export.json' });
           break;
         }
+        case 'uploads':
+          this.#appendUploads(archive);
+          break;
         case 'analytics':
-          this.#appendStream(
-            archive,
-            await this.#deps.exportPostAnalyticsCSV(),
-            'post-analytics.csv',
-          );
+          this.#appendStream(archive, await this.#deps.exportPostAnalyticsCSV(), 'posts.csv');
           break;
         case 'themes':
           await this.#appendThemes(archive, cleanups);
@@ -153,6 +157,26 @@ export class SiteExporter {
     });
 
     archive.append(source, { name });
+  }
+
+  /**
+   * The uploaded images, video, audio and files, at the same `content/...`
+   * paths the site serves them from. Resized copies under `images/size/` are
+   * left out: Ghost regenerates them on request.
+   */
+  #appendUploads(archive: Archiver): void {
+    for (const { dir, zipPath } of this.#deps.listUploadDirectories()) {
+      if (archive.destroyed) {
+        return;
+      }
+
+      archive.directory(dir, zipPath, (entry) => {
+        if (zipPath.endsWith('images') && entry.name.startsWith('size/')) {
+          return false;
+        }
+        return entry;
+      });
+    }
   }
 
   /**

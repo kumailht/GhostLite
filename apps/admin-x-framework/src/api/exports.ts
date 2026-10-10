@@ -1,6 +1,6 @@
 import { blobDownloadFromEndpoint, type BlobDownloadOptions } from '../utils/helpers';
 
-export type SiteExportComponent = 'content' | 'analytics' | 'themes' | 'routes';
+export type SiteExportComponent = 'content' | 'uploads' | 'analytics' | 'themes' | 'routes';
 
 /**
  * Downloads the sync site export zip. Fetch-based rather than a plain

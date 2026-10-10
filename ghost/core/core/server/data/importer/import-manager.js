@@ -37,8 +37,14 @@ class ImportManager {
     config,
     urlUtils,
     logging,
+    siteFileRestorer,
+    notify,
   }) {
     this.jobsService = jobsService;
+    /** Restores themes, routes and redirects carried by an export zip */
+    this.siteFileRestorer = siteFileRestorer;
+    /** Posts an admin notification, so the result is visible without email */
+    this.notify = notify;
 
     /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
     this.importsStorage = importsStorage;
@@ -157,6 +163,29 @@ class ImportManager {
   }
 
   /**
+   * An export carries the site's uploads under `content/images`, `content/media`
+   * and `content/files`. Those folders belong to their own handler: an uploaded
+   * .json or .md file is not import data, and an image uploaded as a file is
+   * not an image to import.
+   * @param {Handler} handler
+   * @param {File[]} files
+   * @param {string} baseDir
+   * @returns {File[]}
+   */
+  filterUploadFolders(handler, files, baseDir) {
+    const prefix = baseDir ? `${baseDir}/` : '';
+    const uploadFolder = (file) => {
+      const match = file.name.slice(prefix.length).match(/^content\/(images|media|files)\//i);
+      return match ? match[1].toLowerCase() : null;
+    };
+
+    return files.filter((file) => {
+      const folder = uploadFolder(file);
+      return folder === null || folder === handler.type;
+    });
+  }
+
+  /**
    * Get the name of the single base directory if there is one, else return an empty string
    * @param {string} directory
    * @returns {string}
@@ -206,7 +235,11 @@ class ImportManager {
     const baseDir = this.getBaseDirectory(zipDirectory);
 
     for (const handler of this.handlers) {
-      const files = this.getFilesFromZip(handler, zipDirectory);
+      const files = this.filterUploadFolders(
+        handler,
+        this.getFilesFromZip(handler, zipDirectory),
+        baseDir,
+      );
 
       debug('handler', handler.type, files);
 
@@ -377,6 +410,56 @@ class ImportManager {
 
   /**
    * Import Step 6:
+   * Post an admin notification summarising the import. Never throws: a failed
+   * notification must not turn a finished import into a failed job.
+   * @param {Object} result
+   */
+  async notifyCompletion(result) {
+    if (!this.notify) {
+      return;
+    }
+
+    const escape = (text) => _.escape(String(text));
+    let type = 'info';
+    let message;
+
+    if (result?.data?.errors) {
+      const first = result.data.errors[0];
+      type = 'error';
+      message = `Your import failed: ${escape(first?.message || first?.context || 'unknown error')}`;
+    } else {
+      const counted = (items, one, many) =>
+        items?.length ? `${items.length} ${items.length === 1 ? one : many}` : null;
+      const original = result?.data?.originalData || {};
+      const uploads =
+        (result?.images?.length || 0) + (result?.media?.length || 0) + (result?.files?.length || 0);
+      const parts = [
+        counted(original.posts, 'post or page', 'posts and pages'),
+        uploads ? `${uploads} ${uploads === 1 ? 'upload' : 'uploads'}` : null,
+        ...(result?.siteFiles?.restored || []).map((label) => label.toLowerCase()),
+      ].filter(Boolean);
+      const problems = [...(result?.data?.problems || []), ...(result?.siteFiles?.problems || [])];
+
+      message = `Your import has finished${parts.length ? `: ${escape(parts.join(', '))}` : ''}.`;
+      if (problems.length) {
+        type = 'warn';
+        message += ` ${problems.length} ${problems.length === 1 ? 'item needs' : 'items need'} attention: ${escape(
+          problems
+            .slice(0, 3)
+            .map((problem) => problem.message)
+            .join('; '),
+        )}${problems.length > 3 ? '…' : ''}`;
+      }
+    }
+
+    try {
+      await this.notify({ type, message, custom: true, location: 'top' });
+    } catch (err) {
+      this.logging.warn(`[Background Job] site-content-import notification not added: ${err.message}`);
+    }
+  }
+
+  /**
    * Create an email to notify the user that the import has completed
    * @param {ImportResult} result
    * @param {Object} options
@@ -582,12 +665,25 @@ class ImportManager {
       // Step 1: Load the content to import
       loaded = await loadImport();
 
+      // Read before the importers run: the settings importer drops active_theme
+      const activeTheme =
+        loaded.data?.data?.data?.settings?.find((setting) => setting.key === 'active_theme')
+          ?.value ?? null;
+
       // Step 2: Let the importers pre-process the data
       const importData = await this.preProcess(loaded.data);
 
       // Step 3: Actually do the import
       // @TODO: It would be cool to have some sort of dry run flag here
       importResult = await this.doImport(importData, importOptions);
+
+      // Step 3b: Restore the themes, routes and redirects an export zip carries
+      if (this.siteFileRestorer && loaded.cleanupDirectory) {
+        importResult.siteFiles = await this.siteFileRestorer.restore(
+          loaded.cleanupDirectory,
+          activeTheme,
+        );
+      }
 
       // Step 4: Report on the import
       importResult = await this.generateReport(importResult);
@@ -602,18 +698,25 @@ class ImportManager {
       await this.cleanUp(loaded?.cleanupDirectory);
 
       if (!env?.startsWith('testing')) {
-        // Step 6: Send email
-        const email = this.generateCompletionEmail(importResult, {
-          emailRecipient: importOptions.user.email,
-          importTag: importOptions.importTag,
-        });
-        await this.mailer.send({
-          to: importOptions.user.email,
-          subject: importResult?.data?.errors
-            ? 'Your content import was unsuccessful'
-            : 'Your content import has finished',
-          html: email,
-        });
+        // Step 6: Tell the user how it went, in the admin and (when mail is set up) by email
+        await this.notifyCompletion(importResult);
+
+        try {
+          const email = this.generateCompletionEmail(importResult, {
+            emailRecipient: importOptions.user.email,
+            importTag: importOptions.importTag,
+          });
+          await this.mailer.send({
+            to: importOptions.user.email,
+            subject: importResult?.data?.errors
+              ? 'Your content import was unsuccessful'
+              : 'Your content import has finished',
+            html: email,
+          });
+        } catch (err) {
+          // Email is optional in GhostLite; the admin notification already carries the result
+          this.logging.warn(`[Background Job] site-content-import email not sent: ${err.message}`);
+        }
       }
     }
   }

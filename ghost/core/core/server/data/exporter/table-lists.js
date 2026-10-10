@@ -34,8 +34,9 @@ const TABLES_ALLOWLIST = [
 ];
 
 // NOTE: these are non-core settings keys which should never end up in the export file
-//       (the whole core group is always excluded)
-const SETTING_KEYS_BLOCKLIST = [];
+//       (the whole core group is always excluded). The private-site access code is a
+//       secret, and restoring `is_private` without it would lock the site.
+const SETTING_KEYS_BLOCKLIST = ['password', 'is_private'];
 
 module.exports = {
   BACKUP_TABLES,

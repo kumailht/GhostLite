@@ -14,6 +14,11 @@ declare module 'archiver' {
   export class Archiver extends Transform {
     append(source: Buffer | string | NodeJS.ReadableStream, data: EntryData): this;
     file(filepath: string, data: EntryData): this;
+    /**
+     * Adds a folder recursively under `destpath`. The callback sees each entry
+     * (its `name` is relative to `dirpath`) and returns `false` to skip it.
+     */
+    directory(dirpath: string, destpath: string, data?: (entry: EntryData) => EntryData | false): this;
     finalize(): Promise<void>;
   }
 

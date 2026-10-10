@@ -27,13 +27,13 @@ const EXPORT_COMPONENTS: ExportComponent[] = [
   {
     key: 'content',
     label: 'Content & settings',
-    description: 'Posts, pages, tags and settings (JSON)',
+    description: 'Posts, pages, tags, staff and settings',
     defaultChecked: true,
   },
   {
-    key: 'analytics',
-    label: 'Posts list',
-    description: 'Every post with its details (CSV)',
+    key: 'uploads',
+    label: 'Images & files',
+    description: 'Everything you uploaded: images, video, audio and files',
     defaultChecked: true,
   },
   {
@@ -47,6 +47,12 @@ const EXPORT_COMPONENTS: ExportComponent[] = [
     label: 'Redirects & routes',
     description: 'routes.yaml and redirects configuration',
     defaultChecked: true,
+  },
+  {
+    key: 'analytics',
+    label: 'Posts spreadsheet',
+    description: 'Every post with its details, as a CSV. Not used when importing',
+    defaultChecked: false,
   },
 ];
 
@@ -121,9 +127,9 @@ const ExportAllModal: React.FC<{
             <DialogHeader>
               <DialogTitle>Export data</DialogTitle>
               <DialogDescription>
-                Your export will be downloaded as a single zip file. Images, videos and files are
-                not included; back up <code>content/images</code> and the other upload folders
-                separately.
+                Your export downloads as a single zip file. Import it on any GhostLite site to
+                restore your posts, pages, uploads, settings and themes. Large sites can take a
+                while.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-1 py-1">

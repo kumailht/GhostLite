@@ -12,7 +12,7 @@ const MigrationTools: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   return (
     <TopLevelGroup
-      description="Import content or export your Ghost data."
+      description="Back up your whole site to one file, or restore one."
       keywords={keywords}
       navid="migration"
       testId="migrationtools"

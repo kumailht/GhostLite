@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -21,7 +21,6 @@ import {
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import { ErrorLine } from '@/editor/publish/components/failure-banner';
-import { reportShownAlert } from '@/editor/report-error';
 import { POST_DELETED, terminalSaveError } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
 
@@ -38,13 +37,6 @@ export interface SessionBannersProps {
   hasUnsavedContent: () => boolean;
   contentText: () => string;
   onReload: () => Promise<ReloadOutcome>;
-}
-
-// Once per banner the writer reads, not per render of it.
-function useShownAlert(message: string, error: SaveError): void {
-  useEffect(() => {
-    reportShownAlert(message, error);
-  }, [message, error]);
 }
 
 type ConflictBannerProps = Pick<
@@ -68,7 +60,6 @@ function ConflictBanner({
   const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
   const halt = stopped ? error : reloadFoundDeleted ? POST_DELETED : null;
   const message = halt ? halt.message : CONFLICT;
-  useShownAlert(message, halt ?? error);
 
   const reload = async () => {
     setConfirming(false);

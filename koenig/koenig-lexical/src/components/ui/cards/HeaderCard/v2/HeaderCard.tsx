@@ -46,10 +46,8 @@ export function HeaderCard({alignment,
     handleButtonColor,
     handleLayout,
     handleTextColor,
-    isPinturaEnabled,
     layout,
     onFileChange,
-    openImageEditor,
     imageDragHandler,
     headerTextEditor,
     headerTextEditorInitialState,
@@ -259,9 +257,7 @@ export function HeaderCard({alignment,
                             imgClassName={`${(correctedBackgroundSize === 'cover') && 'aspect-[3/2]'}`}
                             isEditing={isEditing}
                             isLoading={isLoading}
-                            isPinturaEnabled={isPinturaEnabled}
                             mimeTypes={['image/*']}
-                            openImageEditor={openImageEditor}
                             progress={progress}
                             size='large'
                             src={backgroundImageSrc}
@@ -464,10 +460,8 @@ export function HeaderCard({alignment,
                             imgClassName='w-full'
                             isDraggedOver={imageDragHandler?.isDraggedOver}
                             isLoading={isLoading}
-                            isPinturaEnabled={isPinturaEnabled}
                             label='Image'
                             mimeTypes={['image/*']}
-                            openImageEditor={openImageEditor}
                             placeholderRef={imageDragHandler?.setRef}
                             progress={progress}
                             setFileInputRef={setFileInputRef}
@@ -549,7 +543,6 @@ HeaderCard.propTypes = {
     textColor: PropTypes.string,
     showBackgroundImage: PropTypes.bool,
     isEditing: PropTypes.bool,
-    isPinturaEnabled: PropTypes.bool,
     fileUploader: PropTypes.object,
     fileInputRef: PropTypes.object,
     handleLayout: PropTypes.func,
@@ -564,7 +557,6 @@ HeaderCard.propTypes = {
     layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
     openFilePicker: PropTypes.func,
     onFileChange: PropTypes.func,
-    openImageEditor: PropTypes.func,
     imageDragHandler: PropTypes.object,
     headerTextEditor: PropTypes.object,
     headerTextEditorInitialState: PropTypes.object,

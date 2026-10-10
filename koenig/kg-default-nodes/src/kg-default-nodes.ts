@@ -6,7 +6,6 @@ import * as markdown from './nodes/markdown/MarkdownNode.js';
 import * as video from './nodes/video/VideoNode.js';
 import * as audio from './nodes/audio/AudioNode.js';
 import * as callout from './nodes/callout/CalloutNode.js';
-import * as callToAction from './nodes/call-to-action/CallToActionNode.js';
 import * as aside from './nodes/aside/AsideNode.js';
 import * as horizontalrule from './nodes/horizontalrule/HorizontalRuleNode.js';
 import * as html from './nodes/html/HtmlNode.js';
@@ -15,14 +14,8 @@ import * as button from './nodes/button/ButtonNode.js';
 import * as bookmark from './nodes/bookmark/BookmarkNode.js';
 import * as file from './nodes/file/FileNode.js';
 import * as header from './nodes/header/HeaderNode.js';
-import * as paywall from './nodes/paywall/PaywallNode.js';
-import * as product from './nodes/product/ProductNode.js';
 import * as embed from './nodes/embed/EmbedNode.js';
-import * as email from './nodes/email/EmailNode.js';
 import * as gallery from './nodes/gallery/GalleryNode.js';
-import * as emailCta from './nodes/email-cta/EmailCtaNode.js';
-import * as signup from './nodes/signup/SignupNode.js';
-import * as transistor from './nodes/transistor/TransistorNode.js';
 import * as textnode from './nodes/ExtendedTextNode.js';
 import * as headingnode from './nodes/ExtendedHeadingNode.js';
 import * as quotenode from './nodes/ExtendedQuoteNode.js';
@@ -49,15 +42,8 @@ export * from './nodes/button/ButtonNode.js';
 export * from './nodes/bookmark/BookmarkNode.js';
 export * from './nodes/file/FileNode.js';
 export * from './nodes/header/HeaderNode.js';
-export * from './nodes/paywall/PaywallNode.js';
-export * from './nodes/product/ProductNode.js';
 export * from './nodes/embed/EmbedNode.js';
-export * from './nodes/email/EmailNode.js';
 export * from './nodes/gallery/GalleryNode.js';
-export * from './nodes/email-cta/EmailCtaNode.js';
-export * from './nodes/signup/SignupNode.js';
-export * from './nodes/transistor/TransistorNode.js';
-export * from './nodes/call-to-action/CallToActionNode.js';
 export * from './nodes/ExtendedTextNode.js';
 export * from './nodes/ExtendedHeadingNode.js';
 export * from './nodes/ExtendedQuoteNode.js';
@@ -108,7 +94,6 @@ export const DEFAULT_NODES = [
     video.VideoNode,
     audio.AudioNode,
     callout.CalloutNode,
-    callToAction.CallToActionNode,
     aside.AsideNode,
     horizontalrule.HorizontalRuleNode,
     html.HtmlNode,
@@ -117,14 +102,8 @@ export const DEFAULT_NODES = [
     button.ButtonNode,
     header.HeaderNode,
     bookmark.BookmarkNode,
-    paywall.PaywallNode,
-    product.ProductNode,
     embed.EmbedNode,
-    email.EmailNode,
     gallery.GalleryNode,
-    emailCta.EmailCtaNode,
-    signup.SignupNode,
-    transistor.TransistorNode,
     tk.TKNode,
     atLink.AtLinkNode,
     atLink.AtLinkSearchNode,

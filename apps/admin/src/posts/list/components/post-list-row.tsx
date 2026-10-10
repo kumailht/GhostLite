@@ -5,21 +5,11 @@ import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
 import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
-  didPostEmailFail,
   getPostDateTooltip,
   getPostMetaParts,
   getPostStatusDetail,
   getPostStatusLabel,
 } from '@/posts/list/post-row-copy';
-import { hasPostAnalyticsPage, type PostMetricsSettings } from '@/posts/list/post-metrics';
-import { PostMetricsCells } from '@/posts/list/components/post-metrics-cells';
-import { PostListRowEmailStatus } from '@/posts/list/components/post-list-row-email-status';
-import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
-import {
-  hasInProgressEmail,
-  SETTLED_POST_LIST_ROW_EMAIL_STATUS,
-  type PostListRowEmailStatusState,
-} from '@/posts/list/components/post-list-row-email-status-state';
 import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
@@ -35,9 +25,6 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
    * published posts they can no longer edit.
    */
   isContributor?: boolean;
-  /** Owner or Administrator — the roles Ember's `isAdmin` covers. */
-  hasAdminAccess?: boolean;
-  paidMembersEnabled?: boolean;
   isSelected?: boolean;
   /** Capture-phase, so it beats the row's own link. */
   onSelectMouseDown?: (event: ReactMouseEvent, id: string) => void;
@@ -52,23 +39,15 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
    * These props are all primitives or ref-stable getters for the same reason.
    */
   getMenuItems: () => PostContextMenuItem[];
-  showGiftLink?: boolean;
   menuEnabled?: boolean;
   menuOnOpenChange?: (open: boolean) => void;
   menuOnAction?: (key: PostContextMenuKey) => void | Promise<void>;
-  metricsSettings: PostMetricsSettings;
-  visitorCounts?: Record<string, number>;
-  memberCounts?: Record<string, { free: number; paid: number }>;
-}
-
-interface PostListRowComponentProps extends PostListRowProps {
-  emailSendingState: PostListRowEmailStatusState;
 }
 
 /**
  * Status colour, following `app/styles/layouts/content.css`. Only three states
  * are coloured there — `.draft` pink (985), `.scheduled` green (992), `.error`
- * red (1017). Published and sent have **no** rule, so they inherit the muted
+ * red (1017). Published has **no** rule, so it inherits the muted
  * grey of `.gh-content-entry-status` (#99a3ad, ≈ `muted-foreground`). That is
  * most rows on a real site, so colouring them would change the whole feel of
  * the screen.
@@ -78,11 +57,7 @@ interface PostListRowComponentProps extends PostListRowProps {
  * use the aliases that resolve to the same values Ember's `var(--pink)` and
  * `var(--green)` do.
  */
-function statusTone(post: PostListItem, isFailed: boolean): string {
-  if (isFailed) {
-    return 'text-state-danger';
-  }
-
+function statusTone(post: PostListItem): string {
   switch (post.status) {
     case 'draft':
       return 'text-pink';
@@ -124,27 +99,20 @@ function FeatureImage({ post }: { post: PostListItem }) {
   );
 }
 
-const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
+const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
   function PostListRowComponent(
     {
       post,
       resource,
       timezone,
       isContributor,
-      hasAdminAccess,
-      paidMembersEnabled,
       isSelected,
       onSelectMouseDown,
       onSelectClick,
       getMenuItems,
-      showGiftLink,
       menuEnabled,
       menuOnOpenChange,
       menuOnAction,
-      metricsSettings,
-      visitorCounts,
-      memberCounts,
-      emailSendingState,
       // Everything else lands on the <li>: the context menu wraps each row with
       // `asChild`, so Radix hands its trigger props and ref straight through.
       ...rest
@@ -156,44 +124,20 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
 
     const metaParts = getPostMetaParts(post, { timezone });
     const dateTooltip = getPostDateTooltip(post, { timezone });
-    const statusLabel = getPostStatusLabel(post, resource);
-    const statusDetail = getPostStatusDetail(post, { timezone, resource });
-    const isFailed = didPostEmailFail(post, resource);
-    const displayedPost =
-      emailSendingState.status === 'failed'
-        ? ({ ...post, email: { ...post.email, status: 'failed' } } as PostListItem)
-        : post;
-    const displayedIsFailed = emailSendingState.status === 'failed' || isFailed;
-    const displayedStatusLabel =
-      emailSendingState.status === 'failed'
-        ? getPostStatusLabel(displayedPost, resource)
-        : statusLabel;
+    const statusLabel = getPostStatusLabel(post);
+    const statusDetail = getPostStatusDetail(post, { timezone });
 
-    // Strictly `published`, matching Ember's `isPublished`. An email-only
-    // `sent` post still opens in the editor for a contributor.
+    // Strictly `published`, matching Ember's `isPublished`.
     const isPublished = post.status === 'published';
     const editorType = resource === 'pages' ? 'page' : 'post';
     const linksOffsite = Boolean(isContributor && isPublished);
     const href = linksOffsite ? post.url : `#/editor/${editorType}/${post.id}`;
 
-    const goesToAnalytics = hasPostAnalyticsPage(
-      post,
-      metricsSettings,
-      resource,
-      Boolean(hasAdminAccess),
-    );
-    const action = goesToAnalytics
-      ? {
-          href: `#/posts/analytics/${post.id}`,
-          label: 'Post analytics',
-          external: false,
-          Icon: LucideIcon.ChartNoAxesColumn,
-        }
-      : linksOffsite
-        ? // "View post" on both resources, as Ember hardcodes it. Only ever
-          // reached by a contributor, who has no page access anyway.
-          { href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight }
-        : { href, label: 'Edit', external: false, Icon: LucideIcon.Pen };
+    const action = linksOffsite
+      ? // "View post" on both resources, as Ember hardcodes it. Only ever
+        // reached by a contributor, who has no page access anyway.
+        { href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight }
+      : { href, label: 'Edit', external: false, Icon: LucideIcon.Pen };
 
     const row = (
       <li
@@ -270,55 +214,25 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 </Text>
               )}
 
-              {emailSendingState.status === 'sending' ? (
-                <EmailSendingStatusLine
-                  announce={false}
-                  className="text-sm"
-                  line={emailSendingState.line}
-                />
-              ) : (
-                <Text
-                  className={statusTone(displayedPost, displayedIsFailed)}
-                  size="sm"
-                  weight={
-                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
-                      ? 'medium'
-                      : 'regular'
-                  }
-                >
-                  {displayedStatusLabel}
-                  {/* Mounted only while hovered, as Ember does. A CSS
-                                  opacity fade would keep it in the DOM, so a screen
-                                  reader would read every scheduled row's full
-                                  dispatch details aloud, always. */}
-                  {emailSendingState.status !== 'failed' && isHovered && statusDetail && (
-                    <span> {statusDetail}</span>
-                  )}
-                </Text>
-              )}
+              <Text
+                className={statusTone(post)}
+                size="sm"
+                weight={post.status === 'draft' || post.status === 'scheduled' ? 'medium' : 'regular'}
+              >
+                {statusLabel}
+                {/* Mounted only while hovered, as Ember does. A CSS
+                    opacity fade would keep it in the DOM, so a screen
+                    reader would read every scheduled row's details
+                    aloud, always. */}
+                {isHovered && statusDetail && <span> {statusDetail}</span>}
+              </Text>
             </Stack>
           </a>
-          <PostMetricsCells
-            className="py-4"
-            hideEmailMetrics={emailSendingState.status === 'sending'}
-            memberCounts={memberCounts}
-            paidMembersEnabled={paidMembersEnabled}
-            post={post}
-            resource={resource}
-            settings={metricsSettings}
-            visitorCounts={visitorCounts}
-          />
           {/* Always visible so the action stays discoverable and remains
                     available on touch devices. */}
           <Tooltip delayDuration={1000}>
             <TooltipTrigger asChild>
               <Button
-                // The 32px margin on top of the row's gap separates
-                // the action from the analytics figures beside it. It is an
-                // action rather than another figure, so it needs to read as
-                // separate from the run of metrics.
-                // Margin rather than a wider row gap, which would push the
-                // title away from the metrics too.
                 className={cn(
                   'my-4 shrink-0',
                   isAdmin7 ? 'ms-8' : 'ms-2',
@@ -353,34 +267,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       <PostsContextMenu
         enabled={menuEnabled ?? false}
         getItems={getMenuItems}
-        showGiftLink={showGiftLink ?? false}
         onAction={menuOnAction ?? (() => {})}
         onOpenChange={menuOnOpenChange ?? (() => {})}
       >
         {row}
       </PostsContextMenu>
-    );
-  },
-);
-
-const PostListRowWithEmailStatus = forwardRef<HTMLLIElement, PostListRowProps>(
-  function PostListRowWithEmailStatus(props, ref) {
-    if (hasInProgressEmail(props.post, props.resource)) {
-      return (
-        <PostListRowEmailStatus post={props.post}>
-          {(emailSendingState) => (
-            <PostListRowComponent ref={ref} {...props} emailSendingState={emailSendingState} />
-          )}
-        </PostListRowEmailStatus>
-      );
-    }
-
-    return (
-      <PostListRowComponent
-        ref={ref}
-        {...props}
-        emailSendingState={SETTLED_POST_LIST_ROW_EMAIL_STATUS}
-      />
     );
   },
 );
@@ -394,4 +285,4 @@ const PostListRowWithEmailStatus = forwardRef<HTMLLIElement, PostListRowProps>(
  * Every prop is either a primitive or memoised upstream; `metricsSettings` in
  * particular is built with `useMemo` for this reason.
  */
-export const PostListRow = memo(PostListRowWithEmailStatus);
+export const PostListRow = memo(PostListRowComponent);

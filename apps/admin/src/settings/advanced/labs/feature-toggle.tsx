@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import trackEvent from '@/settings/utils/analytics';
 import { type ConfigResponseType, configDataType } from '@tryghost/admin-x-framework/api/config';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { Switch } from '@tryghost/shade/components';
@@ -89,7 +88,6 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({ label, flag, disabled, co
           value: JSON.stringify({ ...labs, [flag]: newValue }),
         },
       ]);
-      trackEvent('Feature Toggled', { state: newValue ? 'on' : 'off', feature: flag });
       client.setQueriesData({ queryKey: [configDataType] }, (current) => ({
         config: {
           ...(current as ConfigResponseType).config,

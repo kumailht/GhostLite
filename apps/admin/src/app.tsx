@@ -9,14 +9,12 @@ import {
   createAlertsStore,
   useServerNotifications,
 } from './alerts';
-import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
 import { useGlobalShortcuts } from './global-shortcuts/global-shortcuts';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { useDocumentTitle } from './hooks/use-document-title';
 import { usePrivateSiteLogin } from './hooks/use-private-site-login';
 import { SignedOutApp, useAuthNotice } from './auth/api';
-import { useSentry } from './sentry';
 import { BootError, BootLoader } from './boot-states';
 
 function App() {
@@ -26,7 +24,6 @@ function App() {
   const isSignedOut = !currentUser && errorUpdatedAt > 0;
   const bootError = !currentUser && error && !(error instanceof UnauthorizedError) ? error : null;
   const [alerts] = useState(createAlertsStore);
-  useSentry();
   // Warm the settings cache at boot (as the removed AppProvider did): screens
   // hold on settings, and resolving it before routes mount keeps route guards
   // (e.g. force-upgrade) ahead of screen-level data fetches.
@@ -45,7 +42,6 @@ function App() {
       {currentUser ? (
         <AdminLayout>
           <Outlet />
-          <ClientExtensionScript />
         </AdminLayout>
       ) : bootError ? (
         <BootError error={bootError} />

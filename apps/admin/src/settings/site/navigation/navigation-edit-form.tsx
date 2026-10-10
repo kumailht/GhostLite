@@ -19,8 +19,6 @@ const NavigationEditForm: React.FC<{
   navigation: NavigationEditor;
   loadSuggestions: (term: string) => Promise<SuggestionGroup[]>;
   showIcon: boolean;
-  showPaidVisibility: boolean;
-  showVisibility: boolean;
   suggestionsEnabled: boolean;
   uploadIcon?: (file: File) => Promise<string | undefined>;
 }> = ({
@@ -29,14 +27,12 @@ const NavigationEditForm: React.FC<{
   navigation,
   loadSuggestions,
   showIcon,
-  showPaidVisibility,
-  showVisibility,
   suggestionsEnabled,
   uploadIcon,
 }) => {
   return (
     <div className="w-full pt-2">
-      {(showIcon || showVisibility) && (
+      {showIcon && (
         <div className="-mb-1 flex w-full items-center gap-3">
           <div className={navigationDragHandleSpacerClasses} />
           <div className={navigationRowClasses}>
@@ -45,11 +41,6 @@ const NavigationEditForm: React.FC<{
             )}
             <div className={`${navigationColumnClasses.label} ${columnLabelClasses}`}>Label</div>
             <div className={`${navigationColumnClasses.url} ${columnLabelClasses}`}>URL</div>
-            {showVisibility && (
-              <div className={`${navigationColumnClasses.visibility} ${columnLabelClasses}`}>
-                Visibility
-              </div>
-            )}
             <div className={navigationColumnClasses.action} />
           </div>
         </div>
@@ -78,8 +69,6 @@ const NavigationEditForm: React.FC<{
             item={item}
             loadSuggestions={loadSuggestions}
             showIcon={showIcon}
-            showPaidVisibility={showPaidVisibility}
-            showVisibility={showVisibility}
             suggestionsEnabled={suggestionsEnabled}
             updateItem={(updates) => navigation.updateItem(item.id, updates)}
             uploadIcon={uploadIcon}
@@ -117,8 +106,6 @@ const NavigationEditForm: React.FC<{
           labelPlaceholder="New item label"
           loadSuggestions={loadSuggestions}
           showIcon={showIcon}
-          showPaidVisibility={showPaidVisibility}
-          showVisibility={showVisibility}
           suggestionsEnabled={suggestionsEnabled}
           updateItem={navigation.setNewItem}
           uploadIcon={uploadIcon}

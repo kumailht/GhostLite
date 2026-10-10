@@ -199,7 +199,7 @@ export const useKoenigFileUpload = (
     } catch (error) {
       console.error(error); // eslint-disable-line
 
-      // The API wraps some errors (e.g. HostLimitError) with a generic
+      // The API wraps some errors with a generic
       // message and puts the specific, user-actionable text in `context`.
       // Prefer `context` so the user sees the useful message, falling back
       // to `message` for errors that don't set a context.

@@ -37,7 +37,6 @@ import { createLocalRevisionWriter } from '@/editor/local-revisions';
 import {
   reportEditorError,
   reportEditorNotice,
-  reportLeaveConfirmation,
   reportSaveFailure,
 } from '@/editor/report-error';
 import { contentToText } from './content-text';
@@ -277,7 +276,6 @@ export function useEditorSession({
       },
       onError: reportEditorError,
       onSaveFailed: (failure) => reportSaveFailure(failure, postType),
-      onLeaveConfirmed: (leave) => reportLeaveConfirmation(leave, postType),
       localRevisions: createLocalRevisionWriter({
         type: postType,
         storage: () => window.localStorage,

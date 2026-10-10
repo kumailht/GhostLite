@@ -2,7 +2,6 @@ import { useCallback, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
-import type { Offer } from '@tryghost/admin-x-framework/api/offers';
 import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import {
@@ -10,11 +9,7 @@ import {
   type SearchIndexKey,
   searchIndexQueryOptions,
 } from '@/shared/search-index';
-import {
-  type AutocompleteLink,
-  buildAutocompleteLinks,
-  buildOfferLinks,
-} from '@/shared/autocomplete-links';
+import { buildAutocompleteLinks } from '@/shared/autocomplete-links';
 import {
   type LatestPostSource,
   type LinkSearchGroup,
@@ -30,16 +25,10 @@ import {
 export interface PostLinkSuggestionOptions {
   postType: PostType;
   homepageUrl: string;
-  paidMembersEnabled: boolean;
-  donationsEnabled: boolean;
-  recommendationsEnabled: boolean;
-  membersSignupAccess?: string;
-  membersEnabled: boolean;
   timezone: string;
 }
 
 interface SuggestionCache {
-  offerLinks?: Promise<AutocompleteLink[]>;
   latestPosts?: Promise<LinkSearchGroup[]>;
 }
 
@@ -53,11 +42,6 @@ const isPost = (item: SearchIndexItem): item is SearchIndexItem & SearchIndexPos
 export function usePostLinkSuggestions({
   postType,
   homepageUrl,
-  paidMembersEnabled,
-  donationsEnabled,
-  recommendationsEnabled,
-  membersSignupAccess,
-  membersEnabled,
   timezone,
 }: PostLinkSuggestionOptions) {
   const fetchApi = useFetchApi();
@@ -78,46 +62,12 @@ export function usePostLinkSuggestions({
     [fetchApi, queryClient],
   );
 
-  const fetchAutocompleteLinks = useCallback(async () => {
-    // Only active signup offers belong in link dropdowns: archived offers are
-    // gone and retention offers only surface in cancellation flows
-    cache.current.offerLinks ??= fetchApi<{ offers?: Offer[] }>(
-      apiUrl('/offers/', { filter: 'status:active+redemption_type:signup' }),
-      EDITOR_REQUEST_OPTIONS,
-    )
-      .then((response) => buildOfferLinks(response.offers ?? [], homepageUrl))
-      .catch(() => {
-        delete cache.current.offerLinks;
-        return [];
-      });
-
-    const offerLinks = await cache.current.offerLinks;
-
-    return buildAutocompleteLinks(
-      {
-        postType,
-        homepageUrl,
-        paidMembersEnabled,
-        donationsEnabled,
-        recommendationsEnabled,
-        membersSignupAccess,
-      },
-      offerLinks,
-    );
-  }, [
-    fetchApi,
-    postType,
-    homepageUrl,
-    paidMembersEnabled,
-    donationsEnabled,
-    recommendationsEnabled,
-    membersSignupAccess,
-  ]);
-
-  const decorationSettings = useMemo(
-    () => ({ timezone, membersEnabled }),
-    [timezone, membersEnabled],
+  const fetchAutocompleteLinks = useCallback(
+    async () => buildAutocompleteLinks({ postType, homepageUrl }),
+    [postType, homepageUrl],
   );
+
+  const decorationSettings = useMemo(() => ({ timezone }), [timezone]);
 
   const searchLinks = useCallback(
     async (term?: string): Promise<LinkSearchGroup[]> => {

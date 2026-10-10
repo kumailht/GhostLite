@@ -2,23 +2,10 @@ import useSortableIndexedList from '@/settings/hooks/use-sortable-indexed-list';
 import validator from 'validator';
 import { useCallback, useMemo } from 'react';
 
-export const NAVIGATION_ITEM_VISIBILITY = [
-  'public',
-  'members',
-  'paid',
-  'public_free',
-  'public_paid',
-  'public_only',
-  'free_members',
-  'none',
-] as const;
-export type NavigationItemVisibility = (typeof NAVIGATION_ITEM_VISIBILITY)[number];
-
 export type NavigationItem = {
   label: string;
   url: string;
   icon?: string;
-  visibility?: NavigationItemVisibility;
 };
 
 export type NavigationItemErrors = { [key in keyof NavigationItem]?: string };
@@ -41,15 +28,13 @@ export type NavigationEditor = {
 const normalizeItem = (item: NavigationItem) => ({
   ...item,
   icon: item.icon || '',
-  visibility: item.visibility || 'public',
   errors: {},
 });
 
-const serializeItem = ({ url, label, icon, visibility }: NavigationItem): NavigationItem => ({
+const serializeItem = ({ url, label, icon }: NavigationItem): NavigationItem => ({
   url: url.trim(),
   label: label.trim(),
   ...(icon?.trim() ? { icon: icon.trim() } : {}),
-  ...(visibility && visibility !== 'public' ? { visibility } : {}),
 });
 
 const useNavigationEditor = ({
@@ -80,7 +65,7 @@ const useNavigationEditor = ({
   const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
     items: editableItems,
     setItems: setNavigationItems,
-    blank: { url: blankUrl, label: '', icon: '', visibility: 'public', errors: {} },
+    blank: { url: blankUrl, label: '', icon: '', errors: {} },
     canAddNewItem: hasNewItem,
   });
 
@@ -100,10 +85,6 @@ const useNavigationEditor = ({
       (!validator.isURL(item.url, { require_protocol: true }) && !item.url.match(urlRegex))
     ) {
       errors.url = 'You must specify a valid URL or relative path';
-    }
-
-    if (item.visibility && !NAVIGATION_ITEM_VISIBILITY.includes(item.visibility)) {
-      errors.visibility = 'You must specify a valid visibility';
     }
 
     return errors;

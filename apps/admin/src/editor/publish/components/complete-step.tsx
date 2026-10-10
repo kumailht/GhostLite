@@ -1,20 +1,13 @@
 import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
-import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
-import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   publishBackToDashboard,
   publishFlowComplete,
   publishRevertToDraft,
 } from '@/editor/selectors';
 import { PostBookmark } from './post-bookmark';
-import {
-  formatScheduledCompletion,
-  formatSiteDateTime,
-  recipientsConfirmLabel,
-} from '@/editor/publish/publish-copy';
+import { formatScheduledCompletion } from '@/editor/publish/publish-copy';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import type { PublishFlow } from '@/editor/publish/use-publish-flow';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
@@ -25,7 +18,7 @@ export interface CompleteStepProps {
   captured: PublishFlow['captured'];
   timezone: string;
   siteTitle?: string;
-  /** Published-post total including this one; null for pages, schedules and email-only. */
+  /** Published-post total including this one; null for pages and schedules. */
   postCount: number | null;
   /** When the publish landed, standing in for the publish time the server stamped. */
   completedAt: string | null;
@@ -65,16 +58,10 @@ export function CompleteStep({
   completedAt,
   onRevertToDraft,
 }: CompleteStepProps) {
-  const { count } = useMembersCount(state.fullRecipientFilter, {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  const emailOnly = captured.willOnlyEmail;
   // A schedule publishes at the chosen time; anything else just published.
   const publishedAt = captured.isScheduled
     ? state.scheduledAt
     : (completedAt ?? post.publishedAt ?? state.scheduledAt);
-
-  const deliveryVerb = emailOnly ? 'sent' : captured.willEmail ? 'published and sent' : 'published';
 
   return (
     <Stack data-testid={publishFlowComplete} gap="xl">
@@ -82,15 +69,13 @@ export function CompleteStep({
         {captured.isScheduled ? (
           <>
             <span className="block text-state-success">All set!</span> Your{' '}
-            {emailOnly ? 'email' : post.displayName} will be {deliveryVerb}{' '}
+            {post.displayName} will be published{' '}
             {formatScheduledCompletion(publishedAt, timezone)}.
           </>
         ) : (
           <>
             <span className="block text-state-success">Boom. It’s out there. </span>
-            {emailOnly ? (
-              'Your email has been sent.'
-            ) : post.displayName === 'post' && postCount ? (
+            {post.displayName === 'post' && postCount ? (
               <>
                 That’s {formatNumber(postCount)} {postCount === 1 ? 'post' : 'posts'} published,
                 keep going!
@@ -102,43 +87,21 @@ export function CompleteStep({
         )}
       </Text>
 
-      {emailOnly ? (
-        <Stack gap="xl">
-          <Text className="text-pretty" size="lg">
-            Your post {captured.isScheduled ? 'will be' : 'was'} sent to{' '}
-            <strong>
-              {recipientsConfirmLabel({
-                recipientType: getRecipientType(state.recipientFilter),
-                count,
-              })}
-            </strong>
-            {state.onlyDefaultNewsletter ? null : (
-              <>
-                {' '}
-                of <strong>{state.newsletter?.name}</strong>
-              </>
-            )}{' '}
-            on {formatSiteDateTime(publishedAt, timezone)}.
-          </Text>
-          {captured.isScheduled ? <RevertToDraft onRevertToDraft={onRevertToDraft} /> : null}
-        </Stack>
-      ) : (
-        <Stack gap="xl">
-          <PostBookmark post={post} siteTitle={siteTitle} />
-          {captured.isScheduled ? (
-            <RevertToDraft onRevertToDraft={onRevertToDraft} />
-          ) : (
-            <Inline>
-              <Button className="px-5" size="lg" variant="secondary" asChild>
-                <a data-testid={publishBackToDashboard} href="#/posts">
-                  <LucideIcon.ArrowLeft />
-                  Back to posts
-                </a>
-              </Button>
-            </Inline>
-          )}
-        </Stack>
-      )}
+      <Stack gap="xl">
+        <PostBookmark post={post} siteTitle={siteTitle} />
+        {captured.isScheduled ? (
+          <RevertToDraft onRevertToDraft={onRevertToDraft} />
+        ) : (
+          <Inline>
+            <Button className="px-5" size="lg" variant="secondary" asChild>
+              <a data-testid={publishBackToDashboard} href="#/posts">
+                <LucideIcon.ArrowLeft />
+                Back to posts
+              </a>
+            </Button>
+          </Inline>
+        )}
+      </Stack>
     </Stack>
   );
 }

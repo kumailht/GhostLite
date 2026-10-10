@@ -7,14 +7,12 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
 import {
   editorHeaderActions,
   editorPublishInputsError,
 } from '@/editor/selectors';
 import type { PostType } from './card-config';
-import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { PostPreviewModal, type PostPreviewModalProps } from './preview/post-preview-modal';
 import { postPreviewUrl } from './preview/preview-url';
 import { PublishFlowModal } from './publish/publish-flow-modal';
@@ -22,7 +20,6 @@ import { UpdateFlowModal } from './publish/update-flow-modal';
 import type { PublishFlowPost } from './publish/flow-post';
 import { CompletionFailureError, describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
-import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import type { InvalidField } from './session/settings-fields';
 import type { EditorSessionHandle } from './session/use-editor-session';
@@ -185,8 +182,6 @@ export interface EditorHeaderActionsProps {
   /** Held by the screen, because the status line opens the publish flow too. */
   openFlow: OpenFlow;
   onOpenFlow: (flow: OpenFlow) => void;
-  /** Whether the status line offers a failed send's retry, which needs the publish inputs. */
-  offersEmailRetry: boolean;
   /** Takes the writer to the field an explicit save would refuse, and returns it. */
   revealInvalidField: () => InvalidField | null;
   /** The editor's bottom bar, which holds the controls below the small breakpoint. */
@@ -206,7 +201,6 @@ export function EditorHeaderActions({
   tkCount,
   openFlow,
   onOpenFlow,
-  offersEmailRetry,
   revealInvalidField,
   bottomBar: bottomBarSlot,
 }: EditorHeaderActionsProps) {
@@ -317,7 +311,6 @@ export function EditorHeaderActions({
           feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
-          offersEmailRetry={offersEmailRetry}
           openFlow={openFlow}
           post={post}
           preview={preview}
@@ -342,7 +335,6 @@ interface PublishActionsProps {
   tkCount: number;
   isDraft: boolean;
   isSaving: boolean;
-  offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
   /** The draft's Preview, which comes first. */
@@ -366,7 +358,6 @@ function PublishActions({
   tkCount,
   isDraft,
   isSaving,
-  offersEmailRetry,
   openFlow,
   preview,
   previewItem,
@@ -377,17 +368,11 @@ function PublishActions({
 }: PublishActionsProps) {
   const navigate = useNavigate();
   const inputs = usePublishInputs();
-  const limits = usePublishLimits();
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
-  const paywallImprovements = useFeatureFlag('paywallImprovements', {
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
   const [openedFromPreview, setOpenedFromPreview] = useState(false);
-  const [, setFlowNewsletterSlug] = useState<string>();
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -448,11 +433,7 @@ function PublishActions({
   );
   const publishFromPreview = useCallback(() => {
     const invalid = session.invalidField();
-    // The subject is edited in the preview, which names its rule beside it, so the
-    // preview stays open; any other field is behind it and is refused once it closes.
-    if (invalid?.key === 'email_subject') {
-      return;
-    }
+    // The field is behind the preview, so it is refused once the preview closes.
     if (invalid) {
       refuseOnPreviewClose.current = true;
       setPreviewOpen(false);
@@ -467,12 +448,10 @@ function PublishActions({
   // button is the only way into the flow from there.
   usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
 
-  // Ember routes a sent post to the update flow from its status line, not the header.
-  const offersUpdateFlow = !isDraft && post.status !== 'sent';
-  const sentOpensUpdateFlow = post.status === 'sent' && post.email?.status !== 'failed';
+  const offersUpdateFlow = !isDraft;
 
-  // Publish, Unpublish, Unschedule and the status line's Sent and retry open nothing until these load.
-  const inputsBlockActions = isDraft || offersUpdateFlow || sentOpensUpdateFlow || offersEmailRetry;
+  // Publish, Unpublish and Unschedule open nothing until these load.
+  const inputsBlockActions = isDraft || offersUpdateFlow;
 
   // An input read that found the session gone asks for sign-in in place, as a save
   // does, and reads again once the writer is back. It asks once per failure: a
@@ -586,22 +565,16 @@ function PublishActions({
         <PublishFlowModal
           animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
-          limits={limits}
-          paywallImprovements={paywallImprovements}
           post={post}
-          requestReauth={requestReauth}
           showCompletion={false}
-          site={inputs.site}
           siteTitle={siteTitle}
           timezone={inputs.timezone}
           tkCount={tkCount}
-          user={inputs.user}
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
           onCompleted={() => {
             navigate(post.displayName === 'page' ? '/pages' : '/posts');
           }}
-          onNewsletterChange={setFlowNewsletterSlug}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />
@@ -611,9 +584,7 @@ function PublishActions({
         <UpdateFlowModal
           dispatch={session.dispatchPublish}
           post={post}
-          site={inputs.site}
           timezone={inputs.timezone}
-          user={inputs.user}
           onClose={closeFlow}
           onReverted={showReverted}
         />

@@ -6,7 +6,7 @@ import { tagIdentities } from '@/shared/tags/tag-selection';
 import type { EditorCreatePayload } from './write-payload';
 
 /**
- * The projection keys settings and the email subject editor may write. Slug, status and publish
+ * The projection keys settings may write. Slug, status and publish
  * time are absent on purpose: the slug machine and the save engine's command
  * target own them, and a field patch would be dropped before the request.
  */
@@ -14,10 +14,7 @@ export const SETTINGS_FIELD_KEYS = [
   'tags',
   'authors',
   'custom_excerpt',
-  'email_subject',
   'featured',
-  'visibility',
-  'tiers',
   'meta_title',
   'meta_description',
   'canonical_url',
@@ -43,14 +40,11 @@ export type EditorSettingsPatch = Partial<
   show_title_and_feature_image?: boolean;
 };
 
-export const TIERS_REQUIRED = 'Please select at least one tier.';
-
 /** Ember's post validator refuses an empty author list (validators/post.js). */
 export const AUTHORS_REQUIRED = 'At least one author is required.';
 
 /**
- * What a settings field writes. Tags and authors travel as identity alone; a
- * tier relation travels as the record the field holds, and the API reads its id.
+ * What a settings field writes. Tags and authors travel as identity alone.
  */
 export function identityFor<Key extends SettingsFieldKey>(
   key: Key,
@@ -68,9 +62,6 @@ export function identityFor(
   if (key === 'tags') {
     return tagIdentities(fields.tags);
   }
-  if (key === 'tiers') {
-    return [...fields.tiers];
-  }
   // The flag is a page's; a null is a record that carries none, never a write —
   // the patch type admits only a boolean for it.
   if (key === 'show_title_and_feature_image') {
@@ -83,8 +74,6 @@ export function identityFor(
 export const TITLE_MAX = 255;
 export const EXCERPT_MAX = 300;
 export const CODE_INJECTION_MAX = 65535;
-export const EMAIL_SUBJECT_MAX = 300;
-export const EMAIL_SUBJECT_TOO_LONG = `Email subject cannot be longer than ${EMAIL_SUBJECT_MAX} characters.`;
 export const META_TITLE_MAX = 300;
 export const META_DESCRIPTION_MAX = 500;
 export const OG_TITLE_MAX = 300;
@@ -110,13 +99,6 @@ export function titleError(title: string): string | null {
   return isLength(title.trim(), { max: TITLE_MAX }) ? null : TITLE_TOO_LONG;
 }
 
-/** `visibility: 'tiers'` with no tiers: the write contract drops the pair. */
-export function tiersIncomplete(
-  fields: Pick<EditorSettingsFields, 'visibility' | 'tiers'>,
-): boolean {
-  return fields.visibility === 'tiers' && fields.tiers.length === 0;
-}
-
 /** Ember's post validator refuses the same publish time (validators/post.js). */
 export const PUBLISHED_AT_MUST_BE_PAST = 'Please choose a past date and time.';
 
@@ -140,9 +122,6 @@ export function overLength(value: string | null, max: number): boolean {
 
 /** The settings keys the validator reads, and all a prepared save carries for it. */
 export const VALIDATED_SETTINGS_FIELD_KEYS = [
-  'email_subject',
-  'visibility',
-  'tiers',
   'custom_excerpt',
   'codeinjection_head',
   'codeinjection_foot',
@@ -167,10 +146,9 @@ export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSet
 
 /** The width each text field is held to, and what it says when it is past it. */
 const LENGTH_RULES: Record<
-  Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers' | 'canonical_url'>,
+  Exclude<ValidatedSettingsFieldKey, 'canonical_url'>,
   { max: number; message: string }
 > = {
-  email_subject: { max: EMAIL_SUBJECT_MAX, message: EMAIL_SUBJECT_TOO_LONG },
   custom_excerpt: { max: EXCERPT_MAX, message: EXCERPT_TOO_LONG },
   codeinjection_head: { max: CODE_INJECTION_MAX, message: CODE_INJECTION_HEAD_TOO_LONG },
   codeinjection_foot: { max: CODE_INJECTION_MAX, message: CODE_INJECTION_FOOT_TOO_LONG },
@@ -187,13 +165,6 @@ export function settingsFieldErrorFor(
   key: ValidatedSettingsFieldKey,
   fields: ValidatedSettingsFields,
 ): string | null {
-  // The tier pairing is one rule over two fields, and the tier field carries it.
-  if (key === 'visibility') {
-    return null;
-  }
-  if (key === 'tiers') {
-    return tiersIncomplete(fields) ? TIERS_REQUIRED : null;
-  }
   // Ember's post validator (validators/post.js): unless blank, it starts with `/` or a
   // scheme and holds no whitespace.
   if (key === 'canonical_url') {
@@ -219,18 +190,13 @@ export interface InvalidField {
   message: string;
 }
 
-/**
- * The first settings field that breaks its rule, in the post validator's order.
- * A post the server has not created yet is not held to the tier rule
- * (validators/post.js `isNew`); its write leaves the pair out instead.
- */
+/** The first settings field that breaks its rule, in the post validator's order. */
 function invalidSettingsField(
   fields: ValidatedSettingsFields,
-  isNew: boolean,
   skip: ReadonlyArray<ValidatedSettingsFieldKey>,
 ): InvalidField | null {
   for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
-    if ((isNew && key === 'tiers') || skip.includes(key)) {
+    if (skip.includes(key)) {
       continue;
     }
     const message = settingsFieldErrorFor(key, fields);
@@ -244,11 +210,10 @@ function invalidSettingsField(
 /** The first rule the settings fields break, worded as the save refuses it. */
 export function settingsFieldError(
   fields: ValidatedSettingsFields,
-  isNew: boolean,
   /** Fields the save leaves for a later one, whose rules wait for it. */
   skip: ReadonlyArray<ValidatedSettingsFieldKey> = [],
 ): string | null {
-  return invalidSettingsField(fields, isNew, skip)?.message ?? null;
+  return invalidSettingsField(fields, skip)?.message ?? null;
 }
 
 /** What one save would write, as far as the validator reads it. */
@@ -256,8 +221,6 @@ export interface DocumentUnderValidation {
   /** Null for a save that leaves the title for Update. */
   title: string | null;
   fields: ValidatedSettingsFields;
-  /** A draft the server has not created yet. */
-  isNew: boolean;
   /** Fields the save leaves for a later one, whose rules wait for it. */
   skip?: ReadonlyArray<ValidatedSettingsFieldKey>;
   /** The status and publish time the save writes, when its publish time is not the saved one. */
@@ -276,7 +239,7 @@ export function invalidField(document: DocumentUnderValidation): InvalidField | 
   if (title) {
     return { key: 'title', message: title };
   }
-  const settings = invalidSettingsField(document.fields, document.isNew, document.skip ?? []);
+  const settings = invalidSettingsField(document.fields, document.skip ?? []);
   if (settings) {
     return settings;
   }

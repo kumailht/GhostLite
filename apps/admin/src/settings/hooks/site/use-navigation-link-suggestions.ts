@@ -1,11 +1,9 @@
-import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
-import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useCallback, useMemo, useRef } from 'react';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { buildAutocompleteLinks, buildOfferLinks } from '@/shared/autocomplete-links';
+import { buildAutocompleteLinks } from '@/shared/autocomplete-links';
 import {
   type Suggestion,
   type SuggestionGroup,
@@ -46,27 +44,7 @@ const matches = (suggestion: Suggestion, term: string) => {
 
 const useNavigationLinkSuggestions = () => {
   const enabled = useFeatureFlag('navigationUrlSuggestions');
-  const { config, settings, siteData } = useGlobalData();
-
-  const [paidMembersEnabled = false, donationsEnabled = false, recommendationsEnabled = false] =
-    getSettingValues<boolean>(settings, [
-      'paid_members_enabled',
-      'donations_enabled',
-      'recommendations_enabled',
-    ]);
-  const [membersSignupAccess = 'all'] = getSettingValues<string>(settings, [
-    'members_signup_access',
-  ]);
-
-  // Paid signup, plan changes, gifts and tips all go through Stripe checkout,
-  // so they need Stripe connected, as in membership-settings.tsx and
-  // portal-links.tsx
-  const stripeEnabled = checkStripeEnabled(settings, config);
-
-  // Offers need paid membership with Stripe, so there's nothing to fetch otherwise
-  const { data: offersData } = useBrowseOffers({
-    enabled: enabled && paidMembersEnabled && stripeEnabled,
-  });
+  const { siteData } = useGlobalData();
 
   const fetchApi = useFetchApi();
   const searchIndex = useRef<Partial<Record<SearchIndexKey, Promise<SearchIndexPost[]>>>>({});
@@ -97,41 +75,12 @@ const useNavigationLinkSuggestions = () => {
   );
 
   const staticGroups = useMemo<SuggestionGroup[]>(() => {
-    const homepageUrl = getHomepageUrl(siteData);
-
-    const links = buildAutocompleteLinks(
-      {
-        homepageUrl,
-        paidMembersEnabled: paidMembersEnabled && stripeEnabled,
-        donationsEnabled: donationsEnabled && stripeEnabled,
-        recommendationsEnabled,
-        membersSignupAccess,
-      },
-      [],
-    );
-
-    // Keep every active signup offer here; the five-result cap is applied
-    // after search, so typing still finds offers past the first five
-    const offers = (offersData?.offers || []).filter(
-      (offer) => offer.status === 'active' && offer.redemption_type === 'signup',
-    );
+    const links = buildAutocompleteLinks({ homepageUrl: getHomepageUrl(siteData) });
 
     return [
-      { label: 'Links', items: links },
-      { label: 'Offers', items: buildOfferLinks(offers, homepageUrl) },
-    ].map((group) => ({
-      ...group,
-      items: group.items.map((item) => ({ ...item, description: item.value })),
-    }));
-  }, [
-    donationsEnabled,
-    membersSignupAccess,
-    offersData?.offers,
-    paidMembersEnabled,
-    recommendationsEnabled,
-    siteData,
-    stripeEnabled,
-  ]);
+      { label: 'Links', items: links.map((item) => ({ ...item, description: item.value })) },
+    ];
+  }, [siteData]);
 
   const loadSuggestions = useCallback(
     async (term: string): Promise<SuggestionGroup[]> => {
@@ -170,14 +119,10 @@ const useNavigationLinkSuggestions = () => {
         { label: 'Posts', items: toItems(posts) },
       ];
 
-      const filteredStaticGroups = staticGroups.map((group) => {
-        const items = term ? group.items.filter((item) => matches(item, term)) : group.items;
-        return {
-          ...group,
-          // Offers only: Links are few enough to show in full
-          items: group.label === 'Offers' ? items.slice(0, CONTENT_LIMIT) : items,
-        };
-      });
+      const filteredStaticGroups = staticGroups.map((group) => ({
+        ...group,
+        items: term ? group.items.filter((item) => matches(item, term)) : group.items,
+      }));
 
       return [...filteredStaticGroups, ...contentGroups].filter((group) => group.items.length > 0);
     },

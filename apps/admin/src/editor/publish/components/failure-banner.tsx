@@ -1,16 +1,10 @@
 import type { ComponentProps } from 'react';
 import { Banner } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { LimitMessage } from './limit-message';
 import type { CompletionFailure } from '@/editor/publish/completion-message';
 
-/** A failure's copy, with a host limit's upgrade phrase rendered as a link. */
 export function FailureMessage({ failure }: { failure: CompletionFailure }) {
-  if (!failure.parts) {
-    return <>{failure.message}</>;
-  }
-
-  return <LimitMessage parts={failure.parts} />;
+  return <>{failure.message}</>;
 }
 
 /** An error's copy behind a warning icon, the icon level with its first line. */

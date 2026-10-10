@@ -1,13 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
-import { getNewsletterRecipientFilter } from '@tryghost/admin-x-framework/utils/recipient-filter';
-import { newslettersSearchParams } from './browse-params';
-import { scheduledRecipientAudience } from './post-status';
 import { postPreviewUrl } from './preview/preview-url';
-import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { describeRevertToast, describeSaveToast, type SaveToast } from './save-toast';
 import { useSiteTimezone } from './use-editor-settings';
 import { useSmallScreen } from './use-small-screen';
@@ -21,20 +14,6 @@ let saveToastSeq = 0;
 
 /** How long a save button reads as saved before it returns to its label. */
 export const SAVE_STATUS_DURATION_MS = 2500;
-
-function scheduledAudienceOf(record: EditorRecord | undefined) {
-  if (!record || !('newsletter' in record) || !record.newsletter) {
-    return null;
-  }
-
-  const audience = scheduledRecipientAudience({
-    newsletter: record.newsletter,
-    hasEmail: !!record.email,
-    emailSegment: record.email_segment,
-  });
-
-  return audience ? { ...audience, newsletter: record.newsletter } : null;
-}
 
 function savedRecordOf(completion: SaveCompletion): EditorRecord | undefined {
   if (completion.kind !== 'saved' || !('post' in completion.result)) {
@@ -85,31 +64,7 @@ interface SaveFeedbackSources {
 export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackSources) {
   const smallScreen = useSmallScreen();
   const timezone = useSiteTimezone();
-  const audience = scheduledAudienceOf(session.loadedRecord);
-  const { count } = useMembersCount(audience?.filter ?? null, {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const { data: newslettersData } = useBrowseNewsletters({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: newslettersSearchParams(currentUser),
-    enabled: audience !== null && currentUser !== undefined,
-  });
-  const activeNewsletters = (newslettersData?.newsletters ?? []).filter(
-    (newsletter) => newsletter.status === 'active',
-  ).length;
-
-  const sources = {
-    smallScreen,
-    session,
-    displayName,
-    siteUrl,
-    timezone,
-    audience,
-    count,
-    hasMultipleNewsletters: activeNewsletters > 1,
-  };
+  const sources = { smallScreen, session, displayName, siteUrl, timezone };
   const latest = useRef(sources);
   latest.current = sources;
   const lastToastId = useRef<string | null>(null);
@@ -137,17 +92,6 @@ export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackS
 
     const current = latest.current;
     const record = savedRecordOf(completion) ?? current.session.loadedRecord;
-    const savedAudience = scheduledAudienceOf(record);
-    const recipients = savedAudience
-      ? membersCountString(savedAudience.segment, {
-          count: savedAudience.filter === current.audience?.filter ? current.count : undefined,
-          newsletter: {
-            name: savedAudience.newsletter.name,
-            recipientFilter: getNewsletterRecipientFilter(savedAudience.newsletter),
-          },
-          hasMultipleNewsletters: current.hasMultipleNewsletters,
-        })
-      : null;
     const described = describeSaveToast({
       displayName: current.displayName,
       previousStatus,
@@ -156,8 +100,6 @@ export function useSaveFeedback({ session, displayName, siteUrl }: SaveFeedbackS
       previewUrl: postPreviewUrl(current.siteUrl, record?.uuid),
       publishedAt: record?.published_at,
       timezone: current.timezone,
-      emailOnly: !!record && 'email_only' in record && record.email_only === true,
-      recipients,
     });
 
     if (described) {

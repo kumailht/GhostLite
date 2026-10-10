@@ -2,51 +2,35 @@ import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
-import { useEffect, useState } from 'react';
-import {
-  publicPreviewWarningDialog,
-  publishFlowModal,
-  publishFlowPreview,
-  tkReminderDialog,
-} from '@/editor/selectors';
+import { useState } from 'react';
+import { publishFlowModal, publishFlowPreview, tkReminderDialog } from '@/editor/selectors';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { CompleteStep } from './components/complete-step';
 import { ConfirmStep } from './components/confirm-step';
 import { GateDialog } from './components/gate-dialog';
 import { OptionsStep } from './components/options-step';
-import { PUBLIC_PREVIEW_WARNING_COPY, getPublicPreviewWarning } from './public-preview-warning';
 import { usePublishFlow } from './use-publish-flow';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
-import type { PublishLimitPorts, PublishSiteInput, PublishUserInput } from './publish-options';
 
 export interface PublishFlowModalProps {
   post: PublishFlowPost;
   animate?: boolean;
   /** Disable when onCompleted navigates, keeping the pending step visible until it unmounts. */
   showCompletion?: boolean;
-  site: PublishSiteInput;
-  user: PublishUserInput;
-  limits?: PublishLimitPorts;
   /** The publish machine's clock, injected for tests. */
   now?: () => Date;
   timezone: string;
   siteTitle?: string;
   /** Gates the flow behind a reminder when the body still has TK markers. */
   tkCount?: number;
-  /** The `paywallImprovements` lab; the public-preview gate is off without it. */
-  paywallImprovements?: boolean;
   /** The caller supplies the save engine's dispatch. */
   dispatch: PublishDispatcher;
-  /** Asks the writer to sign in again; resolves true once they have. */
-  requestReauth?: () => Promise<boolean>;
   onBeforePublish?: () => Promise<void>;
   onClose: () => void;
-  /** Hears the flow's selected newsletter while it is open, and `undefined` once it closes. */
-  onNewsletterChange?: (slug: string | undefined) => void;
   onPreview?: () => void;
   onRevertToDraft?: () => void;
-  onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
+  onCompleted?: (info: { postId: string; isScheduled: boolean }) => void;
 }
 
 export function PublishFlowModal({ post, ...props }: PublishFlowModalProps) {
@@ -58,28 +42,18 @@ function KeyedPublishFlowModal({
   post,
   animate = true,
   showCompletion,
-  site,
-  user,
-  limits,
   now,
   timezone,
   siteTitle,
   tkCount = 0,
-  paywallImprovements = false,
   dispatch,
-  requestReauth,
   onBeforePublish,
   onClose,
-  onNewsletterChange,
   onPreview,
   onRevertToDraft,
   onCompleted,
 }: PublishFlowModalProps) {
   const [gatesPassed, setGatesPassed] = useState(false);
-  const previewWarning = paywallImprovements ? getPublicPreviewWarning(post) : null;
-
-  // Ember checks the TK gate first and only reaches the preview warning when
-  // there are no TKs, so the two never stack.
   if (!gatesPassed && tkCount > 0) {
     return (
       <GateDialog
@@ -97,82 +71,49 @@ function KeyedPublishFlowModal({
     );
   }
 
-  if (!gatesPassed && previewWarning) {
-    return (
-      <GateDialog
-        testId={publicPreviewWarningDialog}
-        title={PUBLIC_PREVIEW_WARNING_COPY[previewWarning].title}
-        onBack={onClose}
-        onContinue={() => setGatesPassed(true)}
-      >
-        {PUBLIC_PREVIEW_WARNING_COPY[previewWarning].body}
-      </GateDialog>
-    );
-  }
-
   return (
     <PublishFlowDialog
       animate={animate}
       dispatch={dispatch}
-      limits={limits}
       now={now}
       post={post}
-      requestReauth={requestReauth}
       showCompletion={showCompletion}
-      site={site}
       siteTitle={siteTitle}
       timezone={timezone}
-      user={user}
       onBeforePublish={onBeforePublish}
       onClose={onClose}
       onCompleted={onCompleted}
-      onNewsletterChange={onNewsletterChange}
       onPreview={onPreview}
       onRevertToDraft={onRevertToDraft}
     />
   );
 }
 
-type PublishFlowDialogProps = Omit<PublishFlowModalProps, 'tkCount' | 'paywallImprovements'>;
+type PublishFlowDialogProps = Omit<PublishFlowModalProps, 'tkCount'>;
 
 function PublishFlowDialog({
   post,
   animate = true,
   showCompletion,
-  site,
-  user,
-  limits,
   now,
   timezone,
   siteTitle,
   dispatch,
-  requestReauth,
   onBeforePublish,
   onClose,
-  onNewsletterChange,
   onPreview,
   onRevertToDraft,
   onCompleted,
 }: PublishFlowDialogProps) {
   const flow = usePublishFlow({
     post,
-    site,
-    user,
-    limits,
     now,
     dispatch,
-    requestReauth,
     showCompletion,
     onBeforePublish,
     onCompleted,
   });
   const { state, step } = flow;
-  const newsletterSlug = state.newsletter?.slug;
-
-  useEffect(() => {
-    onNewsletterChange?.(newsletterSlug);
-    return () => onNewsletterChange?.(undefined);
-  }, [newsletterSlug, onNewsletterChange]);
 
   // While the publish request is in flight, closing would abandon its outcome
   // unseen: a publish that lands would never navigate and one that fails would
@@ -204,7 +145,7 @@ function PublishFlowDialog({
                 <Button disabled={flow.publishInFlight} variant="ghost" onClick={close}>
                   Close
                 </Button>
-                {flow.emailErrorMessage || !onPreview ? null : (
+                {onPreview ? (
                   <Button
                     className="w-20 shrink-0"
                     data-testid={publishFlowPreview}
@@ -213,7 +154,7 @@ function PublishFlowDialog({
                   >
                     Preview
                   </Button>
-                )}
+                ) : null}
               </>
             )}
           </PageHeader.ActionGroup>
@@ -233,7 +174,6 @@ function PublishFlowDialog({
             />
           ) : step === 'confirm' ? (
             <ConfirmStep
-              captured={flow.captured}
               failure={flow.failure}
               post={post}
               state={state}
@@ -244,12 +184,9 @@ function PublishFlowDialog({
             />
           ) : (
             <OptionsStep
-              limitsChecked={flow.limitsChecked}
-              limitsFailure={flow.limitsFailure}
               state={state}
               timezone={timezone}
               onContinue={flow.toConfirm}
-              onRetryLimits={flow.retryLimits}
               onSetScheduledAt={flow.setScheduledAt}
               onToggleScheduled={flow.setIsScheduled}
             />

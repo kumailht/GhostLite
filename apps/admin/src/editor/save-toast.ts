@@ -23,16 +23,12 @@ export interface SaveToastInput {
   previewUrl: string;
   publishedAt?: string | null;
   timezone: string;
-  emailOnly: boolean;
-  /** Who a scheduled newsletter reaches, as count copy; null when none goes out. */
-  recipients: string | null;
 }
 
 const SUCCESS_MESSAGES: Partial<Record<PostStatus, Partial<Record<PostStatus, string>>>> = {
-  published: { published: 'Updated', draft: 'Saved', scheduled: 'Scheduled', sent: 'Sent' },
-  draft: { published: 'Published', draft: 'Saved', scheduled: 'Scheduled', sent: 'Sent' },
-  scheduled: { scheduled: 'Updated', draft: 'Unscheduled', published: 'Published', sent: 'Sent' },
-  sent: { sent: 'Updated' },
+  published: { published: 'Updated', draft: 'Saved', scheduled: 'Scheduled' },
+  draft: { published: 'Published', draft: 'Saved', scheduled: 'Scheduled' },
+  scheduled: { scheduled: 'Updated', draft: 'Unscheduled', published: 'Published' },
 };
 
 function capitalize(value: string): string {
@@ -58,17 +54,8 @@ function scheduledToast({
   previewUrl,
   publishedAt,
   timezone,
-  emailOnly,
-  recipients,
 }: SaveToastInput): SaveToast {
-  const description: ToastText[] = [{ text: emailOnly ? 'Will be sent' : 'Will be published' }];
-
-  if (recipients !== null) {
-    description.push(
-      { text: emailOnly ? ' to ' : ' and delivered to ' },
-      { text: recipients, strong: true },
-    );
-  }
+  const description: ToastText[] = [{ text: 'Will be published' }];
 
   if (publishedAt) {
     const time = moment.tz(publishedAt, timezone);

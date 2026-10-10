@@ -1,4 +1,3 @@
-import { ErrorBoundary as SentryErrorBoundary } from '@sentry/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, createContext, useContext, useMemo } from 'react';
 import queryClient from '../utils/query-client';
@@ -15,20 +14,6 @@ export type InternalLink = {
   route: string;
   replace?: boolean;
 };
-
-// Stats-specific configuration
-export interface StatsConfig {
-  endpoint?: string;
-  endpointBrowser?: string;
-  id?: string;
-  token?: string;
-  version?: string;
-  local?: {
-    enabled?: boolean;
-    endpoint?: string;
-    token?: string;
-  };
-}
 
 export interface FrameworkProviderProps {
   ghostVersion: string;
@@ -95,11 +80,9 @@ export function FrameworkProvider({
   }, [queryClientOverride]);
 
   return (
-    <SentryErrorBoundary>
-      <QueryClientProvider client={client}>
-        <FrameworkContext.Provider value={props}>{children}</FrameworkContext.Provider>
-      </QueryClientProvider>
-    </SentryErrorBoundary>
+    <QueryClientProvider client={client}>
+      <FrameworkContext.Provider value={props}>{children}</FrameworkContext.Provider>
+    </QueryClientProvider>
   );
 }
 

@@ -2,7 +2,6 @@ import {
   APIError,
   EmailError,
   ErrorResponse,
-  HostLimitError,
   JSONError,
   MaintenanceError,
   RequestEntityTooLargeError,
@@ -57,8 +56,6 @@ const handleResponse = async (
       throw new ValidationError(response, data);
     } else if (data.errors?.[0]?.type === 'ThemeValidationError') {
       throw new ThemeValidationError(response, data);
-    } else if (data.errors?.[0]?.type === 'HostLimitError') {
-      throw new HostLimitError(response, data);
     } else if (data.errors?.[0]?.type === 'EmailError') {
       throw new EmailError(response, data);
     } else {

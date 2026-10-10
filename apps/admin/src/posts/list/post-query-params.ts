@@ -34,7 +34,6 @@ export const POSTS_PER_PAGE = 30;
 export interface PostListParams {
   type?: string | null;
   featured?: string | null;
-  visibility?: string | null;
   author?: string | null;
   tag?: string | null;
   order?: string | null;
@@ -85,8 +84,7 @@ function statusClause(statuses: PostStatus[]): string {
 
 /**
  * Joins `key:value` pairs with `+`, dropping blanks. Values are interpolated
- * verbatim - `visibility=[paid,tiers]` is an opaque option value, not
- * structure to be parsed.
+ * verbatim.
  *
  * "Blank" matches Ember's `isBlank`, which counts whitespace-only strings, so
  * `?tag=%20%20` produces no clause in either implementation. These strings are
@@ -104,7 +102,7 @@ function toFilterString(clauses: Array<[string, string | null | undefined]>): st
 }
 
 /**
- * Clause order is fixed (tag, visibility, status, featured, authors) so filters
+ * Clause order is fixed (tag, status, featured, authors) so filters
  * built here compare equal to the ones Ember builds.
  */
 function filterClauses(
@@ -114,7 +112,6 @@ function filterClauses(
 ): Array<[string, string | null | undefined]> {
   return [
     ['tag', params.tag],
-    ['visibility', params.visibility],
     ['status', statusClause(statuses)],
     ['featured', getFeaturedValue(params)],
     ['authors', ownAuthorSlug || params.author],
@@ -177,7 +174,7 @@ export function getBucketOrder(bucket: PostBucket, order?: string | null): strin
  *
  * `include` is omitted on purpose: with neither `include` nor `columns` set,
  * the server's `defaultRelations` attaches exactly what the list renders -
- * tags, authors, authors.roles, email, tiers, newsletter, count.clicks
+ * tags and authors
  * (`ghost/core/.../serializers/input/posts.js:81`). Sending `columns` would
  * *disable* that, so don't.
  *

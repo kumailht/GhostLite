@@ -1,5 +1,4 @@
 import NavigationIconUpload from './navigation-icon-upload';
-import NavigationVisibilityDropdown from './navigation-visibility-dropdown';
 import React, { type ReactNode } from 'react';
 import UrlSuggestionInput, { type SuggestionGroup } from './url-suggestion-input';
 import clsx from 'clsx';
@@ -31,8 +30,6 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
   action?: ReactNode;
   addItem?: () => void;
   showIcon: boolean;
-  showPaidVisibility: boolean;
-  showVisibility: boolean;
   suggestionsEnabled: boolean;
 };
 
@@ -92,8 +89,6 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({
   textFieldClasses,
   action,
   showIcon,
-  showPaidVisibility,
-  showVisibility,
   suggestionsEnabled,
   className,
   ...props
@@ -187,23 +182,6 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({
           {item.errors.url && <FieldError>{item.errors.url}</FieldError>}
         </Field>
       </div>
-      {showVisibility && (
-        <div
-          className={clsx(
-            'flex flex-col',
-            navigationColumnClasses.visibility,
-            navigationFieldOffsetClass,
-          )}
-        >
-          <NavigationVisibilityDropdown
-            clearError={clearError}
-            idPrefix={idPrefix}
-            item={item}
-            showPaidVisibility={showPaidVisibility}
-            updateItem={updateItem}
-          />
-        </div>
-      )}
       {action && (
         <Inline
           align="center"

@@ -1,6 +1,4 @@
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
-import type { RequestOptions } from '../utils/api/fetch-api';
-import { Config } from './config';
 
 // Types
 
@@ -32,8 +30,7 @@ export const useBrowseSettings = createQuery<SettingsResponseType>({
   dataType,
   path: '/settings/',
   defaultSearchParams: {
-    group:
-      'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor',
+    group: 'site,theme,private,labs,unsplash,views,security',
   },
 });
 
@@ -82,16 +79,6 @@ export const useRegenerateAccessCode = createMutation<SettingsResponseType, null
   },
 });
 
-export const useDeleteStripeSettings = createMutation<unknown, null>({
-  method: 'DELETE',
-  path: () => '/settings/stripe/connect/',
-  invalidateQueries: { dataType },
-});
-
-export const useTestSlack = createMutation<unknown, null>({
-  method: 'POST',
-  path: () => '/slack/test/',
-});
 
 // Helpers
 
@@ -131,85 +118,4 @@ export function isSettingReadOnly(
   }
   const setting = settings.find((d) => d.key === key);
   return setting?.is_read_only || false;
-}
-
-// Selectors
-//
-// Named hooks for the settings the Admin UI gates on. Each returns `undefined`
-// while the settings query has no data (the TanStack `data` contract), so
-// callers can tell "not loaded yet" from a settled `false`.
-
-export interface SettingsSelectorOptions {
-  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
-}
-
-function useSettings({ requestOptions }: SettingsSelectorOptions = {}): Setting[] | undefined {
-  const { data } = useBrowseSettings({ requestOptions });
-  return data?.settings;
-}
-
-export function usePaidMembersEnabled(options?: SettingsSelectorOptions): boolean | undefined {
-  const settings = useSettings(options);
-  if (!settings) {
-    return undefined;
-  }
-  return getSettingValue<boolean>(settings, 'paid_members_enabled') ?? false;
-}
-
-export function useNewslettersEnabled(options?: SettingsSelectorOptions): boolean | undefined {
-  const settings = useSettings(options);
-  if (!settings) {
-    return undefined;
-  }
-  return getSettingValue(settings, 'editor_default_email_recipients') !== 'disabled';
-}
-
-export function useMembersTrackSources(): boolean | undefined {
-  const settings = useSettings();
-  if (!settings) {
-    return undefined;
-  }
-  return getSettingValue<boolean>(settings, 'members_track_sources') ?? false;
-}
-
-export function useEmailTrackOpens(): boolean | undefined {
-  const settings = useSettings();
-  if (!settings) {
-    return undefined;
-  }
-  return getSettingValue<boolean>(settings, 'email_track_opens') ?? false;
-}
-
-export function useEmailTrackClicks(): boolean | undefined {
-  const settings = useSettings();
-  if (!settings) {
-    return undefined;
-  }
-  return getSettingValue<boolean>(settings, 'email_track_clicks') ?? false;
-}
-
-// Single source of truth for the web analytics kill-switch. Unlike the
-// selectors above this is a strict boolean: unresolved settings count as off,
-// so data hooks (e.g. Tinybird) never query before the switch is known.
-export function useWebAnalyticsEnabled(): boolean {
-  const settings = useSettings();
-  if (!settings) {
-    return false;
-  }
-  return getSettingValue<boolean>(settings, 'web_analytics_enabled') === true;
-}
-
-export function checkStripeEnabled(settings: Setting[], config: Config) {
-  const hasSetting = (key: string) =>
-    settings.some((setting) => setting.key === key && setting.value);
-
-  const hasDirectKeys = hasSetting('stripe_secret_key') && hasSetting('stripe_publishable_key');
-  const hasConnectKeys =
-    hasSetting('stripe_connect_secret_key') && hasSetting('stripe_connect_publishable_key');
-
-  if (config.stripeDirect) {
-    return hasDirectKeys;
-  }
-
-  return hasConnectKeys || hasDirectKeys;
 }

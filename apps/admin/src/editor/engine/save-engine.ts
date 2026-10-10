@@ -62,17 +62,11 @@ export interface SaveTarget {
   status: PostStatus;
   /** ISO 8601 with zeroed milliseconds, or null */
   publishedAt: string | null;
-  emailOnly?: boolean;
-  newsletter?: string;
-  emailSegment?: string;
 }
 
 export interface PublishOptions {
   /** Omitted keeps the post's current publish time; null clears it. */
   publishedAt?: string | null;
-  emailOnly?: boolean;
-  newsletter?: string;
-  emailSegment?: string;
 }
 
 export interface ScheduleOptions extends PublishOptions {
@@ -111,7 +105,7 @@ export type SaveSnapshot = PersistedIdentity & {
   /** Whether what a settings-only save carries differs from the saved copy. */
   settingsDirty: boolean;
   changedSinceLastRevision: boolean;
-  /** Monotonic local edit counter; validation/host-limit suppression lifts once it moves. */
+  /** Monotonic local edit counter; validation suppression lifts once it moves. */
   version: number;
 };
 
@@ -140,7 +134,6 @@ export type SaveErrorKind =
   | 'not-found'
   | 'forbidden'
   | 'conflict'
-  | 'host-limit'
   | 'transport'
   | 'validation'
   | 'unknown';
@@ -274,19 +267,6 @@ export function zeroMilliseconds(iso: string | null): string | null {
   return new Date(time - (time % 1000)).toISOString();
 }
 
-function withEmail(target: SaveTarget, options: PublishOptions): SaveTarget {
-  if (options.emailOnly !== undefined) {
-    target.emailOnly = options.emailOnly;
-  }
-  if (options.newsletter !== undefined) {
-    target.newsletter = options.newsletter;
-  }
-  if (options.emailSegment !== undefined) {
-    target.emailSegment = options.emailSegment;
-  }
-  return target;
-}
-
 /** Transition-derived target for a status intent, from the source the command was captured against. */
 export function deriveTarget(
   kind: StatusIntent,
@@ -295,26 +275,19 @@ export function deriveTarget(
 ): SaveTarget {
   switch (kind) {
     case 'publish':
-      return withEmail(
-        {
-          status: 'published',
-          publishedAt: zeroMilliseconds(
-            options.publishedAt === undefined ? source.publishedAt : options.publishedAt,
-          ),
-        },
-        options,
-      );
+      return {
+        status: 'published',
+        publishedAt: zeroMilliseconds(
+          options.publishedAt === undefined ? source.publishedAt : options.publishedAt,
+        ),
+      };
     case 'schedule':
-      return withEmail(
-        { status: 'scheduled', publishedAt: zeroMilliseconds(options.publishedAt ?? null) },
-        options,
-      );
+      return { status: 'scheduled', publishedAt: zeroMilliseconds(options.publishedAt ?? null) };
     case 'revert':
       // Unscheduling clears the publish time; unpublishing keeps it as history.
       return {
         status: 'draft',
         publishedAt: source.status === 'scheduled' ? null : zeroMilliseconds(source.publishedAt),
-        emailOnly: false,
       };
   }
 }
@@ -925,11 +898,7 @@ export function createSaveEngine<
       return;
     }
 
-    // A publish limit says nothing about whether draft content can be saved.
-    if (
-      error.kind === 'validation' ||
-      (error.kind === 'host-limit' && !changesStatus(slot.command, snapshot))
-    ) {
+    if (error.kind === 'validation') {
       hold = { version: snapshot.version, source: 'server', error };
     }
     failSlot(slot, error, snapshot, durationMs);

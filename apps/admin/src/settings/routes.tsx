@@ -44,11 +44,6 @@ export const settingsRouteChildren: RouteObject[] = [
     handle: { dialogGroup: 'staff' } satisfies SettingsRouteHandle,
     lazy: lazyComponent(() => import('./general/user-detail-modal')),
   },
-  {
-    path: 'staff/:slug/email-notifications',
-    handle: { dialogGroup: 'staff' } satisfies SettingsRouteHandle,
-    lazy: lazyComponent(() => import('./general/user-detail-modal')),
-  },
   { path: 'history/view/:userId?', lazy: lazyComponent(() => import('./advanced/history-modal')) },
   { path: 'about', lazy: lazyComponent(() => import('./general/about')) },
   // The lock-site setting lives in the Site access section.

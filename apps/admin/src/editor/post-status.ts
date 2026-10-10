@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  EVERYONE_RECIPIENT_FILTER,
-  PAID_SEGMENT,
-  getFullRecipientFilter,
-  getNewsletterRecipientFilter,
-  normalizeRecipientFilter,
-} from '@tryghost/admin-x-framework/utils/recipient-filter';
-import type { PostNewsletter, PostStatus } from '@tryghost/admin-x-framework/api/posts';
+import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
 import {
   SESSION_EXPIRED_MESSAGE,
   SESSION_EXPIRED_RETRY_MESSAGE,
@@ -24,19 +17,10 @@ import {
 /** How long "Saving…" stays on screen once a save starts, so it is noticeable. */
 export const SAVING_MIN_DISPLAY_MS = 3000;
 
-export type EmailDeliveryStatus = 'pending' | 'submitting' | 'submitted' | 'failed';
-
 export interface EditorStatusRecord {
   status?: PostStatus;
   publishedAt?: string | null;
   url?: string;
-  emailOnly?: boolean;
-  newsletter?: Pick<PostNewsletter, 'slug' | 'visibility'> | null;
-  emailSegment?: string | null;
-  /** An email record exists, so the send has already been handed over. */
-  hasEmail?: boolean;
-  emailStatus?: EmailDeliveryStatus | null;
-  emailCount?: number;
 }
 
 export type EditorStatusView =
@@ -52,22 +36,8 @@ export type EditorStatusView =
   /** Never saved, so there is nothing to report; the status line shows nothing. */
   | { kind: 'new' }
   | { kind: 'draft'; saved: boolean }
-  | {
-      kind: 'scheduled';
-      publishedAt: string | null;
-      emailOnly: boolean;
-      /** Members the send will reach, or null when nothing will be sent. */
-      recipientFilter: string | null;
-      /** The selected segment without its newsletter scope, for descriptive count copy. */
-      recipientSegment: string | null;
-    }
-  | {
-      kind: 'published';
-      url?: string;
-      email: 'none' | 'sending' | 'sent' | 'failed';
-      count: number;
-    }
-  | { kind: 'sent'; failed: boolean; count: number };
+  | { kind: 'scheduled'; publishedAt: string | null }
+  | { kind: 'published'; url?: string };
 
 export interface DeriveEditorStatusInput {
   state: SaveEngineState;
@@ -78,41 +48,6 @@ export interface DeriveEditorStatusInput {
   /** Held true for a minimum window after a save starts. */
   isSaving: boolean;
   now?: Date;
-}
-
-function publishedEmailState(
-  status?: EmailDeliveryStatus | null,
-): 'none' | 'sending' | 'sent' | 'failed' {
-  if (status === 'submitting' || status === 'pending') {
-    return 'sending';
-  }
-  if (status === 'submitted') {
-    return 'sent';
-  }
-  return status === 'failed' ? 'failed' : 'none';
-}
-
-interface ScheduledRecipientAudience {
-  filter: string;
-  segment: string;
-}
-
-/** Who a scheduled send will reach, or null once an email exists or none is going out. */
-export function scheduledRecipientAudience(
-  record: EditorStatusRecord,
-): ScheduledRecipientAudience | null {
-  if (!record.newsletter || record.hasEmail || record.emailSegment === 'none') {
-    return null;
-  }
-
-  const segment = normalizeRecipientFilter(record.emailSegment);
-  const descriptiveSegment =
-    segment ?? (record.newsletter.visibility === 'paid' ? PAID_SEGMENT : EVERYONE_RECIPIENT_FILTER);
-
-  return {
-    filter: getFullRecipientFilter(getNewsletterRecipientFilter(record.newsletter), segment),
-    segment: descriptiveSegment,
-  };
 }
 
 /** A scheduled post whose time has passed reads as published; the server owns the transition. */
@@ -185,40 +120,13 @@ export function deriveEditorStatus({
     return { kind: 'new' };
   }
 
-  const count = record.emailCount ?? 0;
-  const recipientAudience = status === 'scheduled' ? scheduledRecipientAudience(record) : null;
-
-  if (status === 'sent') {
-    return { kind: 'sent', failed: record.emailStatus === 'failed', count };
-  }
-
-  if (record.emailOnly && status === 'scheduled') {
-    return {
-      kind: 'scheduled',
-      publishedAt: record.publishedAt ?? null,
-      emailOnly: true,
-      recipientFilter: recipientAudience?.filter ?? null,
-      recipientSegment: recipientAudience?.segment ?? null,
-    };
-  }
-
-  if (status === 'published' || isPastScheduled(record, now)) {
-    return {
-      kind: 'published',
-      url: record.url,
-      email: publishedEmailState(record.emailStatus),
-      count,
-    };
+  // GhostLite never emails posts; an imported "sent" post reads as published.
+  if (status === 'published' || status === 'sent' || isPastScheduled(record, now)) {
+    return { kind: 'published', url: record.url };
   }
 
   if (status === 'scheduled') {
-    return {
-      kind: 'scheduled',
-      publishedAt: record.publishedAt ?? null,
-      emailOnly: false,
-      recipientFilter: recipientAudience?.filter ?? null,
-      recipientSegment: recipientAudience?.segment ?? null,
-    };
+    return { kind: 'scheduled', publishedAt: record.publishedAt ?? null };
   }
 
   return { kind: 'draft', saved: !isDirty };

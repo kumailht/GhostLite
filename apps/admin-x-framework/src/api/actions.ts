@@ -155,16 +155,6 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
         }
 
         return { route: `integrations/${action.resource.id}` };
-      case 'offer':
-        if (!action.resource || !action.resource.id) {
-          return;
-        }
-        // replace with Settings route once Offers X GA is released
-        return {
-          isExternal: true,
-          route: `offers/${action.resource.id}`,
-          models: [action.resource.id],
-        };
       case 'tag':
         if (!action.resource || !action.resource.slug) {
           return;
@@ -175,8 +165,6 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
           route: 'tag',
           models: [action.resource.slug],
         };
-      case 'product':
-        return { route: 'tiers' };
       case 'user':
         if (!action.resource || !action.resource.slug) {
           return;
@@ -196,18 +184,8 @@ export const getActionTitle = (action: Action) => {
     resourceType = 'API key';
   } else if (resourceType === 'setting') {
     resourceType = 'settings';
-  } else if (resourceType === 'product') {
-    resourceType = 'tier';
-  } else if (resourceType === 'gift_link') {
-    resourceType = 'gift link';
   } else if (resourceType === 'security_action') {
     resourceType = 'security action';
-  } else if (resourceType === 'member_custom_field') {
-    resourceType = 'custom field';
-  } else if (resourceType === 'app_installation') {
-    resourceType = 'app';
-  } else if (resourceType === 'stripe_checkout_config') {
-    resourceType = 'checkout settings';
   }
 
   // Because a `page` and `post` both use the same model, we store the

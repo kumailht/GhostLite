@@ -21,11 +21,9 @@ import {
   type SaveResult,
 } from '@/editor/engine/save-engine';
 import type {
-  BodyDivergence,
   ChangeReasonCode,
   EditablePostPatch,
   EditablePostProjection,
-  ProjectionKey,
   RestoredRevision,
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
@@ -43,7 +41,6 @@ import {
   VALIDATED_SETTINGS_FIELD_KEYS,
   identityFor,
   invalidField,
-  tiersIncomplete,
   validatedFieldsOf,
   type EditorSettingsPatch,
   type InvalidField,
@@ -66,16 +63,6 @@ export interface EditorSaveResult extends SaveResult {
 export interface EditorSaveFailure extends SaveFailure {
   readonly postId: string | null;
   readonly status: PostStatus;
-}
-
-/** A leave the writer has to confirm, with why the tracker holds the post dirty. */
-export interface EditorLeaveConfirmation {
-  readonly postId: string | null;
-  readonly status: PostStatus;
-  readonly engineState: SaveEngineState['kind'];
-  readonly reasons: ChangeReasonCode[];
-  readonly dirtyFields: ProjectionKey[];
-  readonly bodyDiff: BodyDivergence | null;
 }
 
 /** Fields the engine writes onto the request rather than reading from the live post. */
@@ -134,8 +121,6 @@ export interface EditorSessionOptions {
   onError: (error: unknown, context?: EditorErrorContext) => void;
   /** Called once per request that settled as failed. */
   onSaveFailed?: (failure: EditorSaveFailure) => void;
-  /** Called when a leave request answers `confirm`. */
-  onLeaveConfirmed?: (leave: EditorLeaveConfirmation) => void;
   /** Keeps local copies of a draft that holds unsaved work. */
   localRevisions?: LocalRevisionWriter;
 }
@@ -324,7 +309,6 @@ export function createEditorSession({
   onSaveAcknowledged,
   onError,
   onSaveFailed,
-  onLeaveConfirmed,
   localRevisions,
 }: EditorSessionOptions): EditorSession {
   let identity: PersistedIdentity = record
@@ -617,8 +601,7 @@ export function createEditorSession({
   // the URL input hears about them through the session's own subscribers.
   const stopSlugNotifications = machine.subscribe(notifyChanged);
 
-  // The post validator runs before every save: an explicit tier selection needs a
-  // tier once the post exists or leaves draft, and an over-long field is not sent.
+  // The post validator runs before every save: an over-long field is not sent.
   function requestInvalid(
     request: SaveRequest<EditorSaveSnapshot>,
     projection: EditablePostPatch,
@@ -629,7 +612,6 @@ export function createEditorSession({
         // The canvas fields a settings save leaves for Update are checked by Update.
         title: settingsOnly ? null : request.title,
         fields: validatedFieldsOf(live),
-        isNew: request.snapshot.id === null && request.target.status === 'draft',
         skip: settingsOnly ? VALIDATED_SETTINGS_FIELD_KEYS.filter(heldForUpdate) : [],
         // A status command with no time of its own carries whatever the sidebar staged.
         changedPublishTime:
@@ -649,7 +631,6 @@ export function createEditorSession({
     return invalidField({
       title: live.title,
       fields: validatedFieldsOf(live),
-      isNew: identity.id === null && status === 'draft',
       changedPublishTime: current !== publishedAt ? { status, publishedAt: current } : null,
       authors: tracker.isFieldDirty('authors') ? live.authors : undefined,
     });
@@ -714,25 +695,6 @@ export function createEditorSession({
         stageSettingsField(key, live, projection, payload);
       }
     }
-    if (tiersIncomplete(live)) {
-      // The transport drops the unpaired pair (post-contract.ts). Kept out of the
-      // submitted projection too, or the ack rebases the held visibility away.
-      delete projection.visibility;
-      delete payload.visibility;
-      delete projection.tiers;
-      delete payload.tiers;
-    } else if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
-      // The write contract requires the pair even when only one field changed.
-      // Reads include tier relations for Public and Paid posts too, so switching
-      // to specific tiers can leave the relation IDs unchanged.
-      projection.visibility = live.visibility;
-      payload.visibility = live.visibility;
-      projection.tiers = live.tiers;
-      payload.tiers = identityFor('tiers', live);
-    }
-    if (request.target.emailOnly !== undefined) {
-      payload.email_only = request.target.emailOnly;
-    }
 
     const prepared: PreparedWrite = {
       ...request,
@@ -741,8 +703,6 @@ export function createEditorSession({
       builtAtVersion: version,
       options: {
         saveRevision: request.saveRevision,
-        newsletter: request.target.newsletter,
-        emailSegment: request.target.emailSegment,
       },
     };
     const invalid = requestInvalid(request, projection, settingsOnly);
@@ -827,12 +787,6 @@ export function createEditorSession({
           (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
       ).map((key) => [key, live[key]]),
     );
-    // A pair left out of the write was never acknowledged; its empty tier list
-    // equals a new post's saved one, so the rebase would take the server's relations.
-    if (prepared.projection.visibility === undefined && tiersIncomplete(live)) {
-      unsubmittedEdits.visibility = live.visibility;
-      unsubmittedEdits.tiers = live.tiers;
-    }
     const acknowledged = projectionOf(result.post);
     const answered: AuthoredFields = { title: acknowledged.title, slug: acknowledged.slug };
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
@@ -1156,24 +1110,7 @@ export function createEditorSession({
 
     reauthSucceeded: () => engine.reauthSucceeded(),
     reauthAbandoned: () => engine.reauthAbandoned(),
-    leaveRequested: async () => {
-      const decision = await engine.leaveRequested();
-      if (decision === 'confirm' && !disposed) {
-        try {
-          onLeaveConfirmed?.({
-            postId: identity.id,
-            status,
-            engineState: engine.getState().kind,
-            reasons: tracker.verdict().reasons.map((reason) => reason.code),
-            dirtyFields: tracker.dirtyFields(),
-            bodyDiff: tracker.bodyDivergence(),
-          });
-        } catch (error) {
-          onError(error);
-        }
-      }
-      return decision;
-    },
+    leaveRequested: () => engine.leaveRequested(),
 
     flushLocalRevision,
 

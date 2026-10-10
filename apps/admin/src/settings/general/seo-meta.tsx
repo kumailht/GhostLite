@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
-import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import {
@@ -26,7 +25,7 @@ import {
   ImageUploadPreview,
 } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
@@ -102,7 +101,6 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   const handleError = useHandleError();
   const { mutateAsync: uploadImage } = useUploadImage();
-  const editor = usePinturaEditor();
 
   // Get all settings needed for all tabs
   const [
@@ -256,22 +254,6 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
               <ImageUploadPreview className="rounded-b-none">
                 <ImageUploadImage id="facebook-image" src={facebookImage} />
                 <ImageUploadActions>
-                  {editor.isEnabled && (
-                    <ImageUploadAction
-                      aria-label="Edit Facebook image"
-                      onClick={() =>
-                        editor.openEditor({
-                          image: facebookImage,
-                          handleSave: async (file: File) => {
-                            const imageUrl = getImageUrl(await uploadImage({ file }));
-                            updateSetting('og_image', imageUrl);
-                          },
-                        })
-                      }
-                    >
-                      <Pencil />
-                    </ImageUploadAction>
-                  )}
                   <ImageUploadAction
                     aria-label="Remove Facebook image"
                     data-testid="image-delete-button"
@@ -337,22 +319,6 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
               <ImageUploadPreview className="rounded-b-none">
                 <ImageUploadImage id="twitter-image" src={twitterImage} />
                 <ImageUploadActions>
-                  {editor.isEnabled && (
-                    <ImageUploadAction
-                      aria-label="Edit X image"
-                      onClick={() =>
-                        editor.openEditor({
-                          image: twitterImage,
-                          handleSave: async (file: File) => {
-                            const imageUrl = getImageUrl(await uploadImage({ file }));
-                            updateSetting('twitter_image', imageUrl);
-                          },
-                        })
-                      }
-                    >
-                      <Pencil />
-                    </ImageUploadAction>
-                  )}
                   <ImageUploadAction
                     aria-label="Remove X image"
                     data-testid="image-delete-button"

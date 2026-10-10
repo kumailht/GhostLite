@@ -27,16 +27,6 @@ const PAGE_TYPE_OPTIONS: PostFilterOption[] = [
   { value: 'scheduled', label: 'Scheduled pages' },
 ];
 
-/**
- * `[paid,tiers]` is an opaque option value, not structure - Ember interpolates
- * it straight into the filter string.
- */
-export const VISIBILITY_OPTIONS: PostFilterOption[] = [
-  { value: 'public', label: 'Public' },
-  { value: 'members', label: 'Members-only' },
-  { value: '[paid,tiers]', label: 'Paid members-only' },
-];
-
 /** "Newest first" is the absence of an `order` param, so it has no entry. */
 export const ORDER_OPTIONS: PostFilterOption[] = [
   { value: 'published_at asc', label: 'Oldest first' },

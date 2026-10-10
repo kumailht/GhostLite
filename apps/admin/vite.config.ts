@@ -3,7 +3,6 @@ import { defineConfig } from 'vite';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
@@ -36,19 +35,6 @@ function getBase(command: 'build' | 'serve'): string {
   return `${getSubdir()}${DEV_BASE}`;
 }
 
-// Injects Sentry debug IDs on shipping builds; CI uploads the maps afterwards
-function sentryDebugIdsPlugin(): PluginOption {
-  if (!process.env.IS_SHIPPING) {
-    return null;
-  }
-
-  return sentryVitePlugin({
-    sourcemaps: { disable: 'disable-upload' },
-    release: { inject: false },
-    telemetry: false,
-  });
-}
-
 // Rolldown ignores a dependency's `//# sourceMappingURL`, so without this the
 // chunk map's only source for Koenig frames is its already-minified dist
 function koenigSourcemapPlugin(): PluginOption {
@@ -72,15 +58,8 @@ export default defineConfig(({ command, mode }) => ({
     svgr(),
     react(),
     koenigSourcemapPlugin(),
-    // Unit tests have no Ghost backend. Keep filesystem and
-    // shipping side effects out of this lane, including Sentry uploads.
-    ...(command === 'serve' && mode === 'test'
-      ? []
-      : [
-          ghostBackendProxyPlugin(),
-          // Sentry's plugin goes after all others
-          sentryDebugIdsPlugin(),
-        ]),
+    // Unit tests have no Ghost backend. Keep filesystem side effects out of this lane.
+    ...(command === 'serve' && mode === 'test' ? [] : [ghostBackendProxyPlugin()]),
   ],
   build: {
     sourcemap: 'hidden',

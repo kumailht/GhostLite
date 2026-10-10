@@ -1,5 +1,5 @@
 import { getCelebrationCopy } from '@/posts/list/post-celebration-copy';
-import PostShareModal from '@/shared/analytics/post-share-modal';
+import PostShareModal from './post-share-modal';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 
 interface PostCelebrationModalProps {
@@ -32,14 +32,12 @@ export function PostCelebrationModal({
   const copy = getCelebrationCopy({
     wasPublished,
     type,
-    emailOnly: post.email_only === true,
     postCount,
   });
 
   return (
     <PostShareModal
       author={post.authors?.[0]?.name ?? ''}
-      emailOnly={post.email_only === true}
       faviconURL={siteIcon}
       featureImageURL={post.feature_image ?? ''}
       postExcerpt={post.excerpt ?? post.custom_excerpt ?? ''}

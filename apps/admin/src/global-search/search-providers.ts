@@ -10,10 +10,8 @@ import {
   sortSearchResultsByStatus,
 } from './searchables';
 
-/** `search-index/*` entries by model. Billing items come from config, not content. */
-export type SearchContent = Partial<
-  Record<Exclude<SearchableModel, 'pro-page'>, SearchIndexItem[]>
->;
+/** `search-index/*` entries by model. */
+export type SearchContent = Partial<Record<SearchableModel, SearchIndexItem[]>>;
 
 export interface SearchProvider {
   search(term: string): SearchResultGroup[];
@@ -23,10 +21,6 @@ export interface SearchProvider {
 const RESULT_LIMIT = 100;
 
 function itemsFor(searchable: Searchable, content: SearchContent): SearchItem[] {
-  if (searchable.model === 'pro-page') {
-    return searchable.staticItems ?? [];
-  }
-
   return content[searchable.model] ?? [];
 }
 

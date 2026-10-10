@@ -12,17 +12,9 @@ module.exports = {
       'mail',
       'useGravatar',
       'labs',
-      'clientExtensions',
       'enableDeveloperExperiments',
-      'stripeDirect',
-      'mailgunIsConfigured',
-      'emailAnalytics',
-      'hostSettings',
       'klipy',
-      'pintura',
       'security',
-      'featurebase',
-      'docsbot',
     ];
 
     frame.response = {

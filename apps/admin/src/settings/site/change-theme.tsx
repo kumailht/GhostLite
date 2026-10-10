@@ -12,46 +12,20 @@ import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { Text } from '@tryghost/shade/primitives';
 import { type Theme, useBrowseThemes } from '@tryghost/admin-x-framework/api/themes';
 import { downloadFromEndpoint } from '@tryghost/admin-x-framework/helpers';
-import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
-import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  const { checkThemeLimitError } = useCheckThemeLimitError();
   const { route, updateRoute } = useSettingsNavigation();
-  const upgradeRoute = useUpgradeRoute();
-  const { showLimit } = useConfirmation();
   const { data: themesData } = useBrowseThemes();
   const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
 
-  const openPreviewModal = async () => {
-    const limitError = await checkThemeLimitError();
-
-    if (limitError) {
-      showLimit({
-        prompt: limitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
-      });
-      return;
-    }
-
+  const openPreviewModal = () => {
     updateRoute('design/change-theme');
   };
 
-  const openThemeEditor = async () => {
+  const openThemeEditor = () => {
     if (!activeTheme) {
-      return;
-    }
-
-    const limitError = await checkThemeLimitError('.');
-
-    if (limitError) {
-      showLimit({
-        prompt: limitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
-      });
       return;
     }
 

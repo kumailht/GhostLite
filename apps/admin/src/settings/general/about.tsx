@@ -44,16 +44,6 @@ function AboutModal() {
     }
   }
 
-  function showSystemInfo(): boolean {
-    const isPro = !!config.hostSettings?.siteId;
-
-    if (isPro) {
-      return false;
-    }
-
-    return true;
-  }
-
   return (
     <SettingsModal
       cancelLabel=""
@@ -81,7 +71,7 @@ function AboutModal() {
           ) : (
             <VersionLink label="Version" version={config.version} />
           )}
-          {showSystemInfo() && (
+          {(
             <>
               <div>
                 <strong>Environment:</strong> {config.environment}
@@ -100,7 +90,7 @@ function AboutModal() {
             </div>
           )}
 
-          {showSystemInfo() && showDatabaseWarning(config.environment, config.database) && (
+          {showDatabaseWarning(config.environment, config.database) && (
             <div className="text-red-500 dark:text-red-400">
               You are running an unsupported database in production. Please{' '}
               <a

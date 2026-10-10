@@ -5,15 +5,14 @@ import { formatNumber } from '@tryghost/shade/utils';
  * `apps/ember-admin/app/components/modal-post-success.hbs`.
  *
  * A scheduled post gets one line; everything else gets two, and which second
- * line you get depends on the resource, whether it was email-only, and whether
- * the published count was fetched in time.
+ * line you get depends on the resource and whether the published count was
+ * fetched in time.
  */
 
 export interface CelebrationCopyInputs {
   wasPublished: boolean;
   /** 'post' or 'page', as the editor wrote it. */
   type: string;
-  emailOnly?: boolean;
   /** Total published posts. Absent if the count request hasn't landed. */
   postCount?: number;
 }
@@ -21,7 +20,6 @@ export interface CelebrationCopyInputs {
 export function getCelebrationCopy({
   wasPublished,
   type,
-  emailOnly,
   postCount,
 }: CelebrationCopyInputs): { primary: string; secondary: string } {
   if (!wasPublished) {
@@ -33,10 +31,6 @@ export function getCelebrationCopy({
 
   if (type === 'page') {
     return { primary, secondary: 'Your page is published.' };
-  }
-
-  if (emailOnly) {
-    return { primary, secondary: 'Your email has been sent.' };
   }
 
   if (showCount) {

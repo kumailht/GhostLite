@@ -6,13 +6,6 @@
  * Kept separate from `post-filter-query.ts` (which owns the *filter*
  * params) so the sidebar can import it without pulling in the chip model.
  */
-export const POST_VIEW_PARAMS = [
-  'type',
-  'featured',
-  'visibility',
-  'author',
-  'tag',
-  'order',
-] as const;
+export const POST_VIEW_PARAMS = ['type', 'featured', 'author', 'tag', 'order'] as const;
 
 export type PostViewParam = (typeof POST_VIEW_PARAMS)[number];

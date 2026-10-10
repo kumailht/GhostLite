@@ -1,8 +1,5 @@
-import { formatNumber } from '@tryghost/shade/utils';
 import { formatPostTime } from '@/posts/list/post-time';
-import { humanizeRecipientFilter } from '@/posts/list/humanize-recipient-filter';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
-import type { PostResource } from '@/posts/list/post-resource';
 
 /**
  * Every string a post row renders, as pure functions.
@@ -17,41 +14,6 @@ type PostStatus = 'draft' | 'scheduled' | 'published' | 'sent';
 
 function statusOf(post: PostListItem): PostStatus {
   return post.status ?? 'draft';
-}
-
-/**
- * Ember's `didEmailFail`: a *post*, live, whose email failed. The status gate
- * matters — un-publishing a post whose newsletter failed leaves the email
- * record attached, and without it that draft would render as an error.
- */
-export function didPostEmailFail(post: PostListItem, resource: PostResource = 'posts'): boolean {
-  const status = statusOf(post);
-
-  return (
-    resource === 'posts' &&
-    (status === 'published' || status === 'sent') &&
-    post.email?.status === 'failed'
-  );
-}
-
-function didEmailFail(post: PostListItem): boolean {
-  return post.email?.status === 'failed';
-}
-
-/**
- * Ember's `hasBeenEmailed`: a *post* (never a page), live, with a non-failed
- * email. The page guard matters because a page carrying stray email data would
- * otherwise be described as sent.
- */
-function wasEmailed(post: PostListItem, resource: PostResource = 'posts'): boolean {
-  const status = statusOf(post);
-
-  return (
-    resource === 'posts' &&
-    (status === 'published' || status === 'sent') &&
-    Boolean(post.email) &&
-    !didEmailFail(post)
-  );
 }
 
 /** Comma-joined author names, falling back to the email for un-named staff. */
@@ -129,17 +91,14 @@ export function getPostDateTooltip(
 }
 
 /** The always-visible status text. */
-export function getPostStatusLabel(post: PostListItem, resource: PostResource = 'posts'): string {
+export function getPostStatusLabel(post: PostListItem): string {
   switch (statusOf(post)) {
     case 'scheduled':
       return 'Scheduled';
+    // GhostLite never emails posts; an imported "sent" post reads as published.
     case 'published':
-      if (didPostEmailFail(post, resource)) {
-        return 'Published but failed to send newsletter';
-      }
-      return wasEmailed(post, resource) ? 'Published and sent' : 'Published';
     case 'sent':
-      return didPostEmailFail(post, resource) ? 'Failed to send newsletter' : 'Sent';
+      return 'Published';
     default:
       return 'Draft';
   }
@@ -148,16 +107,15 @@ export function getPostStatusLabel(post: PostListItem, resource: PostResource = 
 export interface PostStatusDetailOptions {
   timezone?: string;
   now?: Date;
-  resource?: PostResource;
 }
 
 /**
- * The extra text Ember reveals on hover: who a scheduled post will go to, or
- * how many members already received it. `null` when there is nothing to add.
+ * The extra text Ember reveals on hover: when a scheduled post will go out.
+ * `null` when there is nothing to add.
  */
 export function getPostStatusDetail(
   post: PostListItem,
-  { timezone, now, resource = 'posts' }: PostStatusDetailOptions = {},
+  { timezone, now }: PostStatusDetailOptions = {},
 ): string | null {
   const status = statusOf(post);
 
@@ -165,21 +123,8 @@ export function getPostStatusDetail(
     // Joined rather than interpolated: a post with no publish date yields
     // an empty `when`, which interpolation would leave as a double space.
     const when = formatPostTime(post.published_at, { timezone, scheduled: true, now });
-    const segment = post.email_segment ? `to ${humanizeRecipientFilter(post.email_segment)}` : null;
 
-    // Email-only posts are never "published".
-    const lead = post.email_only
-      ? 'to be sent'
-      : `to be published${post.newsletter ? ' and sent' : ''}`;
-
-    const showSegment = post.email_only || post.newsletter;
-
-    return [lead, when, showSegment ? segment : null].filter(Boolean).join(' ');
-  }
-
-  if (wasEmailed(post, resource)) {
-    const count = post.email?.email_count ?? 0;
-    return `to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
+    return ['to be published', when].filter(Boolean).join(' ');
   }
 
   return null;

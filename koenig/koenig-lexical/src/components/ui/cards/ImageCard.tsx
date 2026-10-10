@@ -1,7 +1,6 @@
 import ImageUploadForm from '../ImageUploadForm';
 import PropTypes from 'prop-types';
 import React from 'react';
-import WandIcon from '../../../assets/icons/kg-wand.svg?react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {CardText, MediaPlaceholder} from '../MediaPlaceholder';
 import {IconButton} from '../IconButton';
@@ -9,7 +8,7 @@ import {ProgressBar} from '../ProgressBar';
 import {isGif} from '../../../utils/isGif';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
-function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragHandler, imageFileDragHandler, isPinturaEnabled, openImageEditor, onFileChange}) {
+function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragHandler, imageFileDragHandler, onFileChange}) {
     const progressStyle = {
         width: `${imageUploader.progress?.toFixed(0)}%`
     };
@@ -45,22 +44,6 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragH
                     <CardText text="Drop to replace image" />
                 </div>
             ) : null}
-            {(isPinturaEnabled && !isGif(src)) &&
-                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100`}>
-                    <div className="flex flex-row-reverse">
-                        <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
-                            image: src,
-                            handleSave: (editedImage) => {
-                                onFileChange({
-                                    target: {
-                                        files: [editedImage]
-                                    }
-                                });
-                            }
-                        })} />
-                    </div>
-                </div>
-            }
         </div>
     );
 }
@@ -101,8 +84,6 @@ const ImageHolder = ({
     setFileInputRef,
     imageCardDragHandler,
     imageFileDragHandler,
-    isPinturaEnabled,
-    openImageEditor
 }) => {
     if (previewSrc || src) {
         return (
@@ -111,8 +92,6 @@ const ImageHolder = ({
                 imageCardDragHandler={imageCardDragHandler}
                 imageFileDragHandler={imageFileDragHandler}
                 imageUploader={imageUploader}
-                isPinturaEnabled={isPinturaEnabled}
-                openImageEditor={openImageEditor}
                 previewSrc={previewSrc}
                 src={src}
                 onFileChange={onFileChange}
@@ -145,8 +124,6 @@ export function ImageCard({
     imageUploader,
     imageCardDragHandler,
     imageFileDragHandler,
-    isPinturaEnabled,
-    openImageEditor
 }) {
     const figureRef = React.useRef(null);
 
@@ -169,8 +146,6 @@ export function ImageCard({
                     imageCardDragHandler={imageCardDragHandler}
                     imageFileDragHandler={imageFileDragHandler}
                     imageUploader={imageUploader}
-                    isPinturaEnabled={isPinturaEnabled}
-                    openImageEditor={openImageEditor}
                     previewSrc={previewSrc}
                     setFileInputRef={setFileInputRef}
                     src={src}
@@ -201,8 +176,6 @@ ImageHolder.propTypes = {
     setFileInputRef: PropTypes.func,
     imageFileDragHandler: PropTypes.object,
     imageCardDragHandler: PropTypes.object,
-    isPinturaEnabled: PropTypes.bool,
-    openImageEditor: PropTypes.func
 };
 
 PopulatedImageCard.propTypes = {
@@ -212,8 +185,6 @@ PopulatedImageCard.propTypes = {
     imageUploader: PropTypes.object,
     imageCardDragHandler: PropTypes.object,
     imageFileDragHandler: PropTypes.object,
-    isPinturaEnabled: PropTypes.bool,
-    openImageEditor: PropTypes.func,
     onFileChange: PropTypes.func
 };
 
@@ -239,6 +210,4 @@ ImageCard.propTypes = {
     imageUploader: PropTypes.object,
     imageFileDragHandler: PropTypes.object,
     imageCardDragHandler: PropTypes.object,
-    isPinturaEnabled: PropTypes.bool,
-    openImageEditor: PropTypes.func
 };

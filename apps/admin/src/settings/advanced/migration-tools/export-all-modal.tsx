@@ -11,23 +11,16 @@ import {
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import {
-  downloadSiteExport,
-  useRequestExport,
-  type SiteExportComponent,
-} from '@tryghost/admin-x-framework/api/exports';
+import { downloadSiteExport, type SiteExportComponent } from '@tryghost/admin-x-framework/api/exports';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
-export type ExportMode = 'sync' | 'async';
-
-type ExportComponentKey = 'content' | 'analytics' | 'themes' | 'routes' | 'media';
+type ExportComponentKey = SiteExportComponent;
 
 type ExportComponent = {
   key: ExportComponentKey;
   label: string;
   description: string;
   defaultChecked: boolean;
-  asyncOnly?: boolean;
 };
 
 const EXPORT_COMPONENTS: ExportComponent[] = [
@@ -55,24 +48,14 @@ const EXPORT_COMPONENTS: ExportComponent[] = [
     description: 'routes.yaml and redirects configuration',
     defaultChecked: true,
   },
-  {
-    key: 'media',
-    label: 'Media files',
-    description:
-      'All images, video and audio files. May significantly increase export size and duration',
-    defaultChecked: false,
-    asyncOnly: true,
-  },
 ];
 
-type ExportPhase = 'select' | 'confirmed' | 'preparing' | 'done';
+type ExportPhase = 'select' | 'preparing' | 'done';
 
 const ExportAllModal: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  mode: ExportMode;
-}> = ({ open, onOpenChange, mode }) => {
-  const { mutateAsync: requestExport, isPending: isRequestingExport } = useRequestExport();
+}> = ({ open, onOpenChange }) => {
   const handleError = useHandleError();
   const [phase, setPhase] = useState<ExportPhase>('select');
   const [selected, setSelected] = useState<Record<ExportComponentKey, boolean>>(() => {
@@ -85,17 +68,9 @@ const ExportAllModal: React.FC<{
   const resetTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const abortRef = useRef<AbortController>();
 
-  const visibleComponents = EXPORT_COMPONENTS.filter(
-    (component) => mode === 'async' || !component.asyncOnly,
-  );
-  const noneSelected = visibleComponents.every((component) => !selected[component.key]);
+  const noneSelected = EXPORT_COMPONENTS.every((component) => !selected[component.key]);
 
   const handleOpenChange = (next: boolean) => {
-    // The export request is not idempotent: closing mid-flight would
-    // detach the pending promise and let it flip a later session's phase.
-    if (!next && isRequestingExport) {
-      return;
-    }
     onOpenChange(next);
     if (next) {
       clearTimeout(resetTimerRef.current);
@@ -109,23 +84,9 @@ const ExportAllModal: React.FC<{
   };
 
   const startExport = async () => {
-    if (mode === 'async') {
-      try {
-        const components = Object.fromEntries(
-          visibleComponents.map((component) => [component.key, selected[component.key]]),
-        );
-        await requestExport({ components });
-        setPhase('confirmed');
-      } catch (e) {
-        // An older backend without the endpoint 404s into the same path
-        handleError(e);
-      }
-      return;
-    }
-
-    const components = visibleComponents
-      .filter((component) => selected[component.key] && component.key !== 'media')
-      .map((component) => component.key as SiteExportComponent);
+    const components = EXPORT_COMPONENTS.filter((component) => selected[component.key]).map(
+      (component) => component.key,
+    );
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -160,26 +121,13 @@ const ExportAllModal: React.FC<{
             <DialogHeader>
               <DialogTitle>Export data</DialogTitle>
               <DialogDescription>
-                {mode === 'async' ? (
-                  'Choose what to include. Your export will be prepared in the background and a download link emailed to you.'
-                ) : (
-                  <>
-                    Your export will be downloaded as a single zip file. Images, videos and files
-                    are not included.{' '}
-                    <a
-                      className="font-medium whitespace-nowrap text-foreground hover:underline"
-                      href="https://docs.ghost.org/migration/ghost#images"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Learn more &rarr;
-                    </a>
-                  </>
-                )}
+                Your export will be downloaded as a single zip file. Images, videos and files are
+                not included; back up <code>content/images</code> and the other upload folders
+                separately.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-1 py-1">
-              {visibleComponents.map((component) => (
+              {EXPORT_COMPONENTS.map((component) => (
                 <label
                   key={component.key}
                   className="flex cursor-pointer items-start gap-3 rounded-md px-2 py-1.5 hover:bg-muted/60"
@@ -201,36 +149,12 @@ const ExportAllModal: React.FC<{
               ))}
             </div>
             <DialogFooter className="gap-2 sm:justify-end">
-              <Button
-                disabled={isRequestingExport}
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
+              <Button variant="outline" onClick={() => handleOpenChange(false)}>
                 Cancel
               </Button>
-              <Button
-                disabled={noneSelected || isRequestingExport}
-                onClick={() => void startExport()}
-              >
+              <Button disabled={noneSelected} onClick={() => void startExport()}>
                 <LucideIcon.Download /> Export
               </Button>
-            </DialogFooter>
-          </>
-        )}
-
-        {phase === 'confirmed' && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <LucideIcon.CircleCheck className="size-5 text-green-600" /> Exporting data&hellip;
-              </DialogTitle>
-            </DialogHeader>
-            <DialogDescription>
-              A link to download your data will be emailed to you once the export is complete. The
-              link will be valid for 7 days. You can now close this window.
-            </DialogDescription>
-            <DialogFooter className="sm:justify-end">
-              <Button onClick={() => handleOpenChange(false)}>Close</Button>
             </DialogFooter>
           </>
         )}

@@ -1,12 +1,10 @@
-import EmailNotificationsTab from './users/email-notifications-tab';
 import ProfileTab from './users/profile-tab';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import SocialLinksTab from './users/social-links-tab';
 import clsx from 'clsx';
-import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import validator from 'validator';
-import { APIError, HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { APIError } from '@tryghost/admin-x-framework/errors';
 import {
   Button,
   DropdownMenu,
@@ -24,7 +22,6 @@ import {
   type ErrorMessages,
   useForm,
   useHandleError,
-  useLimiter,
 } from '@tryghost/admin-x-framework/hooks';
 import {
   ImageUpload,
@@ -36,10 +33,9 @@ import {
 } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useShade } from '@tryghost/shade/app';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import {
   SOCIAL_PLATFORM_CONFIGS,
   SOCIAL_PLATFORM_KEYS,
@@ -123,13 +119,12 @@ const UserDetailModalContent: React.FC<{
   const { isAdmin7 } = useShade();
   const { updateRoute } = useSettingsNavigation();
   const navigate = useNavigate();
-  const upgradeRoute = useUpgradeRoute();
   const location = useLocation();
 
   const getTabFromPath = (path: string): string => {
     const lastSegment = path.split('/').pop() || '';
 
-    if (lastSegment === 'social-links' || lastSegment === 'email-notifications') {
+    if (lastSegment === 'social-links') {
       return lastSegment;
     }
 
@@ -138,7 +133,7 @@ const UserDetailModalContent: React.FC<{
   const { ownerUser } = useStaffUsers();
   const { currentUser } = useGlobalData();
   const handleError = useHandleError();
-  const { confirm, showLimit } = useConfirmation();
+  const { confirm } = useConfirmation();
   const {
     formState,
     setFormState,
@@ -211,10 +206,6 @@ const UserDetailModalContent: React.FC<{
   const { mutateAsync: updateUser } = useEditUser();
   const { mutateAsync: deleteUser } = useDeleteUser();
   const { mutateAsync: makeOwner } = useMakeOwner();
-  const limiter = useLimiter();
-
-  // Pintura integration
-  const editor = usePinturaEditor();
 
   const navigateOnClose = useCallback(() => {
     if (canAccessSettings(currentUser)) {
@@ -225,24 +216,7 @@ const UserDetailModalContent: React.FC<{
     }
   }, [currentUser, navigate, updateRoute]);
 
-  const confirmSuspend = async (_user: User) => {
-    if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
-      try {
-        await limiter?.errorIfWouldGoOverLimit('staff');
-      } catch (error) {
-        if (error instanceof HostLimitError) {
-          showLimit({
-            formSheet: true,
-            prompt: error.message || `Your current plan doesn't support more users.`,
-            onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
-          });
-          return;
-        } else {
-          throw error;
-        }
-      }
-    }
-
+  const confirmSuspend = (_user: User) => {
     let warningText = 'This user will no longer be able to log in but their posts will be kept.';
     if (_user.status === 'inactive') {
       warningText =
@@ -451,21 +425,6 @@ const UserDetailModalContent: React.FC<{
                           src={formState.profile_image}
                         />
                         <ImageUploadActions className="top-1 right-1">
-                          {editor.isEnabled && (
-                            <ImageUploadAction
-                              aria-label="Edit profile image"
-                              className="rounded-full"
-                              onClick={() =>
-                                editor.openEditor({
-                                  image: formState.profile_image || '',
-                                  handleSave: async (file: File) =>
-                                    handleImageUpload('profile_image', file),
-                                })
-                              }
-                            >
-                              <Pencil />
-                            </ImageUploadAction>
-                          )}
                           <ImageUploadAction
                             aria-label="Remove profile image"
                             className="rounded-full"
@@ -498,21 +457,6 @@ const UserDetailModalContent: React.FC<{
                         data-testid="cover-image-preview"
                         src={formState.cover_image}
                       />
-                      {editor.isEnabled && (
-                        <Button
-                          className={coverButtonClasses}
-                          type="button"
-                          onClick={() =>
-                            editor.openEditor({
-                              image: formState.cover_image || '',
-                              handleSave: async (file: File) =>
-                                handleImageUpload('cover_image', file),
-                            })
-                          }
-                        >
-                          Edit cover image
-                        </Button>
-                      )}
                       <Button
                         className={coverButtonClasses}
                         type="button"
@@ -583,7 +527,7 @@ const UserDetailModalContent: React.FC<{
                             <>
                               <DropdownMenuItem
                                 onSelect={() => {
-                                  void confirmSuspend(formState);
+                                  confirmSuspend(formState);
                                 }}
                               >
                                 {suspendUserLabel}
@@ -639,9 +583,6 @@ const UserDetailModalContent: React.FC<{
               <TabsTrigger title="Social Links" value="social-links">
                 Social Links
               </TabsTrigger>
-              <TabsTrigger title="Email Notifications" value="email-notifications">
-                Email Notifications
-              </TabsTrigger>
             </TabsList>
             <TabsContent className="pt-4" value="profile">
               <ProfileTab
@@ -660,9 +601,6 @@ const UserDetailModalContent: React.FC<{
                 user={formState}
                 validateField={validateField}
               />
-            </TabsContent>
-            <TabsContent className="pt-4" value="email-notifications">
-              <EmailNotificationsTab setUserData={setUserData} user={formState} />
             </TabsContent>
           </Tabs>
         </div>

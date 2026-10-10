@@ -25,22 +25,18 @@ export const IMPLEMENTED_POST_ACTIONS: ReadonlySet<PostContextMenuKey> = new Set
   'copy-link',
   'copy-preview',
   'duplicate',
-  'gift-link',
   'delete',
   'unpublish',
   'unschedule',
   'feature',
   'unfeature',
   'add-tag',
-  'change-access',
 ]);
 
 interface UsePostActionsOptions {
   resource: PostResource;
   /** The selected posts that are loaded — Ember's `availableModels`. */
   posts: PostListItem[];
-  /** The screen owns the modal; the hook just says which post to open it for. */
-  onShareAsGift?: (postId: string) => void;
   /**
    * How many posts the action applies to — the *selection* count, which after
    * Cmd+A is the server total rather than the rows in memory. Ember
@@ -62,7 +58,6 @@ interface UsePostActionsOptions {
 export function usePostActions({
   resource,
   posts,
-  onShareAsGift,
   count,
   onBulkAction,
   selectionFilter,
@@ -132,9 +127,6 @@ export function usePostActions({
             notify('duplicated');
             break;
           }
-          case 'gift-link':
-            onShareAsGift?.(first.id);
-            break;
           default:
             // Everything else is a bulk action. The selection is captured now,
             // because the menu is about to close and take a transient selection
@@ -164,7 +156,6 @@ export function usePostActions({
       copyPost,
       copyPage,
       queryClient,
-      onShareAsGift,
       count,
       onBulkAction,
       selectionFilter,

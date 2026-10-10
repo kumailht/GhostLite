@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { debounce } from './debounce';
 
@@ -75,14 +74,12 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({
     const iframe = iframes[visibleIframeIndex].current;
 
     if (iframe) {
-      // refs https://ghost-foundation.sentry.io/issues/5024564293/
-      // Customer reported that code they injected caused Settings to crash.
-      // According to Sentry this the line that caused the crash.
-      // We are adding a try catch block to attempt to catch the error for further investigation and prevent the crash.
+      // Code injected into the site can make this throw; don't let it crash Settings.
       try {
         iframe.contentWindow?.scrollTo(0, scrollPosition);
       } catch (e) {
-        Sentry.captureException(e);
+        // eslint-disable-next-line no-console
+        console.error(e);
       }
     }
   }, [scrollPosition, visibleIframeIndex, iframes]);

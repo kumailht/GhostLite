@@ -1,7 +1,5 @@
 import {
   APIError,
-  EmailError,
-  HostLimitError,
   JSONError,
   MaintenanceError,
   RequestEntityTooLargeError,
@@ -49,8 +47,7 @@ export function stateSaveError(state: SaveEngineState): SaveError | null {
 
 // @tryghost/bookshelf-collision rejects a stale updated_at with this code.
 const COLLISION_CODE = 'UPDATE_COLLISION';
-// Core's email service refuses a publish whose newsletter or audience changed under it with
-// this type and no code.
+// Core refuses some collisions with this type and no code.
 const COLLISION_TYPE = 'UpdateCollisionError';
 // Core refuses `scheduled` for a post published since with this ValidationError context,
 // raised before the collision check could see the stale updated_at.
@@ -60,18 +57,6 @@ const NO_PERMISSION = 'NoPermissionError';
 
 /** The preferred fallback for a failure the editor cannot explain (docs/practices/error-handling.md). */
 export const UNEXPECTED_ERROR_MESSAGE = 'An unexpected error occurred, please try again.';
-
-/**
- * What a publish Core's email service refused tells the writer. Within a request the
- * service throws an `EmailError` only when the post has no newsletter to send to
- * (`checkCanSendEmail` in ghost/core/core/server/services/email-service/email-service.js,
- * called by the post save's email handler), and gives it no code, so the class stands in
- * for that case rather than its sentence. Core's other `EmailError`s are thrown by the
- * background send job, after the request has answered, and reach the editor as the
- * email's failed status instead.
- */
-export const EMAIL_REFUSED_MESSAGE =
-  'The newsletter couldn’t be sent. Check the post’s newsletter and try again.';
 
 function apiErrorBody(error: unknown) {
   return error instanceof JSONError ? error.data?.errors?.[0] : undefined;
@@ -132,15 +117,12 @@ export function isTransportSummary(error: unknown): boolean {
 
 /**
  * Core's reason for a refused request, or null when there is none to show. Only a 4xx
- * is a refusal Core words for the person (validation, a host limit, permissions, a bad
- * request such as an archived newsletter); a 5xx is a fault whose text is for logs, so
+ * is a refusal Core words for the person (validation, permissions, a bad request);
+ * a 5xx is a fault whose text is for logs, so
  * the caller's fallback stands in. Core's error handler rewrites `message` to a generic
  * summary and moves its own sentence into `context`, so the context is preferred.
  */
 function apiErrorReason(error: unknown): string | null {
-  if (error instanceof EmailError) {
-    return EMAIL_REFUSED_MESSAGE;
-  }
   const code = status(error);
   if (code === undefined || code < 400 || code >= 500) {
     return null;
@@ -185,9 +167,6 @@ export function toSaveError(error: unknown, fallback: string): SaveError {
     // Read before the ValidationError check: the framework classes this refusal as one.
     if (isNoPermission(error)) {
       return 'forbidden';
-    }
-    if (error instanceof HostLimitError) {
-      return 'host-limit';
     }
     if (
       error instanceof ServerUnreachableError ||

@@ -1,19 +1,9 @@
-import { z } from 'zod';
 import type { SearchIndexItem } from '@/shared/search-index';
 
-export const BILLING_SEARCH_GROUP_KEY = 'billing';
+export type SearchableModel = 'user' | 'tag' | 'post' | 'page';
 
-export type SearchableModel = 'user' | 'tag' | 'pro-page' | 'post' | 'page';
-
-/** A search-index entry, or a configured billing item. */
+/** A search-index entry. */
 export type SearchItem = SearchIndexItem & { path?: string; keywords?: string };
-
-function parseEach<T>(schema: z.ZodType<T>, items: unknown[]): T[] {
-  return items.flatMap((item) => {
-    const parsed = schema.safeParse(item);
-    return parsed.success ? [parsed.data] : [];
-  });
-}
 
 export interface Searchable {
   name: string;
@@ -22,7 +12,6 @@ export interface Searchable {
   idField: 'id' | 'slug';
   titleField: 'name' | 'title';
   index: Array<'name' | 'title' | 'keywords'>;
-  staticItems?: SearchItem[];
 }
 
 export interface SearchResult {
@@ -73,58 +62,8 @@ const PAGES: Searchable = {
   index: ['title'],
 };
 
-const BUILT_IN_GROUP_NAMES = [STAFF, TAGS, POSTS, PAGES].map((searchable) => searchable.name);
-
-/** Host config defines the billing group: `{groupName, items: [{id, title, path, keywords}]}`. */
-const billingSearchConfigSchema = z.object({
-  // a built-in name would put two groups under one heading
-  groupName: z
-    .string()
-    .trim()
-    .min(1)
-    .refine((name) => !BUILT_IN_GROUP_NAMES.includes(name)),
-  items: z.array(z.unknown()),
-});
-
-const billingSearchItemSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  // a billing app route: no query, fragment, whitespace, or trailing slash
-  path: z
-    .string()
-    .regex(/^\/[^?#\s]*$/)
-    .refine((path) => path === '/' || !path.endsWith('/')),
-  keywords: z.string().catch(''),
-});
-
-function getBillingSearchable(searchConfig: unknown): Searchable | null {
-  const config = billingSearchConfigSchema.safeParse(searchConfig);
-
-  if (!config.success) {
-    return null;
-  }
-
-  const staticItems = parseEach(billingSearchItemSchema, config.data.items);
-
-  if (staticItems.length === 0) {
-    return null;
-  }
-
-  return {
-    name: config.data.groupName,
-    key: BILLING_SEARCH_GROUP_KEY,
-    model: 'pro-page',
-    idField: 'id',
-    titleField: 'title',
-    index: ['title', 'keywords'],
-    staticItems,
-  };
-}
-
-export function getSearchables(hostSettings?: { billing?: { search?: unknown } }): Searchable[] {
-  const billing = getBillingSearchable(hostSettings?.billing?.search);
-
-  return billing ? [STAFF, TAGS, billing, POSTS, PAGES] : [STAFF, TAGS, POSTS, PAGES];
+export function getSearchables(): Searchable[] {
+  return [STAFF, TAGS, POSTS, PAGES];
 }
 
 const STATUS_PRIORITY: Record<string, number> = {

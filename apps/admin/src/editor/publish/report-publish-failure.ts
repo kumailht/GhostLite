@@ -1,24 +1,20 @@
 import { isExpectedFailure, reportEditorError, reportEditorNotice } from '@/editor/report-error';
-import { LimitCheckError } from './publish-options';
 
 /** What the writer was shown, as Sentry's `publish_failure` tag. */
 export type PublishFailureKind =
-  | 'limit-check'
   | 'publish-inputs'
   | 'pre-publish-save'
   | 'publish-request'
   | 'revert-request'
-  | 'retry-eligibility'
-  | 'retry-request'
   | 'no-command';
 
 /**
  * Whether a failure is expected rather than a fault in the flow, by the rule saves
- * are reported by (`isExpectedSaveError()`): validation, a host limit, a writer who
+ * are reported by (`isExpectedSaveError()`): validation, a writer who
  * lost access, an expired session and a lost connection are left out.
  */
 export function isExpectedRefusal(error: unknown): boolean {
-  return isExpectedFailure(error instanceof LimitCheckError ? error.cause : error);
+  return isExpectedFailure(error);
 }
 
 /**

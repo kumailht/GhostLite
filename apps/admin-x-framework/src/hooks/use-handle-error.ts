@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { APIError, SessionExpiredError, getErrorMessage } from '../utils/errors';
@@ -25,24 +24,6 @@ const useHandleError = () => {
     (error: unknown, { withToast = true }: { withToast?: boolean } = {}) => {
       // eslint-disable-next-line no-console
       console.error(error);
-
-      if (Sentry.getClient() && !(error instanceof SessionExpiredError)) {
-        Sentry.withScope((scope) => {
-          scope.setTag('source', 'useHandleError');
-          // API errors reach the user through the toast or the caller's own message
-          scope.setTag('shown_to_user', error instanceof APIError);
-          if (error instanceof APIError) {
-            scope.setContext('ghost', {
-              displayed_message: getErrorMessage(error, error.message),
-            });
-            if (error.response) {
-              scope.setTag('api_url', error.response.url);
-              scope.setTag('api_response_status', error.response.status);
-            }
-          }
-          Sentry.captureException(error);
-        });
-      }
 
       if (!withToast) {
         return;

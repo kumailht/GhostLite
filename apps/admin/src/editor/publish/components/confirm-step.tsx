@@ -1,10 +1,6 @@
 import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
-import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { PublishPhaseIcon } from '@/posts/api';
 import { FailureBanner } from './failure-banner';
 import {
   publishBackToSettings,
@@ -14,21 +10,17 @@ import {
 } from '@/editor/selectors';
 import {
   confirmButtonText,
-  confirmPublishType,
   confirmRunningText,
   formatSiteDateTime,
-  recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
 import type { CompletionFailure } from '@/editor/publish/completion-message';
-import type { ConfirmStatus, PublishFlow } from '@/editor/publish/use-publish-flow';
+import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
 export interface ConfirmStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
-  /** Captured on entering this step so saving cannot change the copy. */
-  captured: PublishFlow['captured'];
   timezone: string;
   status: ConfirmStatus;
   failure: CompletionFailure | null;
@@ -43,32 +35,20 @@ const ENTER = 'animate-in fade-in-0 zoom-in-90 duration-200 ease-out motion-redu
 export function ConfirmStep({
   post,
   state,
-  captured,
   timezone,
   status,
   failure,
   onConfirm,
   onBack,
 }: ConfirmStepProps) {
-  const { count } = useMembersCount(state.fullRecipientFilter, {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  const publishType = confirmPublishType(captured);
-  const showNewsletterName = !state.onlyDefaultNewsletter && state.newsletter?.name;
-  const recipients = recipientsConfirmLabel({
-    recipientType: getRecipientType(state.recipientFilter),
-    count,
-  });
-
   const buttonText = {
     idle: confirmButtonText({
-      publishType,
       isScheduled: state.isScheduled,
       scheduledAt: state.scheduledAt,
       displayName: post.displayName,
       timezone,
     }),
-    running: confirmRunningText(publishType, state.isScheduled),
+    running: confirmRunningText(state.isScheduled),
   };
 
   return (
@@ -94,32 +74,7 @@ export function ConfirmStep({
         ) : (
           'Your'
         )}{' '}
-        {post.displayName}
-        {captured.willPublish ? (
-          <> will be published on your site{captured.willEmail ? ', and delivered to' : '.'}</>
-        ) : null}
-        {captured.willEmail ? (
-          <>
-            {captured.willPublish ? ' ' : ' will be delivered to '}
-            <strong>{recipients}</strong>
-            {showNewsletterName ? (
-              <>
-                {' '}
-                of <strong>{state.newsletter?.name}</strong>
-              </>
-            ) : null}
-            {captured.willPublish ? '.' : ','}
-            {captured.willPublish ? null : (
-              <>
-                {' '}
-                and will <strong>not</strong> be published on your site.
-              </>
-            )}
-          </>
-        ) : null}
-        {captured.willPublish && captured.skipsEmail ? (
-          <> It won’t be sent as a newsletter, because no recipients are selected.</>
-        ) : null}
+        {post.displayName} will be published on your site.
       </Text>
 
       {failure ? <FailureBanner failure={failure} testId={publishConfirmError} /> : null}
@@ -144,9 +99,8 @@ export function ConfirmStep({
         >
           {status === 'running' ? (
             <>
-              {/* The analytics "preparing" spinner, in the button's own text colour.
-                  size-4 matches the size Button gives its icons at this text size. */}
-              <PublishPhaseIcon className={cn('size-4 text-current', ENTER)} phase="preparing" />
+              {/* size-4 matches the size Button gives its icons at this text size. */}
+              <LucideIcon.LoaderCircle className={cn('size-4 animate-spin text-current', ENTER)} />
               <span className={ENTER}>{buttonText.running}</span>
             </>
           ) : (

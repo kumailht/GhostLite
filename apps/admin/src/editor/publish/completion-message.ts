@@ -1,15 +1,9 @@
-import {
-  APIError,
-  HostLimitError,
-  ServerUnreachableError,
-} from '@tryghost/admin-x-framework/errors';
+import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
 import {
   UNEXPECTED_ERROR_MESSAGE,
   isSessionInvalid,
   requestFailureMessage,
 } from '@/editor/session/error-mapping';
-import { splitUpgradeMessage } from './publish-options';
-import type { LimitMessagePart } from './publish-options';
 import type { SaveCompletion, SaveError } from '@/editor/engine/save-engine';
 
 /** A request that never reached the server, a save's or any other. */
@@ -27,8 +21,6 @@ export const SESSION_ABANDONED_MESSAGE =
 export const SESSION_EXPIRED_MESSAGE = 'Your session expired. Try again to sign in.';
 /** The same, beside a Retry that signs in again: a failed save or the publish settings. */
 export const SESSION_EXPIRED_RETRY_MESSAGE = 'Your session expired. Retry to sign in again.';
-export const RETRY_ELIGIBILITY_FAILED_MESSAGE =
-  'Could not check whether this email can be retried. Please try checking again.';
 export const UNEXPECTED_MESSAGE = 'Something went wrong while saving. Please try again.';
 export const DROPPED_MESSAGE = 'This post can no longer be published from here. Reload the editor.';
 export const HALTED_MESSAGE =
@@ -38,16 +30,14 @@ export const DELETED_MESSAGE =
 
 export interface CompletionFailure {
   message: string;
-  /** Set for a host limit, so "please upgrade" can be rendered as a link. */
-  parts?: LimitMessagePart[];
   /** `info` is a note on what to do next, not an error: nothing failed. */
   tone?: 'info';
 }
 
 /**
  * Carries a described failure through a promise rejection, so a caller that
- * rejects with it (the editor's pre-publish save) keeps the structured copy,
- * host-limit link included, instead of flattening it to `message`.
+ * rejects with it (the editor's pre-publish save) keeps the structured copy
+ * instead of flattening it to `message`.
  */
 export class CompletionFailureError extends Error {
   readonly failure: CompletionFailure;
@@ -57,11 +47,6 @@ export class CompletionFailureError extends Error {
     this.name = 'CompletionFailureError';
     this.failure = failure;
   }
-}
-
-/** A host limit's copy, split so its upgrade phrase can be linked. */
-export function hostLimitFailure(message: string): CompletionFailure {
-  return { message, parts: splitUpgradeMessage(message) };
 }
 
 /**
@@ -86,8 +71,7 @@ export function describeRejectedAction(
   }
 
   if (error instanceof APIError) {
-    const message = requestFailureMessage(error, fallback);
-    return error instanceof HostLimitError ? hostLimitFailure(message) : { message };
+    return { message: requestFailureMessage(error, fallback) };
   }
 
   if (error instanceof Error && error.message) {
@@ -157,8 +141,6 @@ export function describeSaveError(error: SaveError): CompletionFailure {
       return { message: CONFLICT_MESSAGE };
     case 'session-invalid':
       return { message: SESSION_ABANDONED_MESSAGE };
-    case 'host-limit':
-      return hostLimitFailure(error.message || UNEXPECTED_ERROR_MESSAGE);
     default:
       return { message: writerMessage(error) || UNEXPECTED_ERROR_MESSAGE };
   }

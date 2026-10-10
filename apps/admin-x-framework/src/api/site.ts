@@ -1,5 +1,4 @@
 import { createQuery } from '../utils/api/hooks';
-import { Config, hasSendingDomain, isManagedEmail, sendingDomain } from './config';
 
 // Types
 
@@ -14,9 +13,6 @@ export type SiteData = {
   locale: string;
   version: string;
   site_uuid: string;
-  /** Present only when the server has client error reporting configured. */
-  sentry_dsn?: string;
-  sentry_env?: string;
 };
 
 export interface SiteResponseType {
@@ -39,21 +35,4 @@ export function getHomepageUrl(siteData: SiteData): string {
   const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
 
   return `${url.origin}${subdir}`;
-}
-
-export function getEmailDomain(siteData: SiteData, config: Config): string {
-  if (isManagedEmail(config) && hasSendingDomain(config)) {
-    return sendingDomain(config) || '';
-  }
-
-  const domain = new URL(siteData.url).hostname || '';
-  if (domain.startsWith('www.')) {
-    return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
-  }
-  return domain;
-}
-
-export function fullEmailAddress(value: 'noreply' | string, siteData: SiteData, config: Config) {
-  const emailDomain = getEmailDomain(siteData, config);
-  return value === 'noreply' ? `noreply@${emailDomain}` : value;
 }

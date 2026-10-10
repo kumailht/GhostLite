@@ -31,7 +31,6 @@
     "dev:test": "node test/test-server.ts",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
     "build": "vite build",
-    "build:demo": "vite build --config vite.config.demo.ts",
     "preview": "vite preview",
     "coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
@@ -59,7 +58,6 @@
     "@lezer/highlight": "1.2.5",
     "@mdx-js/rollup": "3.1.1",
     "@prettier/sync": "0.6.1",
-    "@sentry/vite-plugin": "5.3.0",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/kg-clean-basic-html": "workspace:~",
@@ -118,11 +116,6 @@
           },
           "default",
           "^default"
-        ]
-      },
-      "build:demo": {
-        "dependsOn": [
-          "^build"
         ]
       },
       "dev:integrated": {

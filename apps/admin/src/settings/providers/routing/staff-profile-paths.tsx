@@ -4,7 +4,7 @@
 // rather than restated, or a new tab renders for admins and redirects everyone
 // else. No imports: the shell loads this eagerly, outside the settings chunk.
 
-const STAFF_PROFILE_TABS = ['edit', 'social-links', 'email-notifications'] as const;
+const STAFF_PROFILE_TABS = ['edit', 'social-links'] as const;
 
 export const staffProfileModalPaths: string[] = [
   ...STAFF_PROFILE_TABS.map((tab) => `staff/:slug/${tab}`),

@@ -69,7 +69,49 @@ function buildRenderOptions(userOptions) {
   );
 }
 
+// Cards GhostLite no longer has. Posts imported from a full Ghost site can
+// still contain them, and lexical refuses to load a node type it doesn't know.
+const REMOVED_CARD_TYPES = new Set([
+  'call-to-action',
+  'email',
+  'email-cta',
+  'paywall',
+  'product',
+  'signup',
+  'transistor',
+]);
+
+function withoutRemovedCards(node) {
+  if (!Array.isArray(node?.children)) {
+    return node;
+  }
+
+  return {
+    ...node,
+    children: node.children
+      .filter((child) => !REMOVED_CARD_TYPES.has(child?.type))
+      .map(withoutRemovedCards),
+  };
+}
+
 module.exports = {
+  /**
+   * Drops the cards GhostLite no longer supports from a lexical document.
+   * Returns the input unchanged when it holds none, or isn't valid JSON.
+   */
+  stripRemovedCards(lexical) {
+    if (typeof lexical !== 'string' || ![...REMOVED_CARD_TYPES].some((t) => lexical.includes(`"${t}"`))) {
+      return lexical;
+    }
+
+    try {
+      const document = JSON.parse(lexical);
+      return JSON.stringify({ ...document, root: withoutRemovedCards(document.root) });
+    } catch {
+      return lexical;
+    }
+  },
+
   get blankDocument() {
     return {
       root: {

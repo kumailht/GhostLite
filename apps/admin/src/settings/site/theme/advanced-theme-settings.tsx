@@ -26,11 +26,9 @@ import {
 } from '@tryghost/admin-x-framework/api/themes';
 import { downloadFromEndpoint } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
-import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 
 interface ThemeActionProps {
   theme: Theme;
@@ -77,9 +75,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
   const { refreshActiveThemeData } = useCustomFonts();
   const handleError = useHandleError();
   const { route, updateRoute } = useSettingsNavigation();
-  const upgradeRoute = useUpgradeRoute();
-  const { checkThemeLimitError } = useCheckThemeLimitError();
-  const { confirm, showLimit } = useConfirmation();
+  const { confirm } = useConfirmation();
   const [activationErrors, setActivationErrors] = useState<FatalErrors | null>(null);
 
   const handleActivate = async () => {
@@ -136,17 +132,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
     });
   };
 
-  const handleEditCode = async () => {
-    const limitError = await checkThemeLimitError('.');
-
-    if (limitError) {
-      showLimit({
-        prompt: limitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
-      });
-      return;
-    }
-
+  const handleEditCode = () => {
     updateRoute(
       `theme/edit/${encodeURIComponent(theme.name)}?from=${encodeURIComponent(route ?? '')}`,
     );

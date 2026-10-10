@@ -65,9 +65,7 @@
     "build": "tsc -p tsconfig.declaration.json && vite build"
   },
   "dependencies": {
-    "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
-    "@tryghost/limit-service": "workspace:*",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "@tryghost/string": "catalog:",

@@ -28,11 +28,6 @@ export interface FileUploader {
     [key: string]: unknown;
 }
 
-export interface PinturaConfig {
-    jsUrl?: string;
-    cssUrl?: string;
-}
-
 export interface EmbedResponse {
     url?: string;
     title?: string;
@@ -57,22 +52,15 @@ export interface FetchEmbedOptions {
     [key: string]: unknown;
 }
 
-export type PostVisibility = 'public' | 'members' | 'paid' | 'tiers';
-
-// `visibility` is required: the host resolves it against the site default
-// before handing the config over, so cards never have to guess at access
 export interface CardConfigPost {
     displayName?: 'post' | 'page';
     isPage?: boolean;
     showTitleAndFeatureImage?: boolean;
-    visibility: PostVisibility;
 }
 
 // no index signature: a new flag must be declared here before a card can read it
-export interface CardConfigFeature {
-    transistor?: boolean;
-    paywallImprovements?: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface CardConfigFeature {}
 
 export interface CardConfig {
     createSnippet?: (snippet: Snippet) => void;
@@ -80,14 +68,11 @@ export interface CardConfig {
     // directory serving the embed renderer on a separate origin; embeds preview in the editor's origin when unset
     embedPreviewUrl?: string;
     fetchEmbed?: (url: string, options: FetchEmbedOptions) => Promise<EmbedResponse>;
-    fetchLabels?: () => Promise<string[]>;
     fetchAutocompleteLinks?: () => Promise<{value: string; label: string}[]>;
     searchLinks?: (term?: string) => Promise<unknown>;
     siteUrl?: string;
     klipy?: {apiKey: string; contentFilter?: string} | null;
     unsplash?: unknown;
-    pinturaConfig?: PinturaConfig | null;
-    renderLabels?: boolean;
     image?: {allowedWidths?: string[]};
     feature?: CardConfigFeature;
     post?: CardConfigPost;

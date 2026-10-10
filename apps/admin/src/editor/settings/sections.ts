@@ -24,15 +24,12 @@ export type SettingsSectionId = (typeof SETTINGS_SECTION_ORDER)[number];
 
 /**
  * The section each field the save validator checks is edited in, for the fields
- * the panel holds. The title and the inline excerpt live on the canvas, and the
- * email subject in the preview.
+ * the panel holds. The title and the inline excerpt live on the canvas.
  */
 export const SETTINGS_FIELD_SECTIONS = {
   custom_excerpt: 'excerpt',
   published_at: 'publish-date',
   authors: 'authors',
-  visibility: 'access',
-  tiers: 'access',
   canonical_url: 'meta-data',
   meta_title: 'meta-data',
   meta_description: 'meta-data',
@@ -42,7 +39,7 @@ export const SETTINGS_FIELD_SECTIONS = {
   twitter_description: 'x-card',
   codeinjection_head: 'code-injection',
   codeinjection_foot: 'code-injection',
-} as const satisfies Record<Exclude<InvalidFieldKey, 'title' | 'email_subject'>, SettingsSectionId>;
+} as const satisfies Record<Exclude<InvalidFieldKey, 'title'>, SettingsSectionId>;
 
 /** A field the settings panel edits, which the panel can be asked to take the writer to. */
 export type SettingsPanelField = keyof typeof SETTINGS_FIELD_SECTIONS;

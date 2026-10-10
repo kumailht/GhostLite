@@ -6,7 +6,6 @@ import FormSection from '@/settings/components/form-section';
 import React, { useState } from 'react';
 import UnsplashSelector from '@/settings/components/selectors/unsplash-selector';
 import clsx from 'clsx';
-import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { CUSTOM_FONTS } from '@tryghost/custom-fonts';
 import {
@@ -30,7 +29,7 @@ import {
   ImageUploadImage,
   ImageUploadPreview,
 } from '@tryghost/shade/patterns';
-import { Images, Pencil, Trash2 } from 'lucide-react';
+import { Images, Trash2 } from 'lucide-react';
 import { type SettingValue, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { type Theme, useBrowseThemes } from '@tryghost/admin-x-framework/api/themes';
 import { formatNumber } from '@tryghost/shade/utils';
@@ -123,7 +122,6 @@ const GlobalSettings: React.FC<{
     }
   };
 
-  const editor = usePinturaEditor();
 
   const { data: themesData } = useBrowseThemes();
   const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
@@ -326,28 +324,6 @@ const GlobalSettings: React.FC<{
               <ImageUploadPreview>
                 <ImageUploadImage id="cover" src={values.coverImage} />
                 <ImageUploadActions className="top-1 right-1">
-                  {editor.isEnabled && (
-                    <ImageUploadAction
-                      aria-label="Edit publication cover"
-                      onClick={() =>
-                        editor.openEditor({
-                          image: values.coverImage || '',
-                          handleSave: async (file: File) => {
-                            try {
-                              updateSetting(
-                                'cover_image',
-                                getImageUrl(await uploadImage({ file })),
-                              );
-                            } catch (e) {
-                              handleError(e);
-                            }
-                          },
-                        })
-                      }
-                    >
-                      <Pencil />
-                    </ImageUploadAction>
-                  )}
                   <ImageUploadAction
                     aria-label="Remove publication cover"
                     data-testid="image-delete-button"

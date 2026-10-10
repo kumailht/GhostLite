@@ -24,7 +24,6 @@ import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
 import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
-import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   type User,
   isAdminUser,
@@ -45,13 +44,10 @@ import {
   withLiveSettings,
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
-import { readEditorReturn } from './editor-return';
 import { EditorStatus } from './editor-status';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
-import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
-import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
 import { type InvalidField, settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
@@ -89,19 +85,11 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
   );
 }
 
-function EditorHeader({
-  postType,
-  analyticsReturn,
-  children,
-}: {
-  postType: PostType;
-  analyticsReturn?: string;
-  children?: ReactNode;
-}) {
+function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
   const resource = postType === 'page' ? 'pages' : 'posts';
   const listUrl = getPostListReturnUrl(resource);
-  const backLabel = analyticsReturn ? 'Analytics' : listLabel;
+  const backLabel = listLabel;
 
   return (
     <Grid
@@ -116,17 +104,10 @@ function EditorHeader({
         label={backLabel}
         asChild
       >
-        {analyticsReturn ? (
-          <AdminLink to={analyticsReturn}>
-            <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
-          </AdminLink>
-        ) : (
-          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
-            <LucideIcon.ArrowLeft />
-            <span className="max-[500px]:sr-only">{backLabel}</span>
-          </AdminLink>
-        )}
+        <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
+          <LucideIcon.ArrowLeft />
+          <span className="max-[500px]:sr-only">{backLabel}</span>
+        </AdminLink>
       </PageHeader.Action>
       {children}
     </Grid>
@@ -142,19 +123,10 @@ function statusRecordOf(
     return createdId ? { status: 'draft' } : undefined;
   }
 
-  const email = 'email' in record ? record.email : null;
-  const newsletter = 'newsletter' in record ? (record.newsletter ?? null) : null;
-
   return {
     status: record.status,
     publishedAt: record.published_at,
     url: record.url,
-    emailOnly: 'email_only' in record ? record.email_only : false,
-    newsletter,
-    emailSegment: 'email_segment' in record ? record.email_segment : null,
-    hasEmail: !!email,
-    emailStatus: email?.status ?? null,
-    emailCount: email?.email_count ?? 0,
   };
 }
 
@@ -187,15 +159,6 @@ function EditorContent({
   });
   const [tkCount, setTkCount] = useState(0);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
-  const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
-  const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
-  // Only reads what the sidebar's tier picker loaded, which names a tier picked before its save lands.
-  const { data: tiersData } = useBrowseTiers({
-    defaultErrorHandler: false,
-    enabled: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: PAID_TIERS_SEARCH_PARAMS,
-  });
   const publishPost = buildPublishFlowPost({
     snapshot: {
       id: session.persistedId,
@@ -204,23 +167,9 @@ function EditorContent({
       title: session.title,
     },
     record: session.loadedRecord,
-    access: session.settings,
-    knownTiers: tiersData?.tiers,
     displayName: postType,
-    lexical: session.getLiveLexical(),
   });
-  // Core refuses an email retry to Authors and Contributors.
-  const offersEmailRetry =
-    !!currentUser && !isAuthorOrContributor(currentUser) && !!initialEmailError(publishPost);
-  // The update flow is mounted with the publish controls, which Contributors never get.
-  const canPublish = !!currentUser && !isContributorUser(currentUser);
-  const location = useLocation();
-  const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
   const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
-  const didEmailFail =
-    postType === 'post' &&
-    (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
-    statusRecord.emailStatus === 'failed';
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
@@ -343,15 +292,11 @@ function EditorContent({
   }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
-  const liveVisibility = session.settings.visibility;
   const liveShowTitleAndFeatureImage = session.settings.show_title_and_feature_image;
   const currentCardConfig = useMemo(
     () =>
-      withLiveSettings(cardConfig, {
-        visibility: liveVisibility,
-        showTitleAndFeatureImage: liveShowTitleAndFeatureImage,
-      }),
-    [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
+      withLiveSettings(cardConfig, { showTitleAndFeatureImage: liveShowTitleAndFeatureImage }),
+    [cardConfig, liveShowTitleAndFeatureImage],
   );
 
   const settingsToggle = (
@@ -415,23 +360,18 @@ function EditorContent({
       >
         <Stack className="min-h-0 min-w-0 flex-1" gap="none">
           <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
-            <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
-              {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
-                <EditorStatus
-                  isDirty={session.isDirty()}
-                  pendingSave={session.pendingSave}
-                  record={statusRecord}
-                  state={session.state}
-                  onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                  onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
-                  onRetrySave={session.retrySave}
-                />
-              ) : null}
+            <EditorHeader postType={postType}>
+              <EditorStatus
+                isDirty={session.isDirty()}
+                pendingSave={session.pendingSave}
+                record={statusRecord}
+                state={session.state}
+                onRetrySave={session.retrySave}
+              />
               <PageHeader.ActionGroup className="col-start-3 ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
                 <EditorHeaderActions
                   bottomBar={bottomBar}
                   currentUser={currentUser}
-                  offersEmailRetry={offersEmailRetry}
                   openFlow={openFlow}
                   post={publishPost}
                   postType={postType}

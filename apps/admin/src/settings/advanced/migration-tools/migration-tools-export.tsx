@@ -1,9 +1,8 @@
-import ExportAllModal, { type ExportMode } from './export-all-modal';
+import ExportAllModal from './export-all-modal';
 import React from 'react';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { blobDownloadFromEndpoint } from '@tryghost/admin-x-framework/helpers';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 const MigrationToolsExport: React.FC = () => {
@@ -11,10 +10,6 @@ const MigrationToolsExport: React.FC = () => {
   const [exportAllOpen, setExportAllOpen] = React.useState(false);
   const handleError = useHandleError();
 
-  const { data: configData } = useBrowseConfig();
-  const webhookUrl = configData?.config.hostSettings?.export?.webhookUrl;
-  const mode: ExportMode =
-    typeof webhookUrl === 'string' && webhookUrl.length > 0 ? 'async' : 'sync';
 
   const exportPosts = async () => {
     if (isExportingPosts) {
@@ -66,7 +61,7 @@ const MigrationToolsExport: React.FC = () => {
           )}
         </Button>
       </div>
-      <ExportAllModal mode={mode} open={exportAllOpen} onOpenChange={setExportAllOpen} />
+      <ExportAllModal open={exportAllOpen} onOpenChange={setExportAllOpen} />
     </>
   );
 };

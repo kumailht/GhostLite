@@ -705,6 +705,10 @@ Post = ghostBookshelf.Model.extend(
         }
       }
 
+      if (this.hasChanged('lexical')) {
+        this.set('lexical', lexicalLib.stripRemovedCards(this.get('lexical')));
+      }
+
       // CASE: lexical has changed, generate html
       // CASE: ?force_rerender=true passed via Admin API
       // CASE: html is null, but lexical exists (only important for migrations & importing)

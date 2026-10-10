@@ -14,7 +14,6 @@ import { Stack } from '@tryghost/shade/primitives';
 import { createPortal } from 'react-dom';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { useFramework } from '@tryghost/admin-x-framework';
-import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
   ACCEPTED_IMAGE_TYPES,
@@ -55,7 +54,6 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
 }) => {
   const { mutateAsync: uploadImage, isPending } = useUploadImage();
   const { unsplashConfig } = useFramework();
-  const editor = usePinturaEditor({ disabled });
   const [showUnsplash, setShowUnsplash] = React.useState(false);
   const [operationPending, setOperationPending] = React.useState(false);
   const mountedRef = React.useRef(true);
@@ -74,7 +72,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
     };
   }, []);
 
-  const isBusy = operationPending || showUnsplash || editor.isOpen;
+  const isBusy = operationPending || showUnsplash;
   React.useEffect(() => {
     onBusyChangeRef.current?.(isBusy);
   }, [isBusy]);
@@ -124,15 +122,6 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
           <ImageUploadPreview>
             <ImageUploadImage alt="" src={value} />
             <ImageUploadActions>
-              {editor.isEnabled && (
-                <ImageUploadAction
-                  aria-label={`Edit ${label.toLowerCase()}`}
-                  disabled={fieldDisabled}
-                  onClick={() => editor.openEditor({ image: value, handleSave: handleUpload })}
-                >
-                  <LucideIcon.Pencil />
-                </ImageUploadAction>
-              )}
               <ImageUploadAction
                 aria-label={`Remove ${label.toLowerCase()}`}
                 disabled={fieldDisabled}

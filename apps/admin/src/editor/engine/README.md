@@ -61,7 +61,7 @@ Restoring saved values therefore does not leave a warning for a later edit.
 Subsequent body edits on a blocked new post use the normal debounce instead of
 preparing a create on every keystroke.
 
-Server validation and host-limit holds keep their existing suppression rules;
+Server validation holds keep their existing suppression rules;
 a passing local preparation does not establish that the server will accept the
 request. A collision is tracked separately because its rejected baseline can
 remain unsafe while another error is being resolved.
@@ -103,7 +103,6 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 | `forbidden` on a status change  | `error`, no suppression: Core refused that publish, schedule or unpublish, not the post                                                                                   | next save                                                                                                  |
 | `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded(updatedAt, adopt?)` with a candidate different from the rejected one |
 | server `validation`             | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, an explicit save, or a settings retry                                                           |
-| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, an explicit save, or a settings retry                                                           |
 | `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                                                  |
 
 `halted` carries the error that stopped it, as `error` and `conflict` do.

@@ -15,18 +15,16 @@ import { LucideIcon } from '@tryghost/shade/utils';
  * `post-context-menu-items.ts` stays a plain module with no React in it — it is
  * the piece the unit tests lean on hardest.
  *
- * Star, Tag and Lock match the icons Ember uses for the same three actions.
+ * Star and Tag match the icons Ember uses for the same actions.
  */
 const POST_MENU_ICONS: Record<PostContextMenuKey, typeof LucideIcon.Link> = {
   'copy-link': LucideIcon.Link,
   'copy-preview': LucideIcon.Link,
-  'gift-link': LucideIcon.Gift,
   unpublish: LucideIcon.Undo2,
   unschedule: LucideIcon.CalendarX,
   feature: LucideIcon.Star,
   unfeature: LucideIcon.StarOff,
   'add-tag': LucideIcon.Tag,
-  'change-access': LucideIcon.Lock,
   duplicate: LucideIcon.Copy,
   delete: LucideIcon.Trash2,
 };
@@ -39,8 +37,6 @@ interface PostsContextMenuProps {
    * memo, which is the whole point of rendering the menu inside it.
    */
   getItems: () => PostContextMenuItem[];
-  /** Only this row may offer a gift link, which is a single-post action. */
-  showGiftLink: boolean;
   /**
    * Off for authors and contributors. Ember bails before intercepting the
    * event, letting the browser's own menu through; anything else would swap a
@@ -59,7 +55,6 @@ interface PostsContextMenuProps {
 export function PostsContextMenu({
   children,
   getItems,
-  showGiftLink,
   enabled,
   onOpenChange,
   onAction,
@@ -76,7 +71,7 @@ export function PostsContextMenu({
     return <>{children}</>;
   }
 
-  const visible = showGiftLink ? getItems() : getItems().filter((item) => item.key !== 'gift-link');
+  const visible = getItems();
 
   return (
     <ContextMenu onOpenChange={onOpenChange}>
@@ -89,12 +84,8 @@ export function PostsContextMenu({
             // Fragment, not a div: a `role="menu"` may only contain
             // menuitem, group and separator children.
             <Fragment key={item.key}>
-              {/* The gift-link rule comes from adjacency, not a
-                                `separated` flag: the gift link is filtered out
-                                here per row, so a flag on the item after it
-                                would draw a stray rule when it goes. Never
-                                above the first item. */}
-              {index > 0 && (item.separated || visible[index - 1].key === 'gift-link') && (
+              {/* Never above the first item. */}
+              {index > 0 && item.separated && (
                 <ContextMenuSeparator />
               )}
               <ContextMenuItem

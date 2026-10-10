@@ -56,7 +56,7 @@ export function usePostPublishCelebration() {
   const searchParams = {
     filter: `id:${celebration?.id ?? ''}`,
     limit: '1',
-    include: 'authors,newsletter,email',
+    include: 'authors',
   };
 
   // Both called unconditionally and picked by type — hooks can't be branched.

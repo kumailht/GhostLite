@@ -26,7 +26,7 @@ import {
 import type { PostCardConfig, PostType } from '@/editor/card-config';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
-import { memberAvatarProps } from '@/members/api';
+import { avatarProps } from '@/shared/avatar-props';
 import { revisionDate, type RevisionEntry, type RevisionTag } from './post-history';
 import { RevisionPreview } from './revision-preview';
 
@@ -78,7 +78,7 @@ function RevisionRow({
         <Inline className={cn('mt-1 min-h-7', selected && restorable && 'pr-20')} gap="sm">
           <Avatar
             className="size-6 shrink-0"
-            {...memberAvatarProps({ name: revision.authorName })}
+            {...avatarProps({ name: revision.authorName })}
             src={revision.authorImage}
           />
           <Text className="truncate" size="sm" tone="secondary">

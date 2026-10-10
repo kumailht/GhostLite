@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react';
-import { LucideIcon } from '@tryghost/shade/utils';
 
 export interface LinkSearchItem {
   id: string;
@@ -25,7 +24,6 @@ export interface LinkSearchGroup {
 
 export interface LinkDecorationSettings {
   timezone: string;
-  membersEnabled: boolean;
 }
 
 export interface LatestPostSource {
@@ -73,19 +71,6 @@ export function decoratePostSearchResult(
 
   if (item.publishedAt) {
     decorated.metaText = formatPublishedDate(item.publishedAt, settings.timezone);
-  }
-
-  if (settings.membersEnabled && item.visibility) {
-    if (item.visibility === 'members') {
-      decorated.MetaIcon = LucideIcon.Lock;
-      decorated.metaIconTitle = 'Members only';
-    } else if (item.visibility === 'paid') {
-      decorated.MetaIcon = LucideIcon.DollarSign;
-      decorated.metaIconTitle = 'Paid-members only';
-    } else if (item.visibility === 'tiers') {
-      decorated.MetaIcon = LucideIcon.DollarSign;
-      decorated.metaIconTitle = 'Specific tiers only';
-    }
   }
 
   return decorated;

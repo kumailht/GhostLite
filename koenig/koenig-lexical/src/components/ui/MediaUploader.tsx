@@ -1,7 +1,6 @@
 import DeleteIcon from '../../assets/icons/kg-trash.svg?react';
 import ImageUploadForm from './ImageUploadForm';
 import PropTypes from 'prop-types';
-import WandIcon from '../../assets/icons/kg-wand.svg?react';
 import clsx from 'clsx';
 import {IconButton} from './IconButton';
 import {MediaPlaceholder} from './MediaPlaceholder';
@@ -25,8 +24,6 @@ export function MediaUploader({
     dragHandler,
     isEditing = true,
     isLoading,
-    isPinturaEnabled,
-    openImageEditor,
     progress,
     errors,
     onRemoveMedia = () => {},
@@ -94,16 +91,6 @@ export function MediaUploader({
             {!isLoading && (
                 <div className="absolute right-1 top-1 flex space-x-1 opacity-0 transition-all group-hover/image:opacity-100">
                     {additionalActions}
-                    { isPinturaEnabled && <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
-                        image: src,
-                        handleSave: (editedImage) => {
-                            onFileChange({
-                                target: {
-                                    files: [editedImage]
-                                }
-                            });
-                        }
-                    })} /> }
                     <IconButton dataTestId="media-upload-remove" Icon={DeleteIcon} label="Delete" onClick={onRemove} />
                 </div>
             )}
@@ -133,11 +120,9 @@ MediaUploader.propTypes = {
     imgClassName: PropTypes.string,
     isEditing: PropTypes.bool,
     isLoading: PropTypes.bool,
-    isPinturaEnabled: PropTypes.bool,
     mimeTypes: PropTypes.arrayOf(PropTypes.string),
     onFileChange: PropTypes.func,
     onRemoveMedia: PropTypes.func,
-    openImageEditor: PropTypes.func,
     progress: PropTypes.number,
     setFileInputRef: PropTypes.func,
     size: PropTypes.string,

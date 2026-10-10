@@ -281,10 +281,10 @@ export function usePostBulkActions({ resource, onDeleted, onEdited }: UsePostBul
   );
 
   /**
-   * The two actions that carry a payload. Both refetch rather than prune.
+   * The action that carries a payload. It refetches rather than prunes.
    *
    * Ember prunes here too, but only after re-fetching every edited post in
-   * batches of 50 — the new tag or visibility has to be in the store before
+   * batches of 50 — the new tag has to be in the store before
    * the filter can be evaluated against it. We cannot shortcut that with a
    * local edit: a *newly created* tag's slug is decided server-side, so
    * pruning against `tag:<slug>` locally would be guesswork. Refetching the
@@ -293,18 +293,14 @@ export function usePostBulkActions({ resource, onDeleted, onEdited }: UsePostBul
    */
   const runWithPayload = useCallback(
     async (
-      key: 'add-tag' | 'change-access',
+      key: 'add-tag',
       snapshot: BulkActionSnapshot,
-      meta:
-        | { tags: { id?: string; name: string; slug?: string }[] }
-        | { visibility: string; tiers?: { id: string }[] },
+      meta: { tags: { id?: string; name: string; slug?: string }[] },
     ) => {
       setIsRunning(true);
 
       try {
-        const action = (
-          key === 'add-tag' ? { type: 'addTag', meta } : { type: 'access', meta }
-        ) as PostBulkAction;
+        const action = { type: 'addTag', meta } as PostBulkAction;
 
         if (isPages) {
           await bulkEditPages.mutateAsync({ filter: snapshot.filter, action });
@@ -312,25 +308,15 @@ export function usePostBulkActions({ resource, onDeleted, onEdited }: UsePostBul
           await bulkEditPosts.mutateAsync({ filter: snapshot.filter, action });
         }
 
-        if (key === 'change-access') {
-          toast.success(
-            getPostActionMessage('accessUpdated', {
-              count: snapshot.count,
-              resource,
-              isSingle: snapshot.isSingle,
-            }),
-          );
-        } else {
-          const tagCount = 'tags' in meta ? meta.tags.length : 1;
+        const tagCount = meta.tags.length;
 
-          toast.success(
-            getPostActionMessage(tagCount > 1 ? 'tagsAdded' : 'tagAdded', {
-              count: snapshot.count,
-              resource,
-              isSingle: snapshot.isSingle,
-            }),
-          );
-        }
+        toast.success(
+          getPostActionMessage(tagCount > 1 ? 'tagsAdded' : 'tagAdded', {
+            count: snapshot.count,
+            resource,
+            isSingle: snapshot.isSingle,
+          }),
+        );
 
         // Close *before* refetching, not after. `invalidateQueries`
         // resolves only once every active query has refetched, so awaiting

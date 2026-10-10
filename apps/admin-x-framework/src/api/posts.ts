@@ -26,7 +26,6 @@ import type {
 } from './content-types';
 
 export type {
-  Email,
   Post,
   PostAuthor,
   PostAuthorInput,
@@ -35,13 +34,10 @@ export type {
   PostEditorFields,
   PostEditorRecord,
   PostListFields,
-  PostNewsletter,
   PostRevision,
   PostStatus,
   PostTag,
   PostTagInput,
-  PostTier,
-  PostTierInput,
 } from './content-types';
 
 export interface PostsResponseType {
@@ -118,8 +114,8 @@ export const useEditorPost = (
   });
 };
 
-// The create endpoint only accepts include/formats/source - revision and
-// email delivery options are update-only
+// The create endpoint only accepts include/formats/source - revision
+// options are update-only
 export interface AddPostPayload {
   post: CreateContentData<PostEditableData>;
   options?: PostCreateOptions;

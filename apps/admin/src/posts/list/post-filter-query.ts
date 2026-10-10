@@ -19,7 +19,7 @@ import type { Filter } from '@tryghost/shade/patterns';
  * operator and would read as a nonsense chip. It is carried alongside these.
  */
 
-export const POST_FILTER_PARAMS = ['type', 'featured', 'visibility', 'author', 'tag'] as const;
+export const POST_FILTER_PARAMS = ['type', 'featured', 'author', 'tag'] as const;
 
 export type PostFilterParam = (typeof POST_FILTER_PARAMS)[number];
 
@@ -28,7 +28,6 @@ export type PostFilterParamValues = Record<PostFilterParam, string | null>;
 const EMPTY_PARAMS: PostFilterParamValues = {
   type: null,
   featured: null,
-  visibility: null,
   author: null,
   tag: null,
 };

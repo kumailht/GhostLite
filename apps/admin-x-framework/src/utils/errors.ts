@@ -1,4 +1,3 @@
-import type { Count } from '@tryghost/limit-service';
 
 // API errors
 
@@ -113,43 +112,6 @@ export class ThemeValidationError extends JSONError {
   }
 }
 
-export interface HostLimitErrorDetails {
-  name?: string;
-  limit?: number;
-  total?: Count;
-}
-
-interface HostLimitOptions {
-  message?: string;
-  errorDetails?: HostLimitErrorDetails;
-  help?: string;
-}
-
-// Constructed two ways: from an API error response, and by @tryghost/limit-service
-// (via useLimiter), which news the registered class with a single options object.
-export class HostLimitError extends JSONError {
-  public readonly errorDetails?: HostLimitErrorDetails;
-
-  constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions);
-  constructor(limit: HostLimitOptions);
-  constructor(
-    responseOrLimit: Response | HostLimitOptions,
-    data?: ErrorResponse,
-    errorOptions?: ErrorOptions,
-  ) {
-    if (responseOrLimit instanceof Response) {
-      super(responseOrLimit, data, 'A hosting plan limit was reached or exceeded.', errorOptions);
-    } else {
-      super(
-        undefined,
-        undefined,
-        responseOrLimit.message || 'A hosting plan limit was reached or exceeded.',
-      );
-      this.errorDetails = responseOrLimit.errorDetails;
-    }
-  }
-}
-
 export class EmailError extends JSONError {
   constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
     super(response, data, 'Please verify your email settings', errorOptions);
@@ -165,7 +127,6 @@ export class ValidationError extends JSONError {
 export const errorsWithMessage = [
   ValidationError,
   ThemeValidationError,
-  HostLimitError,
   EmailError,
 ];
 

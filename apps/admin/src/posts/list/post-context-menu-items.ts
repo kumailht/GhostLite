@@ -18,13 +18,11 @@ import type { PostResource } from '@/posts/list/post-resource';
 export type PostContextMenuKey =
   | 'copy-link'
   | 'copy-preview'
-  | 'gift-link'
   | 'unpublish'
   | 'unschedule'
   | 'feature'
   | 'unfeature'
   | 'add-tag'
-  | 'change-access'
   | 'duplicate'
   | 'delete';
 
@@ -46,9 +44,6 @@ export interface PostContextMenuInputs {
   resource: PostResource;
   /** Owner or Administrator. Only they may delete. */
   isAdmin: boolean;
-  membersEnabled: boolean;
-  /** Decided by the shared gift-link rules, which need the current user. */
-  canCopyGiftLink: boolean;
 }
 
 /** `canCopySelection` — the single-post actions. */
@@ -72,7 +67,7 @@ function shouldFeature(posts: PostListItem[]): boolean {
 }
 
 export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostContextMenuItem[] {
-  const { posts, resource, isAdmin, membersEnabled, canCopyGiftLink } = inputs;
+  const { posts, resource, isAdmin } = inputs;
 
   if (posts.length === 0) {
     return [];
@@ -94,13 +89,6 @@ export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostCont
       add('copy-link', resource === 'pages' ? 'Copy link to page' : 'Copy link to post');
     }
 
-    if (canCopyGiftLink) {
-      add('gift-link', 'Share as a gift');
-    }
-
-    // Ember separates Unpublish from the gift link above it, and only
-    // then — but whether the gift link renders is decided per row, after
-    // this list is built, so the menu draws that rule from adjacency.
     add('unpublish', 'Unpublish');
   } else {
     if (isSingle(posts)) {
@@ -112,22 +100,14 @@ export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostCont
     }
   }
 
-  // A sent post can no longer be featured, so a selection of only sent posts
-  // offers neither action.
-  if (posts.some((post) => post.status !== 'sent')) {
-    if (shouldFeature(posts)) {
-      add('feature', 'Feature');
-    } else {
-      add('unfeature', 'Unfeature');
-    }
+  if (shouldFeature(posts)) {
+    add('feature', 'Feature');
+  } else {
+    add('unfeature', 'Unfeature');
   }
 
   // The only item with no condition on it at all.
   add('add-tag', 'Add a tag');
-
-  if (membersEnabled) {
-    add('change-access', 'Change access');
-  }
 
   if (isSingle(posts)) {
     add('duplicate', 'Duplicate');

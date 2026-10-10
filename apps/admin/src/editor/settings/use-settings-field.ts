@@ -6,7 +6,7 @@ import {
 import type { EditorSettingsPort } from './editor-settings-port';
 
 /** The settings keys a plain text field writes: including canonical URL validation. */
-export type SettingsTextFieldKey = Exclude<ValidatedSettingsFieldKey, 'visibility' | 'tiers'>;
+export type SettingsTextFieldKey = ValidatedSettingsFieldKey;
 
 export interface SettingsFieldBinding {
   value: string;

@@ -60,13 +60,10 @@ export interface EditablePostProjection {
   lexical: string | null;
   tags: ReadonlyArray<TagLike>;
   custom_excerpt: string | null;
-  email_subject: string | null;
   feature_image: string | null;
   feature_image_alt: string | null;
   feature_image_caption: string | null;
   featured: boolean;
-  visibility: string | null;
-  tiers: ReadonlyArray<PostRelationLike>;
   authors: ReadonlyArray<PostRelationLike>;
   meta_title: string | null;
   meta_description: string | null;
@@ -147,13 +144,10 @@ const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
   'lexical',
   'tags',
   'custom_excerpt',
-  'email_subject',
   'feature_image',
   'feature_image_alt',
   'feature_image_caption',
   'featured',
-  'visibility',
-  'tiers',
   'authors',
   'meta_title',
   'meta_description',
@@ -172,7 +166,7 @@ const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
 ];
 
 /** Relations compare by identity; the rest of a related record is server-owned. */
-const RELATION_KEYS: ReadonlySet<ProjectionKey> = new Set(['tiers', 'authors']);
+const RELATION_KEYS: ReadonlySet<ProjectionKey> = new Set(['authors']);
 
 const RUNG_KEYS: ReadonlySet<ProjectionKey> = new Set(['title', 'lexical', 'tags', 'updated_at']);
 

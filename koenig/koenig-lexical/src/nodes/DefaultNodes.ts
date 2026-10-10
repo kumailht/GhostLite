@@ -15,11 +15,8 @@ import {AsideNode} from './AsideNode';
 import {AudioNode} from './AudioNode';
 import {BookmarkNode} from './BookmarkNode';
 import {ButtonNode} from './ButtonNode';
-import {CallToActionNode} from './CallToActionNode';
 import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
-import {EmailCtaNode} from './EmailCtaNode';
-import {EmailNode} from './EmailNode';
 import {EmbedNode} from './EmbedNode';
 import {FileNode} from './FileNode';
 import {GalleryNode} from './GalleryNode';
@@ -31,11 +28,7 @@ import {ImageNode} from './ImageNode';
 import {LinkNode} from '@lexical/link';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {MarkdownNode} from './MarkdownNode';
-import {PaywallNode} from './PaywallNode';
-import {ProductNode} from './ProductNode';
-import {SignupNode} from './SignupNode';
 import {ToggleNode} from './ToggleNode';
-import {TransistorNode} from './TransistorNode';
 import {VideoNode} from './VideoNode';
 
 const DEFAULT_NODES = [
@@ -61,18 +54,11 @@ const DEFAULT_NODES = [
     HtmlNode,
     FileNode,
     ButtonNode,
-    CallToActionNode,
     ToggleNode,
     HeaderNode,
     BookmarkNode,
-    PaywallNode,
-    ProductNode,
-    EmailNode,
-    EmailCtaNode,
     EmbedNode,
     GalleryNode,
-    SignupNode,
-    TransistorNode,
     TKNode,
     AtLinkNode,
     AtLinkSearchNode,

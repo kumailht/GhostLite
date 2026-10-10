@@ -40,7 +40,7 @@ export interface BuildPostFilterFieldsOptions {
    * falls back to "Select…" and the filter vanishes from the UI while
    * staying in the URL. Ember shows a red "Unknown type" for the same case.
    */
-  params?: Partial<Record<'type' | 'visibility', string | null>>;
+  params?: Partial<Record<'type', string | null>>;
 }
 
 const IS_ONLY = [{ value: 'is', label: 'is' }];

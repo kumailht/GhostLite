@@ -1,20 +1,15 @@
 import React from 'react';
 import { useShade } from '@tryghost/shade/app';
-import { Button } from '@tryghost/shade/components';
 import { H3 } from '@tryghost/shade/primitives';
 import { ShareModal, type ShareModalSocialLink } from '@tryghost/shade/patterns';
 
 interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof ShareModal.Root> {
   author?: string;
-  canShareAsGift?: boolean;
   children?: React.ReactNode;
   description?: React.ReactNode;
-  emailOnly?: boolean;
   faviconURL?: string;
   featureImageURL?: string;
-  giftAccessLabel?: string;
   onClose?: () => void;
-  onShareAsGift?: () => void;
   postExcerpt?: string;
   postTitle?: string;
   postURL?: string;
@@ -25,15 +20,11 @@ interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof Shar
 
 const PostShareModal: React.FC<PostShareModalProps> = ({
   author = '',
-  canShareAsGift = false,
   children,
   description = '',
-  emailOnly = false,
   faviconURL = '',
   featureImageURL = '',
-  giftAccessLabel = '',
   onClose = () => {},
-  onShareAsGift = () => {},
   postExcerpt = '',
   postTitle = '',
   postURL = '',
@@ -46,35 +37,33 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
   const encodedPostTitle = encodeURIComponent(postTitle);
   const encodedPostURL = encodeURIComponent(postURL);
   const encodedPostURLTitle = encodeURIComponent(`${postTitle} ${postURL}`);
-  const socialLinks: ShareModalSocialLink[] = emailOnly
-    ? []
-    : [
-        {
-          href: `https://twitter.com/intent/tweet?text=${encodedPostTitle}%0A${encodedPostURL}`,
-          label: 'Share on X',
-          service: 'x',
-        },
-        {
-          href: `https://threads.net/intent/post?text=${encodedPostURLTitle}`,
-          label: 'Share on Threads',
-          service: 'threads',
-        },
-        {
-          href: `https://www.facebook.com/sharer/sharer.php?u=${encodedPostURL}`,
-          label: 'Share on Facebook',
-          service: 'facebook',
-        },
-        {
-          href: `https://www.linkedin.com/shareArticle?mini=true&title=${encodedPostTitle}&url=${encodedPostURL}`,
-          label: 'Share on LinkedIn',
-          service: 'linkedin',
-        },
-        {
-          href: `https://bsky.app/intent/compose?text=${encodedPostURLTitle}`,
-          label: 'Share on Bluesky',
-          service: 'bluesky',
-        },
-      ];
+  const socialLinks: ShareModalSocialLink[] = [
+    {
+      href: `https://twitter.com/intent/tweet?text=${encodedPostTitle}%0A${encodedPostURL}`,
+      label: 'Share on X',
+      service: 'x',
+    },
+    {
+      href: `https://threads.net/intent/post?text=${encodedPostURLTitle}`,
+      label: 'Share on Threads',
+      service: 'threads',
+    },
+    {
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedPostURL}`,
+      label: 'Share on Facebook',
+      service: 'facebook',
+    },
+    {
+      href: `https://www.linkedin.com/shareArticle?mini=true&title=${encodedPostTitle}&url=${encodedPostURL}`,
+      label: 'Share on LinkedIn',
+      service: 'linkedin',
+    },
+    {
+      href: `https://bsky.app/intent/compose?text=${encodedPostURLTitle}`,
+      label: 'Share on Bluesky',
+      service: 'bluesky',
+    },
+  ];
 
   return (
     <ShareModal.Root {...props}>
@@ -121,35 +110,13 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
           </div>
         </ShareModal.Preview>
         <ShareModal.Footer>
-          {emailOnly ? (
-            <Button className="cursor-pointer" type="button" onClick={onClose}>
-              Close
-            </Button>
-          ) : (
-            <>
-              <ShareModal.SocialLinks links={socialLinks} />
-              <ShareModal.CopyButton
-                className="ml-0! grow cursor-pointer"
-                copyURL={postURL}
-                icon="link"
-              />
-            </>
-          )}
+          <ShareModal.SocialLinks links={socialLinks} />
+          <ShareModal.CopyButton
+            className="ml-0! grow cursor-pointer"
+            copyURL={postURL}
+            icon="link"
+          />
         </ShareModal.Footer>
-        {canShareAsGift && !emailOnly && (
-          <p className="text-center text-sm text-muted-foreground">
-            Want to share full access to this {giftAccessLabel} post?{' '}
-            <Button
-              className="h-auto p-0 align-baseline text-sm"
-              type="button"
-              variant="link"
-              onClick={onShareAsGift}
-            >
-              Share as a gift
-            </Button>
-            .
-          </p>
-        )}
       </ShareModal.Content>
     </ShareModal.Root>
   );

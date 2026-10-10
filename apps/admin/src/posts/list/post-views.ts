@@ -3,7 +3,7 @@ import {
   type SharedView,
   findMatchingSharedViewIndexes,
   hasSharedViewNameConflict,
-} from '@/members/api';
+} from '@/shared/shared-views';
 import type { PostListParams } from '@/posts/list/post-query-params';
 import type { PostResource } from '@/posts/list/post-resource';
 

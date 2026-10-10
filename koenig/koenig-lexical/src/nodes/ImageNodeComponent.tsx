@@ -3,7 +3,6 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import useCardDragAndDrop from '../hooks/useCardDragAndDrop';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
-import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$createGalleryNode} from './GalleryNode';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
@@ -67,8 +66,6 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         onDrop: onDropImageCard
     });
 
-    const {isEnabled: isPinturaEnabled, openEditor: openImageEditor}
-        = usePinturaEditor({config: cardConfig.pinturaConfig});
         
     const allowedImageCardWidths = React.useMemo(() => {
         return getAllowedImageCardWidths(cardConfig?.image?.allowedWidths);
@@ -234,9 +231,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                 imageCardDragHandler={imageCardDragHandler}
                 imageFileDragHandler={imageFileDragHandler}
                 imageUploader={imageUploader}
-                isPinturaEnabled={isPinturaEnabled}
                 isSelected={isSelected}
-                openImageEditor={openImageEditor}
                 previewSrc={previewSrc}
                 setAltText={setAltText}
                 src={src}

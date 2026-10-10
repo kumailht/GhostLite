@@ -1,24 +1,6 @@
 /** Shared Admin API type contracts for posts and pages. */
 
-import type { Newsletter } from './newsletters';
-
 type Override<Base, Changes> = Omit<Base, keyof Changes> & Changes;
-
-export type Email = {
-  id?: string;
-  created_at?: string | null;
-  submitted_at?: string | null;
-  opened_count: number;
-  email_count: number;
-  status?: 'pending' | 'submitting' | 'submitted' | 'failed';
-  error?: string | null;
-  recipient_filter?: string | null;
-  delivered_count?: number;
-  failed_count?: number;
-  feedback_enabled?: boolean;
-  track_opens?: boolean;
-  track_clicks?: boolean;
-};
 
 // Every field is optional because list and analytics endpoints return different
 // projections of these relations.
@@ -52,14 +34,6 @@ export type PostTagInput =
   | ({ name: string } & Partial<{ id: string; slug: string | null }>)
   | ({ slug: string } & Partial<{ id: string; name: string }>);
 
-export type PostTierInput = { id: string };
-
-export type PostTier = {
-  id: string;
-  name?: string;
-  slug?: string | null;
-};
-
 export type PostRevision = {
   id?: string;
   post_id?: string;
@@ -87,7 +61,6 @@ export type ContentListFields = {
   primary_author?: PostAuthor | null;
   tags?: PostTag[];
   primary_tag?: PostTag | null;
-  tiers?: object[];
 };
 
 /** Fields shared by post and page editor responses. */
@@ -138,17 +111,6 @@ export type ContentRecord = {
 } & ContentListFields &
   ContentEditorFields;
 
-// `include=newsletter` embeds the newsletter row itself; Core does not project it.
-export type PostNewsletter = Newsletter;
-
-export type PostEmailFields = {
-  email?: Email | null;
-  email_subject?: string | null;
-  newsletter?: PostNewsletter | null;
-  email_only?: boolean;
-  email_segment?: string | null;
-};
-
 export type Post = Override<
   ContentRecord,
   {
@@ -156,8 +118,7 @@ export type Post = Override<
     status?: PostStatus;
     count?: PostCount;
   }
-> &
-  PostEmailFields;
+>;
 
 export type Page = Override<
   ContentRecord,
@@ -203,17 +164,12 @@ export type ContentEditableData = Override<
   {
     html?: string | null;
     locale?: string | null;
-    // The serializer treats null visibility as "leave visibility unchanged".
-    visibility?: string | null;
-    visibility_filter?: string | null;
     authors?: PostAuthorInput[];
     tags?: PostTagInput[];
-    tiers?: PostTierInput[];
   }
 >;
 
-export type PostEditableData = ContentEditableData &
-  Partial<Pick<Post, 'status' | 'email_subject' | 'email_only'>>;
+export type PostEditableData = ContentEditableData & Partial<Pick<Post, 'status'>>;
 
 export type PageEditableData = ContentEditableData &
   Partial<Pick<Page, 'status' | 'show_title_and_feature_image'>>;
@@ -222,7 +178,6 @@ type EditorRelations = {
   updated_at: string | null;
   authors?: Array<PostAuthor & { id: string }>;
   tags?: Array<PostTag & { id: string }>;
-  tiers?: PostTier[];
 };
 
 /** A single editor response has the relations required for a safe round-trip edit. */
@@ -243,9 +198,8 @@ export type PostBulkAction =
   | { type: 'unfeature' }
   | { type: 'unpublish' }
   | { type: 'unschedule' }
-  | { type: 'addTag'; meta: { tags: { id?: string; name: string; slug?: string }[] } }
-  | { type: 'access'; meta: { visibility: string; tiers?: { id: string }[] } };
+  | { type: 'addTag'; meta: { tags: { id?: string; name: string; slug?: string }[] } };
 
 // Compatibility aliases for existing imports from api/posts.
 export type PostListFields = ContentListFields;
-export type PostEditorFields = ContentEditorFields & Pick<PostEmailFields, 'email_subject'>;
+export type PostEditorFields = ContentEditorFields;

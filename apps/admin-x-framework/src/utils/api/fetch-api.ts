@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import { useCallback } from 'react';
 import { useFramework } from '../../providers/framework-provider';
 import {
@@ -236,21 +235,6 @@ export const useFetchApi = () => {
       const retryPeriods = [500, 1000];
       const retryableErrors = [ServerUnreachableError, MaintenanceError, TypeError];
 
-      const getErrorData = (response?: Response, error?: unknown) => {
-        const data: Record<string, unknown> = {
-          error: error === undefined ? undefined : String(error),
-          status: response?.status,
-          method,
-          attempts,
-          totalSeconds: (Date.now() - startTime) / 1000,
-          endpoint: endpoint.toString(),
-        };
-        if (endpoint.toString().includes('/ghost/api/')) {
-          data.server = response?.headers.get('server');
-        }
-        return data;
-      };
-
       // Only `XMLHttpRequest` supports progress, so we use that if we have to.
       // Otherwise, we prefer `fetch`.
       const fetchFn = onUploadProgress ? fetchWithXhr.bind(null, onUploadProgress) : fetch;
@@ -265,11 +249,6 @@ export const useFetchApi = () => {
             const data = (await handleResponse(response, { responseType })) as ResponseData;
             if (CURRENT_USER_REQUEST.test(endpoint.toString())) {
               sessionConfirmed = true;
-            }
-            if (attempts !== 0 && Sentry.getClient()) {
-              Sentry.captureMessage('Request took multiple attempts', {
-                extra: getErrorData(response),
-              });
             }
             return data;
           } catch (error) {
@@ -289,12 +268,6 @@ export const useFetchApi = () => {
               });
               attempts += 1;
               continue;
-            }
-
-            if (attempts !== 0 && Sentry.getClient()) {
-              Sentry.captureMessage('Request failed after multiple attempts', {
-                extra: getErrorData(error instanceof APIError ? error.response : undefined, error),
-              });
             }
 
             if (

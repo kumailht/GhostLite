@@ -120,10 +120,6 @@ module.exports = {
     return apiFramework.pipeline(require('./custom-theme-settings'), localUtils);
   },
 
-  get featurebase() {
-    return apiFramework.pipeline(require('./featurebase'), localUtils);
-  },
-
   get serializers() {
     return require('./utils/serializers');
   },

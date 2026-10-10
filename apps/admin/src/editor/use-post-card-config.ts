@@ -1,13 +1,8 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { useFramework } from '@tryghost/admin-x-framework';
-import {
-  useFetchApi,
-  useKoenigFetchEmbed,
-  usePinturaConfig,
-} from '@tryghost/admin-x-framework/hooks';
+import { useKoenigFetchEmbed } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { getHomepageUrl, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import {
   type CardConfigPostSource,
@@ -17,7 +12,6 @@ import {
   buildCardConfigPost,
   buildPostCardConfig,
 } from './card-config';
-import { type LabelsPage, fetchAllLabelNames } from './card-labels';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorSettings, useSiteTimezone } from './use-editor-settings';
 import { usePostLinkSuggestions } from './use-post-link-suggestions';
@@ -54,45 +48,20 @@ export function usePostCardConfig({
   const siteRead = useBrowseSite({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const currentUserRead = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { unsplashConfig } = useFramework();
-  const pinturaConfig = usePinturaConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const fetchEmbed = useKoenigFetchEmbed(EDITOR_REQUEST_OPTIONS);
-  const fetchApi = useFetchApi();
 
   const settings = settingsRead.data?.settings ?? null;
   const config = configRead.data?.config;
   const site = siteRead.data?.site;
   const currentUser = currentUserRead.data;
 
-  const labelsRequest = useRef<Promise<string[]> | null>(null);
-  const fetchLabels = useCallback(() => {
-    labelsRequest.current ??= fetchAllLabelNames((url) =>
-      fetchApi<LabelsPage>(url, EDITOR_REQUEST_OPTIONS),
-    ).catch((error: unknown) => {
-      labelsRequest.current = null;
-      throw error;
-    });
-
-    return labelsRequest.current;
-  }, [fetchApi]);
-
-  const membersSignupAccess = getSettingValue<string>(settings, 'members_signup_access') ?? 'all';
   const { fetchAutocompleteLinks, searchLinks } = usePostLinkSuggestions({
     postType: post.displayName,
     homepageUrl: site ? getHomepageUrl(site) : '/',
-    paidMembersEnabled: getSettingValue<boolean>(settings, 'paid_members_enabled') === true,
-    donationsEnabled: getSettingValue<boolean>(settings, 'donations_enabled') === true,
-    recommendationsEnabled: getSettingValue<boolean>(settings, 'recommendations_enabled') === true,
-    membersSignupAccess,
-    membersEnabled: membersSignupAccess !== 'none',
     timezone,
   });
 
-  const defaultContentVisibility =
-    getSettingValue<string>(settings, 'default_content_visibility') ?? 'public';
-  const cardConfigPost = useMemo(
-    () => buildCardConfigPost(post, defaultContentVisibility),
-    [post, defaultContentVisibility],
-  );
+  const cardConfigPost = useMemo(() => buildCardConfigPost(post), [post]);
 
   const cardConfig = useMemo(() => {
     if (!settings || !config || !site || !currentUser) {
@@ -104,9 +73,7 @@ export function usePostCardConfig({
         settings,
         config,
         site,
-        currentUser,
         unsplashHeaders: unsplashConfig,
-        pinturaConfig,
         post: cardConfigPost,
         snippets,
       },
@@ -114,7 +81,6 @@ export function usePostCardConfig({
         fetchEmbed,
         fetchAutocompleteLinks,
         searchLinks,
-        fetchLabels,
         createSnippet,
         deleteSnippet,
       },
@@ -125,13 +91,11 @@ export function usePostCardConfig({
     site,
     currentUser,
     unsplashConfig,
-    pinturaConfig,
     cardConfigPost,
     snippets,
     fetchEmbed,
     fetchAutocompleteLinks,
     searchLinks,
-    fetchLabels,
     createSnippet,
     deleteSnippet,
   ]);

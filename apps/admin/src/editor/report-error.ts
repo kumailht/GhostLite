@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
 import {
   APIError,
@@ -8,7 +7,7 @@ import {
 import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
-import type { EditorLeaveConfirmation, EditorSaveFailure } from '@/editor/session/editor-session';
+import type { EditorSaveFailure } from '@/editor/session/editor-session';
 import { toSaveError } from '@/editor/session/error-mapping';
 
 type TagValue = boolean | number | string;
@@ -19,23 +18,19 @@ export interface EditorErrorContext {
   contexts?: Record<string, Record<string, unknown>>;
 }
 
-/** A failed save is slow past this; Sentry gets a second event with its timing. */
-const SLOW_SAVE_MS = 2000;
-
 /**
  * Reports an editor failure. Never rethrown: the editor recovers without losing
  * what the writer typed.
  */
 export function reportEditorError(error: unknown, context?: EditorErrorContext): void {
   // eslint-disable-next-line no-console
-  console.error(error);
-
-  Sentry.captureException(error, context);
+  console.error(error, context ?? '');
 }
 
 /** Reports a recovery the editor made on its own, as a message rather than a fault. */
 export function reportEditorNotice(message: string, context?: EditorErrorContext): void {
-  Sentry.captureMessage(message, context);
+  // eslint-disable-next-line no-console
+  console.warn(message, context ?? '');
 }
 
 /** The post editor's visible Koenig instance, or the hidden one its change baseline comes from. */
@@ -97,7 +92,7 @@ function saveFailureError(error: SaveError): Error {
 
 /**
  * Whether a failure is not a fault in the editor, and so is not reported: a refusal
- * the writer reads and acts on (validation, a host limit, a writer who lost access
+ * the writer reads and acts on (validation, a writer who lost access
  * to the post, an expired session, whose recovery is signing in again) or a
  * connection that never reached the server. A missing post, a collision, a 5xx, a
  * timeout, maintenance and anything unrecognised are reported. Saves and the publish
@@ -106,7 +101,6 @@ function saveFailureError(error: SaveError): Error {
 export function isExpectedSaveError(error: SaveError): boolean {
   return (
     error.kind === 'validation' ||
-    error.kind === 'host-limit' ||
     error.kind === 'forbidden' ||
     error.kind === 'session-invalid' ||
     error.cause instanceof ServerUnreachableError
@@ -135,63 +129,12 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     ...responseTags(error),
   });
 
-  if (durationMs !== null && durationMs > SLOW_SAVE_MS) {
-    Sentry.captureException('Failed Lexical save took > 2s', {
-      tags: definedTags({
-        ...tags,
-        save_time: Math.ceil(durationMs / 1000),
-        save_revision: command.requiresRevision,
-        email_segment: command.target?.emailSegment,
-      }),
-      extra: { post_id: postId },
-    });
-  }
-
   if (isExpectedSaveError(error)) {
-    return;
-  }
-
-  if (error.kind === 'not-found' && persisted) {
-    Sentry.captureMessage(`Attempted to edit deleted ${postType}`, {
-      tags,
-      extra: { post_id: postId },
-    });
     return;
   }
 
   reportEditorError(saveFailureError(error), {
     tags,
     extra: { post_id: postId, duration_ms: durationMs },
-  });
-}
-
-/** Reports an error banner the writer was shown, by the text they read. */
-export function reportShownAlert(message: string, error: SaveError): void {
-  Sentry.captureMessage(message, {
-    tags: definedTags({
-      shown_to_user: true,
-      source: 'editor-banner',
-      save_error_kind: error.kind,
-      ...responseTags(error),
-    }),
-    contexts: { ghost: { displayed_message: message, save_error_message: error.message } },
-  });
-}
-
-/** Reports a leave the writer had to confirm, with why the post counted as unsaved. */
-export function reportLeaveConfirmation(leave: EditorLeaveConfirmation, postType: PostType): void {
-  Sentry.captureMessage('showing leave editor modal', {
-    tags: {
-      post_type: postType,
-      save_status: leave.status,
-      engine_state: leave.engineState,
-      leave_reasons: leave.reasons.join(','),
-    },
-    extra: {
-      post_id: leave.postId,
-      reasons: leave.reasons,
-      dirty_fields: leave.dirtyFields,
-      body_diff: leave.bodyDiff,
-    },
   });
 }

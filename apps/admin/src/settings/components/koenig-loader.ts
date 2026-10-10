@@ -13,16 +13,12 @@ export type KoenigLexicalModule = {
   HtmlOutputPlugin: KoenigComponent;
   WordCountPlugin: KoenigComponent;
   TKCountPlugin: KoenigComponent;
-  EmailEditor: KoenigComponent;
   DEFAULT_NODES: unknown;
   BASIC_NODES: unknown;
   MINIMAL_NODES: unknown;
-  EMAIL_NODES: unknown;
-  EMAIL_EDITOR_NODES: unknown;
   DEFAULT_TRANSFORMERS: unknown;
   BASIC_TRANSFORMERS: unknown;
   MINIMAL_TRANSFORMERS: unknown;
-  EMAIL_TRANSFORMERS: unknown;
 };
 
 export type KoenigInstance = {

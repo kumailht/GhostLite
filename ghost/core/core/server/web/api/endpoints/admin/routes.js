@@ -21,7 +21,6 @@ module.exports = function apiRoutes() {
 
   // ## Configuration
   router.get('/config', mw.authAdminApi, http(api.config.read));
-  router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
   // ## Posts
   router.get('/posts', mw.authAdminApi, http(api.posts.browse));
@@ -165,9 +164,6 @@ module.exports = function apiRoutes() {
   // ## Exports
   router.get('/exports/download', mw.authAdminApi, http(api.exports.download));
   router.post('/exports', mw.authAdminApi, http(api.exports.add));
-
-  // ## Featurebase
-  router.get('/featurebase/token', mw.authAdminApi, http(api.featurebase.token));
 
   // ## Sessions
   // We don't need auth when creating a new session (logging in)

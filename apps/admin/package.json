@@ -25,7 +25,6 @@
     "@dnd-kit/utilities": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
-    "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-virtual": "catalog:",
     "@tryghost/admin-x-framework": "workspace:*",
@@ -64,7 +63,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@sentry/vite-plugin": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "@types/papaparse": "5.5.2",

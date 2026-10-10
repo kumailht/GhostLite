@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import React, { type ErrorInfo, type ReactNode } from 'react';
 import { Banner } from '@tryghost/shade/components';
 
@@ -7,7 +6,7 @@ export interface ErrorBoundaryProps {
   name: ReactNode;
   /** Rendered in place of the default banner once a child has thrown. */
   fallback?: ReactNode;
-  /** Replaces the default Sentry capture; the console lines stay. */
+  /** Called once a child has thrown; the console lines stay. */
   onError?: (error: unknown, info: ErrorInfo) => void;
 }
 
@@ -27,14 +26,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
-    if (this.props.onError) {
-      this.props.onError(error, info);
-    } else {
-      Sentry.withScope((scope) => {
-        scope.setTag('adminx_settings_component', info.componentStack);
-        Sentry.captureException(error);
-      });
-    }
+    this.props.onError?.(error, info);
     // eslint-disable-next-line no-console
     console.error(error);
     // eslint-disable-next-line no-console

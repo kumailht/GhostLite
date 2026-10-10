@@ -26,7 +26,6 @@ import { PostCelebrationModal } from './components/post-celebration-modal';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { usePostPublishCelebration } from './hooks/use-post-publish-celebration';
 import { AddTagModal } from './components/modals/add-tag-modal';
-import { ChangeAccessModal } from './components/modals/change-access-modal';
 import { ConfirmBulkActionModal } from './components/modals/confirm-bulk-action-modal';
 import { usePostBulkActions, type BulkActionSnapshot } from './hooks/use-post-bulk-actions';
 import type { BulkConfirmKey } from './post-bulk-modal-copy';
@@ -70,28 +69,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // Scheduled times read in the site's timezone, not the browser's.
   const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
   const isContributor = Boolean(currentUser && isContributorUser(currentUser));
-  // Ember's `isAdmin` — Owner or Administrator. Decides whether a row's
-  // trailing button offers Analytics, and whether views can be saved.
+  // Ember's `isAdmin` — Owner or Administrator. Decides whether views can be saved.
   const isAdmin = Boolean(currentUser && hasAdminAccess(currentUser));
-
-  const settings = settingsData?.settings ?? null;
-  // Memoised because it is a prop of every row, and the rows are memoised:
-  // rebuilding this object each render would defeat that and re-render the
-  // whole list on every modifier keypress.
-  const metricsSettings = useMemo(
-    () => ({
-      // GhostLite has no web analytics or member attribution.
-      webAnalyticsEnabled: false,
-      membersTrackSources: false,
-      emailTrackOpens: getSettingValue<boolean>(settings, 'email_track_opens') === true,
-      emailTrackClicks: getSettingValue<boolean>(settings, 'email_track_clicks') === true,
-      membersSignupAccess: getSettingValue<string>(settings, 'members_signup_access') ?? 'all',
-      isMembersInviteOnly: getSettingValue<string>(settings, 'members_signup_access') === 'invite',
-      isContributor,
-    }),
-    [settings, isContributor],
-  );
-  const paidMembersEnabled = getSettingValue<boolean>(settings, 'paid_members_enabled') === true;
 
   // The save/edit-view affordance: admins only, posts only, not while a
   // default view is active, and only with something actually filtered.
@@ -169,9 +148,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     () => items.filter((item) => isPostSelected(selectionState, item.id)),
     [items, selectionState],
   );
-  // GhostLite has no members.
-  const membersEnabled = false;
-
   // Changes on every selection change; rows read it through a stable ref
   // below so their memo holds.
   const menuItems = useMemo(
@@ -180,12 +156,9 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
         posts: menuPosts,
         resource,
         isAdmin,
-        membersEnabled,
-        canCopyGiftLink: false,
       }),
-    [menuPosts, resource, isAdmin, membersEnabled],
+    [menuPosts, resource, isAdmin],
   );
-
 
   // The Ember editor writes a localStorage key on publish and navigates here;
   // this reads it. The editor stays Ember on both sides of the flag.
@@ -363,17 +336,13 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                     <PostListRow
                       key={item.id}
                       getMenuItems={getMenuItems}
-                      hasAdminAccess={isAdmin}
                       isContributor={isContributor}
                       isSelected={selection.isSelected(item.id)}
                       menuEnabled={selection.enabled}
                       menuOnAction={stableRunPostAction}
                       menuOnOpenChange={selection.getContextMenuOpenHandler(item.id)}
-                      metricsSettings={metricsSettings}
-                      paidMembersEnabled={paidMembersEnabled}
                       post={item}
                       resource={resource}
-                      showGiftLink={false}
                       timezone={timezone}
                       onSelectClick={selection.onRowClick}
                       onSelectMouseDown={selection.onRowMouseDown}
@@ -411,24 +380,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
             }}
             onConfirm={(tags) => {
               void bulkActions.runWithPayload('add-tag', pendingBulkAction.snapshot, { tags });
-            }}
-          />
-        )}
-        {pendingBulkAction?.key === 'change-access' && (
-          <ChangeAccessModal
-            count={pendingBulkAction.snapshot.count}
-            currentTiers={
-              pendingBulkAction.snapshot.posts[0]?.tiers as { id: string }[] | undefined
-            }
-            currentVisibility={pendingBulkAction.snapshot.posts[0]?.visibility}
-            isRunning={bulkActions.isRunning}
-            isSingle={pendingBulkAction.snapshot.isSingle}
-            resource={resource}
-            onCancel={() => {
-              setPendingBulkAction(null);
-            }}
-            onConfirm={(access) => {
-              void bulkActions.runWithPayload('change-access', pendingBulkAction.snapshot, access);
             }}
           />
         )}

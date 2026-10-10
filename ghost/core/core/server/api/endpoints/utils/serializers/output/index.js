@@ -107,8 +107,4 @@ module.exports = {
   get search_index() {
     return require('./search-index');
   },
-
-  get featurebase() {
-    return require('./featurebase');
-  },
 };

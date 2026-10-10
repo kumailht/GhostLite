@@ -26,14 +26,12 @@ import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { type OfficialTheme } from '@/settings/providers/settings-app-context';
 import { PageHeader, SettingsModal } from '@tryghost/shade/patterns';
 import { toast } from 'sonner';
-import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
 import {
   type ConfirmationHandle,
   useConfirmation,
 } from '@/settings/providers/confirmation-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 
 interface ThemeToolbarProps {
   selectedTheme: OfficialTheme | null;
@@ -67,39 +65,16 @@ const UploadModalContent: React.FC<{ onUpload: (file: File) => void }> = ({ onUp
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, themes }) => {
   const { updateRoute } = useSettingsNavigation();
-  const upgradeRoute = useUpgradeRoute();
   const { mutateAsync: uploadTheme } = useUploadTheme();
-  const { checkThemeLimitError, isThemeLimited } = useCheckThemeLimitError();
   const handleError = useHandleError();
-  const { confirm, showLimit } = useConfirmation();
+  const { confirm } = useConfirmation();
 
-  const [uploadConfig, setUploadConfig] = useState<
-    { enabled: boolean; error?: string } | undefined
-  >();
   const [isUploading, setUploading] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<{
     themeName: string;
     fatalErrors: FatalErrors;
   } | null>(null);
   const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
-
-  useEffect(() => {
-    const checkUploadLimit = async () => {
-      // Theme upload is always a custom theme, so we check with '.'
-      // to force an error if ANY theme limit is applied
-      if (isThemeLimited) {
-        const error = await checkThemeLimitError('.');
-        setUploadConfig({
-          enabled: false,
-          error: error || "Your current plan doesn't support uploading custom themes.",
-        });
-      } else {
-        setUploadConfig({ enabled: true });
-      }
-    };
-
-    void checkUploadLimit();
-  }, [checkThemeLimitError, isThemeLimited]);
 
   const onClose = () => {
     updateRoute('/');
@@ -209,38 +184,20 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
   );
 
   const handleUpload = () => {
-    // Don't do anything if still checking limits
-    if (!uploadConfig) {
-      return;
-    }
-
-    if (uploadConfig.enabled) {
-      const handleRef: { current: ConfirmationHandle | null } = { current: null };
-      handleRef.current = confirm({
-        title: 'Upload theme',
-        prompt: (
-          <UploadModalContent
-            onUpload={(file) => {
-              handleRef.current?.remove();
-              onThemeUpload(file);
-            }}
-          />
-        ),
-        okLabel: '',
-        formSheet: false,
-      });
-    } else {
-      showLimit({
-        title: 'Upgrade to enable custom themes',
-        prompt: uploadConfig.error || (
-          <>
-            Your current plan only supports official themes. You can install them from the{' '}
-            <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.
-          </>
-        ),
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
-      });
-    }
+    const handleRef: { current: ConfirmationHandle | null } = { current: null };
+    handleRef.current = confirm({
+      title: 'Upload theme',
+      prompt: (
+        <UploadModalContent
+          onUpload={(file) => {
+            handleRef.current?.remove();
+            onThemeUpload(file);
+          }}
+        />
+      ),
+      okLabel: '',
+      formSheet: false,
+    });
   };
 
   const right = (
@@ -323,14 +280,12 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
   const [isMounted, setIsMounted] = useState(false);
   const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
   const { updateRoute } = useSettingsNavigation();
-  const upgradeRoute = useUpgradeRoute();
 
   const { data: { themes } = {} } = useBrowseThemes();
   const { mutateAsync: installTheme } = useInstallTheme();
   const { mutateAsync: activateTheme } = useActivateTheme();
-  const { checkThemeLimitError } = useCheckThemeLimitError();
   const handleError = useHandleError();
-  const { confirm, showLimit } = useConfirmation();
+  const { confirm } = useConfirmation();
 
   const onSelectTheme = (theme: OfficialTheme | null) => {
     setSelectedTheme(theme);
@@ -342,7 +297,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
 
   // probably not the best place to handle the logic here, something for cleanup.
   useEffect(() => {
-    const handleUrlInstallation = async () => {
+    const handleUrlInstallation = () => {
       // this grabs the theme ref from the url and installs it
       // Only show confirmation if we have explicit source and themeRef props (not from URL params after redirect)
       // Important: This should only run when ChangeThemeModal is explicitly given these props,
@@ -350,16 +305,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       // Also wait for component to be mounted to avoid race conditions
       if (source && themeRef && !installedFromMarketplace && isMounted) {
         const themeName = themeRef.split('/')[1];
-
-        // Check theme limit before showing installation modal
-        const limitError = await checkThemeLimitError(themeName);
-        if (limitError) {
-          // Don't show installation modal if there's a limit error
-          // The parent component should handle this
-          // Also close the current modal to prevent any issues
-          updateRoute('theme');
-          return;
-        }
 
         const titleText = 'Install Theme';
         const existingThemeNames = themes?.map((t) => t.name) || [];
@@ -423,7 +368,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       }
     };
 
-    void handleUrlInstallation();
+    handleUrlInstallation();
   }, [
     themeRef,
     source,
@@ -433,7 +378,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
     updateRoute,
     themes,
     installedFromMarketplace,
-    checkThemeLimitError,
     confirm,
     isMounted,
   ]);
@@ -449,16 +393,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       (theme) => theme.name.toLowerCase() === selectedTheme.name.toLowerCase(),
     );
     onInstall = async () => {
-      // Check theme limit FIRST, before any confirmation modals
-      const limitError = await checkThemeLimitError(selectedTheme.name);
-      if (limitError) {
-        showLimit({
-          prompt: limitError,
-          onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
-        });
-        return;
-      }
-
       // Handle the overwrite confirmation if needed
       if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
         return new Promise<void>((resolve) => {

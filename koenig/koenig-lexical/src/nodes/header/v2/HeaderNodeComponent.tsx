@@ -1,11 +1,9 @@
 import CardContext from '../../../context/CardContext';
 import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import useFileDragAndDrop from '../../../hooks/useFileDragAndDrop';
-import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../../../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../../../plugins/KoenigBehaviourPlugin';
-// import {SignupCard} from '../components/ui/cards/SignupCard.jsx';
 import {HeaderCard} from '../../../components/ui/cards/HeaderCard/v2/HeaderCard';
 import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../../../components/ui/ToolbarMenu';
@@ -54,7 +52,6 @@ function HeaderNodeComponent({
     // this is used to determine if the image was deliberately removed by the user or not, for some UX finesse
     const [imageRemoved, setImageRemoved] = useState(false);
 
-    const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -275,10 +272,8 @@ function HeaderNodeComponent({
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 imageDragHandler={imageDragHandler}
                 isEditing={isEditing}
-                isPinturaEnabled={isPinturaEnabled}
                 isSwapped={isSwapped}
                 layout={layout}
-                openImageEditor={openImageEditor}
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showBackgroundImage={showBackgroundImage}
                 subheader={subheader}

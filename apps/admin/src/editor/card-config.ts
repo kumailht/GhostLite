@@ -1,11 +1,6 @@
 import { type Config } from '@tryghost/admin-x-framework/api/config';
-import {
-  type Setting,
-  checkStripeEnabled,
-  getSettingValue,
-} from '@tryghost/admin-x-framework/api/settings';
+import { type Setting, getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
-import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import type { AutocompleteLink } from '@/shared/autocomplete-links';
 import type { LinkSearchGroup } from './link-suggestions';
 
@@ -15,13 +10,11 @@ export interface CardConfigPost {
   displayName: PostType;
   isPage: boolean;
   showTitleAndFeatureImage: boolean;
-  visibility: string;
 }
 
 export interface CardConfigPostSource {
   displayName: PostType;
   showTitleAndFeatureImage?: boolean;
-  visibility?: string | null;
 }
 
 export interface CardConfigSnippet {
@@ -39,9 +32,7 @@ export interface PostCardConfigSources {
   settings: Setting[];
   config: Config;
   site: SiteData;
-  currentUser: Parameters<typeof isContributorUser>[0];
   unsplashHeaders: Record<string, string | boolean>;
-  pinturaConfig: { jsUrl: string; cssUrl: string } | null;
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
 }
@@ -50,22 +41,15 @@ export interface PostCardConfigPorts {
   fetchEmbed: (url: string, options: { type?: string }) => Promise<unknown>;
   fetchAutocompleteLinks: () => Promise<AutocompleteLink[]>;
   searchLinks: (term?: string) => Promise<LinkSearchGroup[] | undefined>;
-  fetchLabels: () => Promise<string[]>;
   createSnippet?: (snippet: CardConfigSnippetInput) => void;
   deleteSnippet?: (snippet: { name: string }) => void;
 }
 
-export type CardVisibilitySettings = 'web only' | 'web and email';
-
 export interface PostCardConfig extends PostCardConfigPorts {
   unsplash: Record<string, string | boolean> | null;
   klipy: NonNullable<Config['klipy']> | null;
-  pinturaConfig: { jsUrl: string; cssUrl: string } | null;
   embedPreviewUrl: string | undefined;
-  renderLabels: boolean;
-  feature: { transistor: boolean; paywallImprovements: boolean };
   deprecated: { headerV1: boolean };
-  membersEnabled: boolean;
   siteTitle: string;
   siteDescription: string;
   siteOgImage: string | null;
@@ -73,17 +57,14 @@ export interface PostCardConfig extends PostCardConfigPorts {
   siteCoverImage: string | null;
   siteUrl: string;
   siteUuid: string;
-  stripeEnabled: boolean;
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
-  visibilitySettings: CardVisibilitySettings;
+  /** GhostLite has no members or email, so cards carry no visibility settings. */
+  visibilitySettings: 'none';
 }
 
-// An unsaved post has no visibility until the first save applies the site
-// default, so it is resolved here to keep `visibility` present for cards.
 export function buildCardConfigPost(
   post: CardConfigPostSource | undefined,
-  defaultContentVisibility: string,
 ): CardConfigPost | undefined {
   if (!post) {
     return undefined;
@@ -93,15 +74,7 @@ export function buildCardConfigPost(
     displayName: post.displayName,
     isPage: post.displayName === 'page',
     showTitleAndFeatureImage: post.showTitleAndFeatureImage ?? true,
-    visibility: post.visibility || defaultContentVisibility,
   };
-}
-
-export function getCardVisibilitySettings(
-  post: Pick<CardConfigPost, 'isPage' | 'displayName'> | undefined,
-): CardVisibilitySettings {
-  const isPage = post?.isPage || post?.displayName === 'page';
-  return isPage ? 'web only' : 'web and email';
 }
 
 function imageSetting(settings: Setting[], key: string): string | null {
@@ -113,25 +86,17 @@ export function buildPostCardConfig(
   sources: PostCardConfigSources,
   ports: PostCardConfigPorts,
 ): PostCardConfig {
-  const { settings, config, site, currentUser } = sources;
+  const { settings, config, site } = sources;
 
   return {
     unsplash: getSettingValue<boolean>(settings, 'unsplash') ? sources.unsplashHeaders : null,
     klipy: config.klipy?.apiKey ? config.klipy : null,
-    pinturaConfig: sources.pinturaConfig,
     embedPreviewUrl: config.security?.embedPreviewUrl || undefined,
     fetchAutocompleteLinks: ports.fetchAutocompleteLinks,
     fetchEmbed: ports.fetchEmbed,
-    fetchLabels: ports.fetchLabels,
-    renderLabels: !isContributorUser(currentUser),
-    feature: {
-      transistor: getSettingValue<boolean>(settings, 'transistor') === true,
-      paywallImprovements: config.labs?.paywallImprovements === true,
-    },
     deprecated: {
       headerV1: true,
     },
-    membersEnabled: getSettingValue<string>(settings, 'members_signup_access') === 'all',
     searchLinks: ports.searchLinks,
     siteTitle: getSettingValue<string>(settings, 'title') ?? '',
     siteDescription: getSettingValue<string>(settings, 'description') ?? '',
@@ -140,22 +105,20 @@ export function buildPostCardConfig(
     siteCoverImage: imageSetting(settings, 'cover_image'),
     siteUrl: getHomepageUrl(site),
     siteUuid: site.site_uuid,
-    stripeEnabled: checkStripeEnabled(settings, config),
     post: sources.post,
     snippets: sources.snippets,
     createSnippet: ports.createSnippet,
     deleteSnippet: ports.deleteSnippet,
-    visibilitySettings: getCardVisibilitySettings(sources.post),
+    visibilitySettings: 'none',
   };
 }
 
 export interface LiveCardConfigSettings {
-  visibility?: string | null;
   showTitleAndFeatureImage?: boolean | null;
 }
 
-// The live settings fields, not the saved record: a visibility or a hidden
-// title the writer has only staged still decides what the cards describe.
+// The live settings fields, not the saved record: a hidden title the writer
+// has only staged still decides what the cards describe.
 export function withLiveSettings(
   cardConfig: PostCardConfig,
   live: LiveCardConfigSettings,
@@ -168,7 +131,6 @@ export function withLiveSettings(
     ...cardConfig,
     post: {
       ...cardConfig.post,
-      visibility: live.visibility || cardConfig.post.visibility,
       showTitleAndFeatureImage: live.showTitleAndFeatureImage ?? true,
     },
   };

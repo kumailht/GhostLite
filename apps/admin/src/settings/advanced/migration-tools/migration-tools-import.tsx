@@ -6,41 +6,13 @@ import { DialogPortal } from '@/settings/providers/dialog-portal';
 import { type ChecklistItem, MigrationChecklist } from './migration-checklist';
 
 const IMPORT_CHECKLIST: ChecklistItem[] = [
-  {
-    status: 'included',
-    label: 'Posts and pages, with their tags and authors',
-    note: 'from a GhostLite or Ghost export (.json or .zip)',
-  },
-  {
-    status: 'included',
-    label: 'Images, video, audio and files in the zip',
-    note: 'links in posts are updated to match',
-  },
-  {
-    status: 'included',
-    label: 'Site settings',
-    note: 'title, navigation, design and code injection',
-  },
-  {
-    status: 'optional',
-    label: 'Themes, routes and redirects',
-    note: 'restored when the zip contains them; Casper and Source are left as they are',
-  },
-  {
-    status: 'optional',
-    label: 'Staff accounts',
-    note: 'imported locked; each person resets their password (needs email set up)',
-  },
-  {
-    status: 'excluded',
-    label: 'Private-site access code and visibility',
-    note: 'keep this site’s own setting',
-  },
-  {
-    status: 'excluded',
-    label: 'Members, newsletters, comments and tiers',
-    note: 'dropped; members-only posts become public',
-  },
+  { status: 'included', label: 'Posts and pages' },
+  { status: 'included', label: 'Images and files' },
+  { status: 'included', label: 'Site settings' },
+  { status: 'optional', label: 'Themes and routes' },
+  { status: 'optional', label: 'Staff (locked)' },
+  { status: 'excluded', label: 'Private-site code' },
+  { status: 'excluded', label: 'Members and newsletters' },
 ];
 
 const MigrationToolsImport: React.FC = () => {

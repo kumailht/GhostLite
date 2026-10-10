@@ -5,35 +5,13 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { type ChecklistItem, MigrationChecklist } from './migration-checklist';
 
 const EXPORT_CHECKLIST: ChecklistItem[] = [
-  {
-    status: 'included',
-    label: 'Posts and pages, with their tags and authors',
-  },
-  {
-    status: 'included',
-    label: 'Images, video, audio and files you uploaded',
-  },
-  {
-    status: 'included',
-    label: 'Site settings and staff accounts',
-    note: 'without passwords',
-  },
-  {
-    status: 'optional',
-    label: 'Themes, routes and redirects',
-  },
-  {
-    status: 'optional',
-    label: 'Posts list as a spreadsheet (CSV)',
-  },
-  {
-    status: 'excluded',
-    label: 'Post revision history, integrations and API keys',
-  },
-  {
-    status: 'excluded',
-    label: 'Private-site access code',
-  },
+  { status: 'included', label: 'Posts and pages' },
+  { status: 'included', label: 'Images and files' },
+  { status: 'included', label: 'Settings and staff' },
+  { status: 'optional', label: 'Themes and routes' },
+  { status: 'optional', label: 'Posts spreadsheet' },
+  { status: 'excluded', label: 'Passwords and access code' },
+  { status: 'excluded', label: 'Revision history' },
 ];
 
 const MigrationToolsExport: React.FC = () => {

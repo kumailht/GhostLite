@@ -38,28 +38,6 @@ const _ = require('lodash');
  * @property {string|null} twitter_image - Twitter card image URL
  * @property {string|null} twitter_title - Twitter card title
  * @property {string|null} twitter_description - Twitter card description
- * @property {string|null} members_support_address - Support email for members
- * @property {boolean|null} members_enabled - Whether members feature is enabled
- * @property {boolean|null} allow_self_signup - Whether self signup is allowed
- * @property {boolean|null} members_invite_only - Whether membership is invite only
- * @property {string|null} members_signup_access - Member signup access level
- * @property {boolean|null} paid_members_enabled - Whether paid memberships are enabled
- * @property {string|null} firstpromoter_account - FirstPromoter account ID
- * @property {string|null} portal_button_style - Portal button style
- * @property {string|null} portal_button_signup_text - Portal signup button text
- * @property {string|null} portal_button_icon - Portal button icon
- * @property {string|null} portal_signup_terms_html - Portal signup terms HTML
- * @property {boolean|null} portal_signup_checkbox_required - Whether signup checkbox is required
- * @property {string|null} portal_plans - JSON string of available portal plans
- * @property {string|null} portal_default_plan - Default portal plan
- * @property {boolean|null} portal_name - Whether to show portal names
- * @property {boolean|null} portal_button - Whether to show the portal button
- * @property {boolean|null} comments_enabled - Whether comments are enabled
- * @property {boolean|null} recommendations_enabled - Whether recommendations are enabled
- * @property {boolean|null} outbound_link_tagging - Whether outbound link tagging is enabled
- * @property {string|null} default_email_address - Default email address
- * @property {string|null} support_email_address - Support email address
- * @property {string|null} editor_default_email_recipients - Default email recipients for editor
  * @property {string|null} labs - JSON string of enabled labs features
  * @property {never} [x] - Prevent accessing undefined properties
  */
@@ -244,14 +222,6 @@ class CacheManager {
     // This block correctly populates the values from the cache
     for (const newKey in this.publicSettings) {
       settings[newKey] = this._doGet(this.publicSettings[newKey]) ?? null;
-    }
-
-    // Compute transistor_portal_enabled: only true if main integration AND portal setting are both enabled
-    //  - this is done server-side because we shouldn't expose the transistor integration setting
-    if ('transistor_portal_enabled' in settings) {
-      const transistorEnabled = this._doGet('transistor');
-      const portalEnabled = settings.transistor_portal_enabled;
-      settings.transistor_portal_enabled = Boolean(transistorEnabled) && Boolean(portalEnabled);
     }
 
     return settings;

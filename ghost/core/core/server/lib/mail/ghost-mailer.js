@@ -8,7 +8,8 @@ const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils').default;
 const metrics = require('@tryghost/metrics');
-const emailAddress = require('../../services/email-address');
+const validator = require('@tryghost/validator');
+const settingsHelpers = require('../../services/settings-helpers');
 const messages = {
   title: 'Ghost at {domain}',
   checkEmailConfigInstructions: 'Please see {url} for instructions on configuring email.',
@@ -34,16 +35,16 @@ function getDomain() {
  * @returns {{from: string, replyTo?: string|null}}
  */
 function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
-  if (!requestedFromAddress) {
-    // Use the default config
-    requestedFromAddress = emailAddress.service.defaultFromEmail;
-  }
+  const parseValid = (address) => {
+    const parsed = address ? emailAddressParser.parse(address) : null;
+    return parsed && validator.isEmail(parsed.address) ? parsed : null;
+  };
 
-  // Clean up email addresses (checks whether sending is allowed + email address is valid)
-  const addresses = emailAddress.service.getAddressFromString(
-    requestedFromAddress,
-    requestedReplyToAddress,
-  );
+  // An invalid or missing from address falls back to `mail.from`
+  const addresses = {
+    from: parseValid(requestedFromAddress) ?? { ...settingsHelpers.getDefaultEmail() },
+    replyTo: parseValid(requestedReplyToAddress),
+  };
 
   // fill in missing name if not set
   const defaultSiteTitle = settingsCache.get('title')
@@ -245,11 +246,6 @@ module.exports = class GhostMailer {
    */
   getTags(additionalTags = []) {
     const tagList = [...DEFAULT_TAGS];
-
-    const siteId = config.get('hostSettings:siteId');
-    if (siteId) {
-      tagList.push(`blog-${siteId}`);
-    }
 
     if (Array.isArray(additionalTags) && additionalTags.length > 0) {
       const cleanedTags = additionalTags

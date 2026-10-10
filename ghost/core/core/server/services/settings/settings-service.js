@@ -5,29 +5,12 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
-const { limitService: limits } = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager').default;
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const { generatePrivateSiteAccessCode } = require('./private-site-access-code');
 const { obfuscatedSetting, isSecretSetting, hideValueIfSecret } = require('./settings-utils');
-
-const ObjectId = require('bson-objectid').default;
-const settingsHelpers = require('../settings-helpers');
-
-
-const getSettingsOverrides = () => {
-  const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
-  const limitOverrides = {};
-
-  // Transistor.fm's Ghost-based features should be treated as off if the webhooks functionality is limited by the host
-  if (config.get('hostSettings:limits:customIntegrations:disabled') === true) {
-    limitOverrides.transistor = false;
-  }
-
-  return Object.assign({}, settingsOverrides, limitOverrides);
-};
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
@@ -37,32 +20,8 @@ const getSettingsBREADServiceInstance = () => {
     SettingsModel: models.Settings,
     settingsCache: SettingsCache,
     labsService: labs,
-    limitsService: limits,
   });
 };
-
-class CalculatedField {
-  constructor({ key, type, group, fn, dependents }) {
-    this.key = key;
-    this.type = type;
-    this.group = group;
-    this.fn = fn;
-    this.dependents = dependents;
-  }
-
-  getSetting() {
-    return {
-      key: this.key,
-      type: this.type,
-      group: this.group,
-      value: this.fn(),
-      // @TODO: remove this hack
-      id: ObjectId().toHexString(),
-      created_at: new Date().toISOString().replace(/\d{3}Z$/, '000Z'),
-      updated_at: new Date().toISOString().replace(/\d{3}Z$/, '000Z'),
-    };
-  }
-}
 
 module.exports = {
   /**
@@ -71,59 +30,11 @@ module.exports = {
   async init() {
     const cacheStore = adapterManager.getAdapter('cache:settings');
     await models.Settings.populateDefaults();
-    await this.enforcePublicSiteAccessLimit();
     const settingsCollection = await models.Settings.findAll({ context: { internal: true } });
-    const settingsOverrides = getSettingsOverrides();
-    SettingsCache.init(
-      events,
-      settingsCollection,
-      this.getCalculatedFields(),
-      cacheStore,
-      settingsOverrides,
-    );
+    SettingsCache.init(events, settingsCollection, [], cacheStore, {});
 
     // Validate site_uuid matches config
     this.validateSiteUuid();
-  },
-
-  /**
-   * When the `publicSiteAccess` flag limit is disabled, ensure the site
-   * is private and has an access code before the cache is built.
-   *
-   * @private
-   */
-  async enforcePublicSiteAccessLimit() {
-    if (!limits.isDisabled('publicSiteAccess')) {
-      return;
-    }
-
-    const isPrivateSetting = await models.Settings.findOne(
-      { key: 'is_private' },
-      { context: { internal: true } },
-    );
-    // Note: the `password` setting is the storage key for what we call the
-    // access code; the underlying setting is staying named for compatibility
-    // and will be renamed in a separate follow-up.
-    const accessCodeSetting = await models.Settings.findOne(
-      { key: 'password' },
-      { context: { internal: true } },
-    );
-    const writes = [];
-
-    if (!isPrivateSetting || isPrivateSetting.get('value') !== true) {
-      writes.push({ key: 'is_private', value: true });
-    }
-
-    const currentAccessCode = accessCodeSetting && accessCodeSetting.get('value');
-    if (typeof currentAccessCode !== 'string' || currentAccessCode.trim() === '') {
-      writes.push({ key: 'password', value: generatePrivateSiteAccessCode() });
-    }
-
-    if (writes.length === 0) {
-      return;
-    }
-
-    await models.Settings.edit(writes, { context: { internal: true } });
   },
 
   /**
@@ -152,133 +63,6 @@ module.exports = {
    */
   reset() {
     SettingsCache.reset(events);
-  },
-
-  /**
-   *
-   */
-  getCalculatedFields() {
-    const fields = [];
-
-    fields.push(
-      new CalculatedField({
-        key: 'members_enabled',
-        type: 'boolean',
-        group: 'members',
-        fn: settingsHelpers.isMembersEnabled.bind(settingsHelpers),
-        dependents: ['members_signup_access'],
-      }),
-    );
-    fields.push(
-      new CalculatedField({
-        key: 'members_invite_only',
-        type: 'boolean',
-        group: 'members',
-        fn: settingsHelpers.isMembersInviteOnly.bind(settingsHelpers),
-        dependents: ['members_signup_access'],
-      }),
-    );
-    fields.push(
-      new CalculatedField({
-        key: 'allow_self_signup',
-        type: 'boolean',
-        group: 'members',
-        fn: settingsHelpers.allowSelfSignup.bind(settingsHelpers),
-        dependents: ['members_signup_access'],
-      }),
-    );
-    fields.push(
-      new CalculatedField({
-        key: 'paid_members_enabled',
-        type: 'boolean',
-        group: 'members',
-        fn: settingsHelpers.arePaidMembersEnabled.bind(settingsHelpers),
-        dependents: [
-          'members_signup_access',
-          'stripe_secret_key',
-          'stripe_publishable_key',
-          'stripe_connect_secret_key',
-          'stripe_connect_publishable_key',
-        ],
-      }),
-    );
-    fields.push(
-      new CalculatedField({
-        key: 'firstpromoter_account',
-        type: 'string',
-        group: 'firstpromoter',
-        fn: settingsHelpers.getFirstpromoterId.bind(settingsHelpers),
-        dependents: ['firstpromoter', 'firstpromoter_id'],
-      }),
-    );
-    fields.push(
-      new CalculatedField({
-        key: 'donations_enabled',
-        type: 'boolean',
-        group: 'donations',
-        fn: settingsHelpers.areDonationsEnabled.bind(settingsHelpers),
-        dependents: [
-          'stripe_secret_key',
-          'stripe_publishable_key',
-          'stripe_connect_secret_key',
-          'stripe_connect_publishable_key',
-        ],
-      }),
-    );
-
-    // E-mail addresses
-    fields.push(
-      new CalculatedField({
-        key: 'default_email_address',
-        type: 'string',
-        group: 'email',
-        fn: settingsHelpers.getDefaultEmailAddress.bind(settingsHelpers),
-        dependents: ['labs'],
-      }),
-    );
-    fields.push(
-      new CalculatedField({
-        key: 'support_email_address',
-        type: 'string',
-        group: 'email',
-        fn: settingsHelpers.getMembersSupportAddress.bind(settingsHelpers),
-        dependents: ['labs', 'members_support_address'],
-      }),
-    );
-
-    // Blocked email domains from member signup, from both config and user settings
-    fields.push(
-      new CalculatedField({
-        key: 'all_blocked_email_domains',
-        type: 'string',
-        group: 'members',
-        fn: settingsHelpers.getAllBlockedEmailDomains.bind(settingsHelpers),
-        dependents: ['blocked_email_domains'],
-      }),
-    );
-
-    return fields;
-  },
-
-  /**
-   * Handles email setting synchronization when email has been verified per instance
-   *
-   * @param {boolean} configValue current email verification value from local config
-   */
-  async syncEmailSettings(configValue) {
-    const isEmailDisabled = SettingsCache.get('email_verification_required');
-
-    if (configValue === true && isEmailDisabled) {
-      return await models.Settings.edit(
-        [
-          {
-            key: 'email_verification_required',
-            value: false,
-          },
-        ],
-        { context: { internal: true } },
-      );
-    }
   },
 
   /**

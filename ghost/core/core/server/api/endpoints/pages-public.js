@@ -3,7 +3,6 @@ const errors = require('@tryghost/errors');
 const pick = require('lodash/pick');
 const models = require('../../models');
 const { rejectPagesContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
-const { generateOptionsData, generateAuthData } = require('./utils/public-cache-keys');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
 const ALLOWED_READ_FIELDS = ['id', 'slug', 'uuid'];
@@ -55,18 +54,6 @@ const controller = {
   read: {
     headers: {
       cacheInvalidate: false,
-    },
-    async generateCacheKeyData(frame) {
-      return {
-        options: generateOptionsData(frame, ['include', 'fields', 'formats', 'absolute_urls']),
-        auth: generateAuthData(frame),
-        method: 'read',
-        identifier: {
-          id: frame.data.id,
-          slug: frame.data.slug,
-          uuid: frame.data.uuid,
-        },
-      };
     },
     options: ['include', 'fields', 'formats', 'debug', 'absolute_urls'],
     data: ALLOWED_READ_FIELDS,

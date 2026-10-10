@@ -2,11 +2,9 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const pick = require('lodash/pick');
-const postsPublicService = require('../../services/posts-public');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 const { rejectPostsContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
-const { generateOptionsData, generateAuthData } = require('./utils/public-cache-keys');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers', 'sentiment'];
 const ALLOWED_READ_FIELDS = ['id', 'slug', 'uuid'];
@@ -23,25 +21,6 @@ const controller = {
   browse: {
     headers: {
       cacheInvalidate: false,
-    },
-    cache: postsPublicService.api?.cache,
-    generateCacheKeyData(frame) {
-      return {
-        options: generateOptionsData(frame, [
-          'include',
-          'filter',
-          'fields',
-          'formats',
-          'limit',
-          'order',
-          'page',
-          'absolute_urls',
-          'collection',
-        ]),
-        skipPagination: frame.options?.skipPagination === true,
-        auth: generateAuthData(frame),
-        method: 'browse',
-      };
     },
     options: [
       'include',
@@ -79,19 +58,6 @@ const controller = {
   read: {
     headers: {
       cacheInvalidate: false,
-    },
-    cache: postsPublicService.api?.cache,
-    async generateCacheKeyData(frame) {
-      return {
-        options: generateOptionsData(frame, ['include', 'fields', 'formats', 'absolute_urls']),
-        auth: generateAuthData(frame),
-        method: 'read',
-        identifier: {
-          id: frame.data.id,
-          slug: frame.data.slug,
-          uuid: frame.data.uuid,
-        },
-      };
     },
     options: ['include', 'fields', 'formats', 'debug', 'absolute_urls'],
     data: ALLOWED_READ_FIELDS,

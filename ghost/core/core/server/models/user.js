@@ -2,7 +2,6 @@ const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
-const { limitService } = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
@@ -918,21 +917,6 @@ const User = ghostBookshelf.Model.extend(
         });
       }
 
-      const isUnsuspending =
-        unsafeAttrs.status &&
-        unsafeAttrs.status === 'active' &&
-        userModel.get('status') === 'inactive';
-
-      // If we have a staff user limit & the staff user is being unsuspended (don't count contributors)
-      if (
-        limitService.isLimited('staff') &&
-        action === 'edit' &&
-        isUnsuspending &&
-        !userModel.hasRole('Contributor')
-      ) {
-        await limitService.errorIfWouldGoOverLimit('staff');
-      }
-
       if (action === 'edit') {
         if (context.user === userModel.get('id')) {
           // If this is the same user that requests the operation allow it.
@@ -991,17 +975,6 @@ const User = ghostBookshelf.Model.extend(
               message: tpl(messages.cannotChangeOwnRole),
             }),
           );
-        }
-
-        if (
-          limitService.isLimited('staff') &&
-          userModel.hasRole('Contributor') &&
-          role.name !== 'Contributor'
-        ) {
-          // CASE: if your site is limited to a certain number of staff users
-          // Trying to change the role of a contributor, who doesn't count towards the limit, to any other role requires a limit check
-          // To check if it's OK to add one more staff user
-          await limitService.errorIfWouldGoOverLimit('staff');
         }
 
         return User.getOwnerUser().then((owner) => {

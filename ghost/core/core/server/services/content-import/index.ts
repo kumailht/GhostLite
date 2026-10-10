@@ -24,7 +24,6 @@ const timezoneSchema = z.string().min(1).catch('Etc/UTC');
 
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const sentry = require('../../../shared/sentry');
 
 // Composition root: models and services are wired behind the collaborators the
 // importer declares.
@@ -50,7 +49,6 @@ function makeImporter(): ContentCSVImporter {
         { event: { name: 'content.import.error' }, err: error },
         '[Background Job] content-import error',
       );
-      sentry.captureException(error);
     } catch {
       // Callers report from catch blocks, so this must not throw.
     }

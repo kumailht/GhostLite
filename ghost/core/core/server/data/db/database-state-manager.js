@@ -3,7 +3,6 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 
-const sentry = require('../../../shared/sentry');
 
 const states = {
   READY: 0,
@@ -77,7 +76,6 @@ class DatabaseStateManager {
         });
       }
 
-      sentry.captureException(errorToThrow);
       throw errorToThrow;
     }
   }
@@ -130,7 +128,6 @@ class DatabaseStateManager {
         });
       }
 
-      sentry.captureException(errorToThrow);
       throw errorToThrow;
     }
   }

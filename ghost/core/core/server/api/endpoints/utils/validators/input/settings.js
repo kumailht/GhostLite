@@ -4,9 +4,6 @@ const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-  invalidEmailReceived: 'Please send a valid email',
-  invalidEmailValueReceived: 'Please enter a valid email address.',
-  invalidEmailTypeReceived: 'Invalid email type received',
   invalidNavigationItemValueReceived: 'Please enter a valid navigation item',
 };
 
@@ -141,14 +138,7 @@ module.exports = {
     _.each(frame.data.settings, (setting) => {
       // TODO: the below array is INCOMPLETE
       //       it should include all setting values that have array as a type
-      const arrayTypeSettings = [
-        'notifications',
-        'navigation',
-        'secondary_navigation',
-        'announcement_visibility',
-      ];
-
-      const emailTypeSettings = ['members_support_address'];
+      const arrayTypeSettings = ['notifications', 'navigation', 'secondary_navigation'];
 
       if (arrayTypeSettings.includes(setting.key)) {
         const typeError = new ValidationError({
@@ -177,18 +167,6 @@ module.exports = {
           validateNavigationItems(setting, errors);
         } catch (err) {
           // Array type validation above will return the specific array error.
-        }
-      }
-
-      if (emailTypeSettings.includes(setting.key)) {
-        const email = setting.value;
-
-        if (typeof email !== 'string' || (!validator.isEmail(email) && email !== 'noreply')) {
-          const typeError = new ValidationError({
-            message: tpl(messages.invalidEmailValueReceived),
-            property: setting.key,
-          });
-          errors.push(typeError);
         }
       }
     });

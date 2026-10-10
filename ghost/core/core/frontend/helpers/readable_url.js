@@ -4,13 +4,11 @@
 // Returns a human readable URL for the given URL, e.g. google.com for https://www.google.com?query=1#section
 
 const logging = require('@tryghost/logging');
-const sentry = require('../../shared/sentry');
 const errors = require('@tryghost/errors');
 const { SafeString } = require('../services/handlebars');
 
 function captureError(message) {
   const error = new errors.IncorrectUsageError({ message });
-  sentry.captureException(error);
   logging.error(error);
 }
 

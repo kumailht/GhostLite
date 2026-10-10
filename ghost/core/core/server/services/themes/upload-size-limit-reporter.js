@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const sentry = require('../../../shared/sentry');
 
 const THEME_UPLOAD_LOG_KEY = '[theme-upload]';
 const SIZE_LIMIT_EVENTS_BY_CODE = {
@@ -35,11 +34,6 @@ const reportThemeUploadSizeLimitError = (err, { themeName = null, zip = null } =
     },
     `${THEME_UPLOAD_LOG_KEY} ${err.message}`,
   );
-
-  sentry.captureException(err, {
-    tags: { source: eventName },
-    extra: eventDetails,
-  });
 };
 
 module.exports = {

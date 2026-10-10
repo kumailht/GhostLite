@@ -7,9 +7,6 @@ const ALLOWED_INCLUDES = [
   'tags',
   'authors',
   'authors.roles',
-  'tiers',
-  'count.signups',
-  'count.paid_conversions',
   'post_revisions',
   'post_revisions.author',
 ];

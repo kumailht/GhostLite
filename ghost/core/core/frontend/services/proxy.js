@@ -1,7 +1,6 @@
 // This file contains everything that the helpers and frontend apps require from the core of Ghost
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
-const settingsHelpers = require('../../server/services/settings-helpers');
 const storageUtils = require('../../server/adapters/storage/utils');
 const internalKeys = require('../../server/services/internal-keys').default;
 const serverEventBus = require('../../server/lib/common/events');
@@ -78,11 +77,6 @@ module.exports = {
 
   // TODO: Only expose "get"
   settingsCache: settingsCache,
-
-  // Settings helpers for calculated settings
-  settingsHelpers: {
-    isStripeConnected: (...args) => settingsHelpers.isStripeConnected(...args),
-  },
 
   // TODO: Expose less of the API to make this safe
   api: require('../../server/api').endpoints,

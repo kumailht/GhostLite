@@ -252,11 +252,6 @@ export function normalizeAdapterConfig(config: ConfigInstance) {
         basePath: config.getContentPath('settings'),
         defaultSettingsBasePath: config.get('paths:defaultRouteSettings'),
       },
-      // The S3 store reads the bundled defaults off disk too, for the
-      // empty-state response when the bucket holds no routes.yaml yet.
-      S3RouteSettingsStore: {
-        defaultSettingsBasePath: config.get('paths:defaultRouteSettings'),
-      },
     }),
   };
 }
@@ -267,7 +262,7 @@ export function normalizeAdapterConfig(config: ConfigInstance) {
  * A key is a "feature" (e.g. `images`/`media`/`files` for storage) when it isn't
  * `active` and its value either names another adapter (a String, e.g.
  * `media: 'LocalMediaStorage'`) or carries inline feature config (an Object with
- * an `adapter` property, e.g. `media: {adapter: 'S3Storage', bucket: '...'}`).
+ * an `adapter` property, e.g. `media: {adapter: 'LocalMediaStorage'}`).
  * Plain adapter-config objects keyed by class name (e.g. `LocalMediaStorage: {}`)
  * are not features — `resolveAdapterOptions` resolves those back to the active
  * adapter — so they're intentionally excluded here.

@@ -2,11 +2,11 @@ const debug = require('@tryghost/debug')('web:api:endpoints:content:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const express = require('../../../../../shared/express');
-const sentry = require('../../../../../shared/sentry');
 const config = require('../../../../../shared/config');
 const shared = require('../../../shared');
 const routes = require('./routes');
 const errorHandler = require('@tryghost/mw-error-handler');
+const { noErrorReporting } = require('../../../../../shared/express');
 
 /**
  * @returns {import('express').Application}
@@ -35,7 +35,7 @@ module.exports = function setupApiApp() {
 
   // API error handling
   apiApp.use(errorHandler.resourceNotFound);
-  apiApp.use(errorHandler.handleJSONResponse(sentry));
+  apiApp.use(errorHandler.handleJSONResponse(noErrorReporting));
 
   debug('Content API setup end');
 

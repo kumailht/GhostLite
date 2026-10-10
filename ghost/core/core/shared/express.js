@@ -1,7 +1,6 @@
 const debug = require('@tryghost/debug')('shared:express');
 const express = require('express');
 const { createLazyRouter } = require('express-lazy-router');
-const sentry = require('./sentry');
 const config = require('../../core/shared/config');
 
 const lazyLoad = createLazyRouter();
@@ -24,9 +23,6 @@ module.exports = (name) => {
     app.enable('trust proxy');
   }
 
-  // Sentry must be our first error handler. Mounting it here means all custom error handlers will come after
-  app.use(sentry.errorHandler);
-
   app.lazyUse = function lazyUse(mountPath, requireFn) {
     app.use(
       mountPath,
@@ -47,8 +43,6 @@ module.exports.Router = (name, options) => {
   debug('new Router start', name);
   const router = express.Router(options);
 
-  router.use(sentry.errorHandler);
-
   debug('new Router end', name);
   return router;
 };
@@ -57,3 +51,9 @@ module.exports.serveStatic = express.static;
 
 // Export the OG module for testing based on the internals
 module.exports._express = express;
+
+// @tryghost/mw-error-handler mounts the `errorHandler` of the error reporter it's
+// given. GhostLite logs errors but reports them nowhere, so this one is a no-op.
+module.exports.noErrorReporting = {
+  errorHandler: (req, res, next) => next(),
+};

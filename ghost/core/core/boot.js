@@ -129,24 +129,11 @@ async function initCore({ ghostServer, config }) {
   require('./shared/url-utils');
   debug('End: Load urlUtils');
 
-  // Limit service is booted before settings, so that limits are available for calculated settings
-  debug('Begin: limits');
-  const limits = require('./server/services/limits');
-  await limits.init();
-  debug('End: limits');
-
   // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
   debug('Begin: settings');
   const settings = require('./server/services/settings/settings-service');
   await settings.init();
-  await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
   debug('End: settings');
-
-  // Signing keys come from settings and must be ready before anything signs or serves a JWKS
-  debug('Begin: signing keys');
-  const signingKeys = require('./server/services/signing-keys');
-  await signingKeys.init();
-  debug('End: signing keys');
 
   debug('Begin: i18n');
   const i18n = require('./server/services/i18n');
@@ -246,19 +233,6 @@ async function initExpressApps({ frontend, backend, config }) {
 }
 
 /**
- * Initialize prometheus client
- */
-function initPrometheusClient({ config }) {
-  if (config.get('prometheus:enabled')) {
-    debug('Begin: initPrometheusClient');
-    const prometheusClient = require('./shared/prometheus-client');
-    debug('End: initPrometheusClient');
-    return prometheusClient;
-  }
-  return null;
-}
-
-/**
  * Dynamic routing is generated from the routes.yaml file
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
@@ -315,23 +289,15 @@ async function initServices({ jobsService }) {
   debug('Begin: Services');
   const permissions = require('./server/services/permissions');
   const postScheduling = require('./server/services/post-scheduling').default;
-  const tagsPublic = require('./server/services/tags-public');
-  const postsPublic = require('./server/services/posts-public');
   const mediaInliner = require('./server/services/media-inliner');
   const contentImport = require('./server/services/content-import');
-  const emailAddressService = require('./server/services/email-address');
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
-  // The email address service picks the "from" address for staff mail
-  // (password resets, invites), so it is initialised before anything sends mail.
-  emailAddressService.init();
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
 
   await Promise.all([
-    tagsPublic.init(),
-    postsPublic.init(),
     permissions.init(),
     mediaInliner.init(),
     contentImport.init(),
@@ -378,20 +344,6 @@ async function initBackgroundServices({ config }) {
     return;
   }
 
-  const jobsService = require('./server/services/jobs-service').getInstance();
-
-  try {
-    const signingKeys = require('./server/services/signing-keys');
-    await signingKeys.scheduleCheckJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
-  const remoteFlags = require('./server/services/remote-flags');
-  remoteFlags.init(config);
-
   debug('End: initBackgroundServices');
 }
 
@@ -421,7 +373,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   // These require their own try-catch block and error format, because we can't log an error if logging isn't working
   try {
     // Step 0 - Load config and logging - fundamental required components
-    // Version is required by logging, sentry & Migration config & so is fundamental to booting
+    // Version is required by logging & Migration config & so is fundamental to booting
     // However, it involves reading package.json so its slow & it's here for visibility on that slowness
     debug('Begin: Load version info');
     require('@tryghost/version');
@@ -454,18 +406,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   }
 
   try {
-    // Step 1 - require more fundamental components
-
-    // Sentry must be initialized early, but requires config
-    debug('Begin: Load sentry');
-    const sentry = require('./shared/sentry');
-    debug('End: Load sentry');
-
-    // Initialize prometheus client early to enable metrics collection during boot
-    // Note: this does not start the metrics server yet to avoid increasing boot time
-    const prometheusClient = initPrometheusClient({ config });
-
-    // Step 2 - Start server with minimal app in global maintenance mode
+    // Step 1 - Start server with minimal app in global maintenance mode
     debug('Begin: load server + minimal app');
     const rootApp = require('./app')();
 
@@ -478,33 +419,18 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       });
       await ghostServer.start(rootApp);
       bootLogger.log('server started');
-
-      // Ensure the prometheus client is stopped when the server shuts down
-      ghostServer.registerCleanupTask(async () => {
-        if (prometheusClient) {
-          prometheusClient.stop();
-        }
-      }, 'Prometheus client');
       debug('End: load server + minimal app');
     }
 
-    // Step 3 - Get the DB ready
+    // Step 2 - Get the DB ready
     debug('Begin: Get DB ready');
     await initDatabase({ config });
     bootLogger.log('database ready');
-    const connection = require('./server/data/db/connection');
-    sentry.initQueryTracing(connection);
     debug('End: Get DB ready');
 
-    // Step 4 - Load Ghost with all its services
+    // Step 3 - Load Ghost with all its services
     debug('Begin: Load Ghost Services & Apps');
     await initCore({ ghostServer, config });
-
-    // Instrument the knex instance and connection pool if prometheus is enabled
-    // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
-    if (prometheusClient) {
-      prometheusClient.instrumentKnex(connection);
-    }
 
     await initServicesForFrontend({ bootLogger });
 
@@ -525,18 +451,18 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     debug('End: Load Ghost Services & Apps');
 
-    // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
+    // Step 4 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
     debug('Begin: mountGhost');
     rootApp.disable('maintenance');
     rootApp.use(config.getSubdir(), ghostApp);
     debug('End: mountGhost');
 
-    // Step 6 - We are technically done here - let everyone know!
+    // Step 5 - We are technically done here - let everyone know!
     bootLogger.log('booted');
     bootLogger.metric('boot-time');
     notifyServerReady();
 
-    // Step 7 - Init our background services, we don't wait for this to finish
+    // Step 6 - Init our background services, we don't wait for this to finish
     initBackgroundServices({ config });
 
     // If we pass the env var, kill Ghost

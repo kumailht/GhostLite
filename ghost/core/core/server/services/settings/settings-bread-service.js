@@ -6,11 +6,9 @@ const {
 } = require('@tryghost/errors');
 const { obfuscatedSetting, isSecretSetting, hideValueIfSecret } = require('./settings-utils');
 
-const PUBLIC_SITE_ACCESS_LOCKED_KEYS = ['is_private', 'password'];
 const messages = {
   problemFindingSetting: 'Problem finding setting: {key}',
   accessCoreSettingFromExtReq: 'Attempted to access core setting from external request',
-  publicSiteAccessLocked: 'Site visibility and access code cannot be changed.',
 };
 
 class SettingsBREADService {
@@ -20,18 +18,15 @@ class SettingsBREADService {
    * @param {Object} options.SettingsModel
    * @param {Object} options.settingsCache - SettingsCache instance
    * @param {Object} options.labsService - labs service instance
-   * @param {Object} options.limitsService - limits service instance
    */
   constructor({
     SettingsModel,
     settingsCache,
     labsService,
-    limitsService,
   }) {
     this.SettingsModel = SettingsModel;
     this.settingsCache = settingsCache;
     this.labs = labsService;
-    this.limitsService = limitsService;
   }
 
   /**
@@ -148,21 +143,6 @@ class SettingsBREADService {
           message: tpl(messages.accessCoreSettingFromExtReq),
         });
       }
-
-      if (this._isPublicSiteAccessLimited()) {
-        const lockedEdit = filteredSettings.find((setting) => {
-          if (setting.key === 'password') {
-            return true;
-          }
-          return setting.key === 'is_private' && setting.value !== true;
-        });
-
-        if (lockedEdit) {
-          throw new NoPermissionError({
-            message: tpl(messages.publicSiteAccessLocked),
-          });
-        }
-      }
     }
 
     return this.SettingsModel.edit(filteredSettings, options).then((result) => {
@@ -198,20 +178,7 @@ class SettingsBREADService {
       labsSetting.value = JSON.stringify(this.labs.getAll());
     }
 
-    if (this._isPublicSiteAccessLimited()) {
-      settings = settings.map((setting) => {
-        if (PUBLIC_SITE_ACCESS_LOCKED_KEYS.includes(setting.key)) {
-          return { ...setting, is_read_only: true };
-        }
-        return setting;
-      });
-    }
-
     return settings;
-  }
-
-  _isPublicSiteAccessLimited() {
-    return Boolean(this.limitsService && this.limitsService.isDisabled('publicSiteAccess'));
   }
 }
 

@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const { limitService } = require('../services/limits');
 const ghostBookshelf = require('./base');
 const errors = require('@tryghost/errors');
 const { NoPermissionError } = errors;
@@ -95,14 +94,6 @@ const Integration = ghostBookshelf.Model.extend(
       hasUserPermission,
       hasApiKeyPermission,
     ) {
-      const isAdd = action === 'add';
-
-      if (isAdd && limitService.isLimited('customIntegrations')) {
-        // CASE: if your site is limited to a certain number of custom integrations
-        // Inviting a new custom integration requires we check we won't go over the limit
-        await limitService.errorIfWouldGoOverLimit('customIntegrations');
-      }
-
       if (!hasUserPermission || !hasApiKeyPermission) {
         throw new NoPermissionError();
       }

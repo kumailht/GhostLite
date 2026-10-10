@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
-const { limitService } = require('../../../services/limits');
 const { legacyApiPathMatch } = require('../../../web/api/middleware/api-version-compatibility');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
@@ -151,16 +150,6 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
     });
   }
 
-  // CASE: blocking all non-internal: "custom" and "builtin" integration requests when the limit is reached
-  if (
-    limitService.isLimited('customIntegrations') &&
-    apiKey.relations.integration &&
-    !['internal', 'core'].includes(apiKey.relations.integration.get('type'))
-  ) {
-    // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
-    //       a concept of measuring if the limit has been surpassed
-    await limitService.errorIfWouldGoOverLimit('customIntegrations');
-  }
 
   // Decoding from hex and transforming into bytes is here to
   // keep comparison of the bytes that are stored in the secret.

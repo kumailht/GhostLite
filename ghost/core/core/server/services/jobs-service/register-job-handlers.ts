@@ -4,8 +4,6 @@ import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
-import CheckSigningKeysJob from '../signing-keys/check-signing-keys-job';
-import * as signingKeys from '../signing-keys';
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
@@ -30,9 +28,5 @@ export default function registerJobHandlers({
 
   jobsService.handle(ContentImportJob, async (job) => {
     await siteImporter.executeImport(job);
-  });
-
-  jobsService.handle(CheckSigningKeysJob, async () => {
-    await signingKeys.getInstance().check();
   });
 }

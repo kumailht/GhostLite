@@ -12,17 +12,13 @@ const { serializeToYaml } = require('../../services/custom-redirects/redirect-co
 const themeService = require('../../services/themes');
 const themeList = require('../../services/themes/list');
 const { SiteExporter } = require('../../services/exports/site-exporter');
-const {
-  SYNC_EXPORT_COMPONENTS,
-  ASYNC_EXPORT_COMPONENTS,
-} = require('../../services/exports/export-components');
+const { SYNC_EXPORT_COMPONENTS } = require('../../services/exports/export-components');
 const { getExportFileName } = require('./utils/csv-export-filename');
 const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
-const { exportRequestsService } = require('../../services/export-requests/export-requests-service');
 
 const postsService = getPostServiceInstance();
 
@@ -133,58 +129,6 @@ const controller = {
         archive: createSiteExporter().createArchive(components),
         filename: getExportFileName('export', 'zip'),
       };
-    },
-  },
-
-  add: {
-    statusCode: 202,
-    headers: {
-      cacheInvalidate: false,
-    },
-    validation(frame) {
-      const components = frame.data && frame.data.components;
-
-      if (!components || typeof components !== 'object' || Array.isArray(components)) {
-        throw new errors.BadRequestError({
-          message: 'components must be an object',
-        });
-      }
-
-      const keys = Object.keys(components);
-      const unknownKeys = keys.filter((key) => !ASYNC_EXPORT_COMPONENTS.includes(key));
-
-      if (unknownKeys.length > 0) {
-        throw new errors.BadRequestError({
-          message: `Unknown export components: ${unknownKeys.join(', ')}`,
-        });
-      }
-
-      if (keys.some((key) => typeof components[key] !== 'boolean')) {
-        throw new errors.BadRequestError({
-          message: 'Export component values must be booleans',
-        });
-      }
-
-      if (!keys.some((key) => components[key] === true)) {
-        throw new errors.BadRequestError({
-          message: 'At least one export component must be selected',
-        });
-      }
-    },
-    permissions: {
-      docName: 'db',
-      method: 'exportContent',
-    },
-    async query(frame) {
-      const components = {};
-      for (const key of ASYNC_EXPORT_COMPONENTS) {
-        components[key] = frame.data.components[key] === true;
-      }
-
-      await exportRequestsService.requestExport({
-        components,
-        requestedByUserId: frame.options.context.user,
-      });
     },
   },
 };

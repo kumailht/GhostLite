@@ -66,23 +66,7 @@ function selectAllAllowedColumns(frame) {
   }
 }
 
-/**
- * Map names of relations to the internal names
- */
-function mapWithRelated(frame) {
-  if (frame.options.withRelated) {
-    // Map sentiment to count.sentiment
-    frame.options.withRelated = frame.options.withRelated.map((relation) => {
-      return relation === 'sentiment' ? 'count.sentiment' : relation;
-    });
-    return;
-  }
-}
-
 function defaultRelations(frame) {
-  // Apply same mapping as content API
-  mapWithRelated(frame);
-
   // Additional defaults for admin API. Applied before the URL force-load so
   // a forced relation can never preempt the full admin default list.
   if (!frame.options.withRelated && !frame.options.columns) {
@@ -90,10 +74,6 @@ function defaultRelations(frame) {
       'tags',
       'authors',
       'authors.roles',
-      'email',
-      'tiers',
-      'newsletter',
-      'count.clicks',
     ];
   }
 
@@ -176,7 +156,6 @@ module.exports = {
       frame.options.order = rejectPostsContentApiRestrictedOrderFields(frame.options.order);
       setDefaultOrder(frame);
       forceVisibilityColumn(frame);
-      mapWithRelated(frame);
       url.forceUrlRelations(frame, 'posts');
     }
 

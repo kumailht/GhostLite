@@ -15,14 +15,9 @@ export interface JobsLogger {
   info(...args: unknown[]): void;
 }
 
-export interface JobsErrorReporter {
-  captureException(err: unknown, captureContext?: { tags?: Record<string, string> }): void;
-}
-
 export interface JobsServiceOptions {
   backend: JobsBackendBase;
   logging: JobsLogger;
-  sentry?: JobsErrorReporter;
 }
 
 type Deliverer = (payload: string) => Promise<void> | void;
@@ -45,15 +40,13 @@ export interface JobHandlingOptions {
 export class JobsService {
   readonly #backend: JobsBackendBase;
   readonly #logging: JobsLogger;
-  readonly #sentry?: JobsErrorReporter;
   readonly #registry = new Map<string, Deliverer>();
   readonly #queueByType = new Map<string, string>();
   readonly #queues = new Map<string, QueueDeclaration>();
 
-  constructor({ backend, logging, sentry }: JobsServiceOptions) {
+  constructor({ backend, logging }: JobsServiceOptions) {
     this.#backend = backend;
     this.#logging = logging;
-    this.#sentry = sentry;
   }
 
   handle<T extends Job, D>(
@@ -200,7 +193,6 @@ export class JobsService {
         err,
         `[Background Job] ${envelope.type} failed after ${Date.now() - startedAt}ms`,
       );
-      this.#sentry?.captureException(err, { tags: { job_type: envelope.type } });
       throw err;
     }
 

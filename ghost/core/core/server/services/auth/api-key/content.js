@@ -1,6 +1,5 @@
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
-const { limitService } = require('../../../services/limits');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -47,16 +46,6 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
       );
     }
 
-    // CASE: blocking all non-internal: "custom" and "builtin" integration requests when the limit is reached
-    if (
-      limitService.isLimited('customIntegrations') &&
-      apiKey.relations.integration &&
-      !['internal', 'core'].includes(apiKey.relations.integration.get('type'))
-    ) {
-      // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
-      //       a concept of measuring if the limit has been surpassed
-      await limitService.errorIfWouldGoOverLimit('customIntegrations');
-    }
 
     // authenticated OK, store the api key on the request for later checks and logging
     req.api_key = apiKey;

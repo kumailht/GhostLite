@@ -163,7 +163,6 @@ module.exports = function apiRoutes() {
 
   // ## Exports
   router.get('/exports/download', mw.authAdminApi, http(api.exports.download));
-  router.post('/exports', mw.authAdminApi, http(api.exports.add));
 
   // ## Sessions
   // We don't need auth when creating a new session (logging in)

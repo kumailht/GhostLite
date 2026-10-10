@@ -1,16 +1,9 @@
 // NOTE: mapping is based on maping present in migration - 3.22/04-populate-settings-groups-and-flags
 const keyGroupMapping = {
-  members_public_key: 'core',
-  members_private_key: 'core',
-  members_email_auth_secret: 'core',
-  members_otc_secret: 'core',
   db_hash: 'core',
-  next_update_check: 'core',
   notifications: 'core',
   admin_session_secret: 'core',
   theme_session_secret: 'core',
-  ghost_public_key: 'core',
-  ghost_private_key: 'core',
   title: 'site',
   description: 'site',
   logo: 'site',
@@ -45,19 +38,9 @@ const keyGroupMapping = {
   password: 'private',
   public_hash: 'private',
   labs: 'labs',
-  slack: 'slack',
   unsplash: 'unsplash',
   shared_views: 'views',
-  bulk_email_settings: 'email',
-  default_content_visibility: 'members',
-  members_subscription_settings: 'members',
-  stripe_connect_integration: 'members',
-  portal_name: 'portal',
-  portal_button: 'portal',
-  portal_plans: 'portal',
   require_email_mfa: 'security',
-  explore_ping: 'explore',
-  explore_ping_growth: 'explore',
 };
 
 const mapKeyToGroup = (key) => {

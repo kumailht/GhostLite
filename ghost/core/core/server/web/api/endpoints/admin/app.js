@@ -2,11 +2,11 @@ const debug = require('@tryghost/debug')('web:endpoints:admin:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const errorHandler = require('@tryghost/mw-error-handler');
+const { noErrorReporting } = require('../../../../../shared/express');
 
 const versionMatch = require('../../middleware/version-match');
 const shared = require('../../../shared');
 const express = require('../../../../../shared/express');
-const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
 
 /**
@@ -37,7 +37,7 @@ module.exports = function setupApiApp() {
 
   // API error handling
   apiApp.use(errorHandler.resourceNotFound);
-  apiApp.use(errorHandler.handleJSONResponse(sentry));
+  apiApp.use(errorHandler.handleJSONResponse(noErrorReporting));
 
   debug('Admin API setup end');
 

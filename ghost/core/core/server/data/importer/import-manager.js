@@ -40,7 +40,7 @@ class ImportManager {
   }) {
     this.jobsService = jobsService;
 
-    /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default | import('../../adapters/storage/S3Storage').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
+    /** @type {Pick<import('../../adapters/storage/LocalStorageBase').default, 'save' | 'readStream' | 'delete' | 'urlToPath' | 'storagePath'>} */
     this.importsStorage = importsStorage;
 
     /**

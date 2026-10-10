@@ -7,8 +7,6 @@ import type {
 } from '@tryghost/adapter-base-scheduling';
 
 // CJS-only module without TS declarations.
-// TODO: replace with dependency injection once the sentry module is TS
-const sentry = require('../../../shared/sentry');
 
 /**
  * The surface Ghost consumes from a resolved scheduling adapter: the
@@ -36,7 +34,6 @@ function redactToken(url: string): string {
 }
 
 function report(err: unknown, operation: 'schedule' | 'unschedule', job: SchedulerJob): void {
-  sentry.captureException(err);
   logging.error(
     {
       event: { name: `scheduler.${operation}.failed` },

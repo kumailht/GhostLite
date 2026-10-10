@@ -1,10 +1,9 @@
 const themeService = require('../../services/themes');
-const { limitService } = require('../../services/limits');
 const models = require('../../models');
 
 // Used to emit theme.uploaded which is used in core/server/analytics-events
 const events = require('../../lib/common/events');
-const { settingsCache } = require('../../services/settings-helpers');
+const settingsCache = require('../../../shared/settings-cache');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -47,10 +46,6 @@ const controller = {
     permissions: true,
     async query(frame) {
       const themeName = frame.options.name;
-
-      if (limitService.isLimited('customThemes')) {
-        await limitService.errorIfWouldGoOverLimit('customThemes', { value: themeName });
-      }
 
       const newSettings = [
         {
@@ -110,11 +105,6 @@ const controller = {
       method: 'add',
     },
     async query(frame) {
-      if (limitService.isLimited('customThemes')) {
-        // Sending a bad string to make sure it fails (empty string isn't valid)
-        await limitService.errorIfWouldGoOverLimit('customThemes', { value: '.' });
-      }
-
       // @NOTE: consistent filename uploads
       frame.options.originalname = frame.file.originalname.toLowerCase();
 

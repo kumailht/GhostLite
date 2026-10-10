@@ -20,22 +20,6 @@
       "defaultValue": null,
       "type": "string"
     },
-    "ghost_public_key": {
-      "defaultValue": null,
-      "type": "string"
-    },
-    "ghost_private_key": {
-      "defaultValue": null,
-      "type": "string"
-    },
-    "ghost_next_private_key": {
-      "defaultValue": null,
-      "type": "string"
-    },
-    "ghost_previous_public_key": {
-      "defaultValue": null,
-      "type": "string"
-    },
     "site_uuid": {
       "defaultValue": null,
       "type": "string",
@@ -297,28 +281,6 @@
     "shared_views": {
       "defaultValue": "[]",
       "type": "array"
-    }
-  },
-  "pintura": {
-    "pintura": {
-      "defaultValue": "true",
-      "validations": {
-        "isIn": [
-          [
-            "true",
-            "false"
-          ]
-        ]
-      },
-      "type": "boolean"
-    },
-    "pintura_js_url": {
-      "defaultValue": null,
-      "type": "string"
-    },
-    "pintura_css_url": {
-      "defaultValue": null,
-      "type": "string"
     }
   },
   "security": {

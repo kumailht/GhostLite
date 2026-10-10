@@ -17,9 +17,6 @@ module.exports = {
         'timezone',
         'url',
         'version',
-        'allow_external_signup',
-        'sentry_dsn',
-        'sentry_env',
         'site_uuid',
       ]),
     };

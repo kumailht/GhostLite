@@ -64,9 +64,6 @@ function defaultRelations(frame) {
       'tags',
       'authors',
       'authors.roles',
-      'tiers',
-      'count.signups',
-      'count.paid_conversions',
     ];
   }
 

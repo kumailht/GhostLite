@@ -1,8 +1,8 @@
 const debug = require('@tryghost/debug')('web:api:default:app');
 const express = require('../../../shared/express');
-const sentry = require('../../../shared/sentry');
 const middleware = require('../shared/middleware');
 const errorHandler = require('@tryghost/mw-error-handler');
+const { noErrorReporting } = require('../../../shared/express');
 const apiVersionCompatibility = require('./middleware/api-version-compatibility');
 
 /**
@@ -23,7 +23,7 @@ module.exports = function setupApiApp() {
 
   // Error handling for requests to non-existent API versions
   apiApp.use(errorHandler.resourceNotFound);
-  apiApp.use(errorHandler.handleJSONResponse(sentry));
+  apiApp.use(errorHandler.handleJSONResponse(noErrorReporting));
 
   debug('Parent API setup end');
   return apiApp;

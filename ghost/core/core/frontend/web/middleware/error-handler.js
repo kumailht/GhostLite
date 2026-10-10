@@ -2,7 +2,6 @@ const hbs = require('express-hbs');
 const path = require('path');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const sentry = require('../../../shared/sentry');
 
 const config = require('../../../shared/config');
 const renderer = require('../../services/rendering');
@@ -143,8 +142,6 @@ module.exports.handleThemeResponse = [
   prepareError,
   // Add cache-control header
   prepareErrorCacheControl(),
-  // Handle the error in Sentry
-  sentry.errorHandler,
   // Format the stack for the user
   prepareStack,
   // Render the error using theme template

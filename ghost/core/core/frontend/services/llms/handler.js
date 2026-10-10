@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const sentry = require('../../../shared/sentry');
 const urlUtils = require('../../../shared/url-utils').default;
 
 const LLMS_LOG_KEY = '[llms]';
@@ -47,11 +46,6 @@ function createLlmsHandler({ llmsService, config, settingsCache }) {
         },
         `${LLMS_LOG_KEY} ${err.message}`,
       );
-
-      sentry.captureException(err, {
-        tags: { source: eventName },
-        extra: eventDetails,
-      });
 
       return next(err);
     }

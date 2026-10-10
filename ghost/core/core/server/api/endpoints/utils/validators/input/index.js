@@ -28,14 +28,6 @@ module.exports = {
     return require('./invitations');
   },
 
-  get media() {
-    return require('./media');
-  },
-
-  get files() {
-    return require('./files');
-  },
-
   get settings() {
     return require('./settings');
   },

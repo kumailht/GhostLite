@@ -4,7 +4,7 @@ const express = require('../../../shared/express');
 const config = require('../../../shared/config');
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
-const sentry = require('../../../shared/sentry');
+const { noErrorReporting } = require('../../../shared/express');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
 
 const serveStatic = express.serveStatic;
@@ -62,7 +62,7 @@ module.exports = function setupAdminApp() {
     }
   });
   adminApp.use(errorHandler.pageNotFound);
-  adminApp.use(errorHandler.handleHTMLResponse(sentry));
+  adminApp.use(errorHandler.handleHTMLResponse(noErrorReporting));
 
   debug('Admin setup end');
 

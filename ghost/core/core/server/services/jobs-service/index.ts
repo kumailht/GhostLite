@@ -16,12 +16,10 @@ export function init(): JobsService {
 
   const adapterManager = require('../adapter-manager').default;
   const logging = require('@tryghost/logging');
-  const sentry = require('../../../shared/sentry');
 
   instance = new JobsService({
     backend: adapterManager.getAdapter('jobs'),
     logging,
-    sentry,
   });
 
   return instance;

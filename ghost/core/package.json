@@ -45,7 +45,6 @@
     "dev": "nodemon index.js",
     "start": "NODE_ENV=production node --conditions=source --import=tsx index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
-    "build:assets:js": "node scripts/minify-assets.mts",
     "build:assets:cards": "node scripts/build-card-assets.mts",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc"

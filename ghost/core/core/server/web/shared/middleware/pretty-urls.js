@@ -1,16 +1,14 @@
 // Pretty URL redirects
 //
-// These are three pieces of middleware that handle ensuring that
+// These are two pieces of middleware that handle ensuring that
 // URLs get formatted correctly.
 // Slashes ensures that we get trailing slashes
-// redirectAmpUrls removes /amp from the end of urls if it exists (AMP support removed in v6)
 // Uncapitalise changes case to lowercase
 // @TODO optimize this to reduce the number of redirects required to get to a pretty URL
 // @TODO move this to being used by routers?
 const path = require('path');
 const slashes = require('connect-slashes');
 const config = require('../../../../shared/config');
-const { redirectAmpUrls } = require('./redirect-amp-urls');
 
 const SKIP_SLASH_EXTENSIONS = new Set(['.md', '.txt']);
 
@@ -30,4 +28,4 @@ function skipSlashesForLlmsExtensions(req, res, next) {
   return ensureTrailingSlash(req, res, next);
 }
 
-module.exports = [skipSlashesForLlmsExtensions, redirectAmpUrls, require('./uncapitalise')];
+module.exports = [skipSlashesForLlmsExtensions, require('./uncapitalise')];

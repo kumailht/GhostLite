@@ -198,26 +198,6 @@ function servePublicFiles(siteApp) {
     ),
   );
 
-  // Private page runtime
-  siteApp.get(
-    '/public/private.js',
-    createPublicFileMiddleware(
-      'static',
-      'public/private.js',
-      'application/javascript',
-      config.get('caching:publicAssets:maxAge'),
-    ),
-  );
-  siteApp.get(
-    '/public/private.min.js',
-    createPublicFileMiddleware(
-      'static',
-      'public/private.min.js',
-      'application/javascript',
-      config.get('caching:publicAssets:maxAge'),
-    ),
-  );
-
   // Serve robots.txt if not found in theme (and blog is not private)
   const defaultRobotsTxtMiddleware = createPublicFileMiddleware(
     'static',

@@ -6,8 +6,10 @@
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": "https://github.com/TryGhost/Ghost",
+  "packageManager": "pnpm@12.8.2",
   "scripts": {
     "bootstrap": "pnpm install && git submodule update --init --recursive",
+    "fetch-themes": "node scripts/fetch-themes.js",
     "dev": "pnpm build:admin && pnpm --filter ghost dev",
     "start": "pnpm build:admin && pnpm --filter ghost start",
     "build": "pnpm nx run ghost:build:tsc && pnpm build:admin",

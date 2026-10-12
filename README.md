@@ -71,6 +71,14 @@ blog.example.com {
 To keep Ghost running after you log out and across reboots, run `pnpm start`
 under systemd, pm2, or any other process manager.
 
+### Hosts without git
+
+`pnpm bootstrap` gets the default themes through git submodules, so it needs a
+git checkout. Some hosts, such as Railway, deploy a plain copy of the files
+instead. On those, run `pnpm install` and then `pnpm fetch-themes`, which
+downloads the latest Casper and Source from GitHub. It skips any theme that's
+already there.
+
 ### Upgrading
 
 ```sh
@@ -169,6 +177,7 @@ Create the empty database first. Ghost creates the tables on first start.
 | Command            | What it does                                     |
 | ------------------ | ------------------------------------------------ |
 | `pnpm bootstrap`   | Install dependencies and the default themes      |
+| `pnpm fetch-themes`| Download the default themes without git          |
 | `pnpm dev`         | Build the admin and run Ghost with auto-restart  |
 | `pnpm start`       | Build the admin and run Ghost in production mode |
 | `pnpm build`       | Compile Ghost core and build the admin           |

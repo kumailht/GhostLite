@@ -10,10 +10,9 @@
   "scripts": {
     "bootstrap": "pnpm install && git submodule update --init --recursive",
     "fetch-themes": "node scripts/fetch-themes.js",
-    "dev": "pnpm build:admin && pnpm --filter ghost dev",
-    "start": "pnpm build:admin && pnpm --filter ghost start",
-    "build": "pnpm nx run ghost:build:tsc && pnpm build:admin",
-    "build:admin": "pnpm nx run ghost:build:assets && pnpm nx run @tryghost/admin:build",
+    "dev": "pnpm build && pnpm --filter ghost dev",
+    "start": "pnpm --filter ghost start",
+    "build": "pnpm nx run ghost:build:assets && pnpm nx run @tryghost/admin:build",
     "clean": "node scripts/clean.js"
   },
   "devDependencies": {

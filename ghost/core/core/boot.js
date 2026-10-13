@@ -384,6 +384,11 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     config = require('./shared/config');
     debug('End: Load config');
 
+    // The content folder must have its subfolders before logging writes to it
+    debug('Begin: Prepare content folders');
+    require('./shared/content-folders').prepareContentFolders(config);
+    debug('End: Prepare content folders');
+
     // Logging is also used absolutely everywhere
     debug('Begin: Load logging');
     logging = require('@tryghost/logging');

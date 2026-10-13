@@ -49,15 +49,16 @@ Create `ghost/core/config.production.json` with your blog's address:
 }
 ```
 
-Then start it:
+Then build it and start it:
 
 ```sh
+pnpm build
 pnpm start
 ```
 
-`pnpm start` builds the admin and runs Ghost in production mode. The database
-is created the first time it starts, and it's updated automatically when you
-upgrade.
+`pnpm build` builds the admin, and `pnpm start` runs Ghost in production mode.
+The database is created the first time it starts, and it's updated
+automatically when you upgrade.
 
 Ghost listens on `127.0.0.1:2368`. Put a web server in front of it to handle
 HTTPS. With [Caddy](https://caddyserver.com/), that's one line:
@@ -71,19 +72,36 @@ blog.example.com {
 To keep Ghost running after you log out and across reboots, run `pnpm start`
 under systemd, pm2, or any other process manager.
 
-### Hosts without git
+### Hosting platforms
 
-`pnpm bootstrap` gets the default themes through git submodules, so it needs a
-git checkout. Some hosts, such as Railway, deploy a plain copy of the files
-instead. On those, run `pnpm install` and then `pnpm fetch-themes`, which
-downloads the latest Casper and Source from GitHub. It skips any theme that's
-already there.
+On platforms such as Railway or Render, which build and run the app for you:
+
+- **Build command:** `pnpm fetch-themes && pnpm build`. These platforms deploy
+  a plain copy of the files without git, so `pnpm fetch-themes` downloads the
+  default themes that `pnpm bootstrap` would get through git submodules.
+- **Start command:** `pnpm start`
+
+Attach a persistent volume, mounted at `/data` for example, so your posts and
+uploads survive redeploys. Then set these environment variables:
+
+| Variable                         | Value                    |
+| -------------------------------- | ------------------------ |
+| `url`                            | `https://blog.example.com` |
+| `server__host`                   | `0.0.0.0`                |
+| `paths__contentPath`             | `/data`                  |
+| `database__connection__filename` | `/data/data/ghost.db`    |
+
+Ghost listens on port 2368, so point the platform's public port there. On
+start, Ghost creates its folders on the volume and copies in the default
+themes. Any config setting can be set this way: `__` separates each level, so
+`mail__options__host` is `mail.options.host` in a config file.
 
 ### Upgrading
 
 ```sh
 git pull
 pnpm bootstrap
+pnpm build
 pnpm start
 ```
 
@@ -179,9 +197,8 @@ Create the empty database first. Ghost creates the tables on first start.
 | `pnpm bootstrap`   | Install dependencies and the default themes      |
 | `pnpm fetch-themes`| Download the default themes without git          |
 | `pnpm dev`         | Build the admin and run Ghost with auto-restart  |
-| `pnpm start`       | Build the admin and run Ghost in production mode |
-| `pnpm build`       | Compile Ghost core and build the admin           |
-| `pnpm build:admin` | Build only the admin                             |
+| `pnpm start`       | Run Ghost in production mode                     |
+| `pnpm build`       | Build the admin                                  |
 | `pnpm clean`       | Delete `node_modules`, build output and Nx cache |
 
 ## License

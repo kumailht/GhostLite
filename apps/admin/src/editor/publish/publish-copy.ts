@@ -2,7 +2,7 @@ import moment from 'moment-timezone';
 
 export type PostDisplayName = 'post' | 'page';
 
-// Ember's `buttonTextMap`, less its success copy: the flow replaces the confirm
+// Ember's `buttonTextMap`, less its success copy: the flow replaces the options
 // step with the complete step, so a success state on this button never renders.
 export interface ConfirmButtonInputs {
   isScheduled: boolean;

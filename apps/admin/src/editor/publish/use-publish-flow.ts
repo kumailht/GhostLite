@@ -18,7 +18,7 @@ import type { PublishFlowPost } from './flow-post';
 import type { PublishDispatcher, PublishOptionsMachine, PublishOptionsState } from './publish-options';
 import type { SaveCompletion } from '@/editor/engine/save-engine';
 
-export type PublishStep = 'options' | 'confirm' | 'complete';
+export type PublishStep = 'options' | 'complete';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
 
 export interface PublishFlowOptions {
@@ -44,17 +44,16 @@ export interface PublishFlow extends PublishOptionActions {
   completedAt: string | null;
   /** True while the publish request itself is in flight; closing then would hide its outcome. */
   publishInFlight: boolean;
-  /** Publish intent captured on entering confirm, so saving cannot change the copy. */
+  /** Publish intent captured when publishing starts, so saving cannot change the copy. */
   captured: { isScheduled: boolean };
-  toConfirm: () => void;
-  toOptions: () => void;
-  confirmPublish: () => Promise<void>;
+  /** Publishes or schedules straight from the options step. */
+  publish: () => Promise<void>;
   /** Abandons any asynchronous continuation before the caller closes the modal. */
   cancel: () => void;
 }
 
 export const SCHEDULE_PASSED =
-  'The scheduled time has passed. Go back and choose a future date and time.';
+  'The scheduled time has passed. Choose a future date and time.';
 
 export function usePublishFlow({
   post,
@@ -147,25 +146,6 @@ export function usePublishFlow({
       }
     }
   }, [fetchApi, post.displayName, post.id, state.isScheduled]);
-
-  const toConfirm = useCallback(() => {
-    if (!state.canPublish) {
-      return;
-    }
-    setCaptured({ isScheduled: state.isScheduled });
-    setFailure(null);
-    setConfirmStatus('idle');
-    setStep('confirm');
-    void fetchPostCount();
-  }, [fetchPostCount, state]);
-
-  const toOptions = useCallback(() => {
-    if (publishRunningRef.current) {
-      return;
-    }
-    setStep('options');
-    setConfirmStatus('idle');
-  }, []);
 
   const complete = useCallback(
     (isScheduled: boolean) => {
@@ -280,14 +260,22 @@ export function usePublishFlow({
     if (completionFailure) {
       publishRunningRef.current = false;
       setFailure(completionFailure);
+      // A re-auth interruption leaves the user on the options step to try again.
       setConfirmStatus('failure');
-      // A re-auth interruption sends the user back to confirm and try again.
-      setStep('confirm');
       return;
     }
 
     complete(isScheduled);
   }, [complete, dispatch, machine, onBeforePublish, post.id, state]);
+
+  const publish = useCallback(async () => {
+    if (!state.canPublish || publishRunningRef.current) {
+      return;
+    }
+    setCaptured({ isScheduled: state.isScheduled });
+    void fetchPostCount();
+    await confirmPublish();
+  }, [confirmPublish, fetchPostCount, state]);
 
   return {
     ...optionActions,
@@ -299,9 +287,7 @@ export function usePublishFlow({
     completedAt,
     publishInFlight,
     captured,
-    toConfirm,
-    toOptions,
-    confirmPublish,
+    publish,
     cancel,
   };
 }

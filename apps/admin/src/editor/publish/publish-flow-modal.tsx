@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { publishFlowModal, publishFlowPreview, tkReminderDialog } from '@/editor/selectors';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { CompleteStep } from './components/complete-step';
-import { ConfirmStep } from './components/confirm-step';
 import { GateDialog } from './components/gate-dialog';
 import { OptionsStep } from './components/options-step';
 import { usePublishFlow } from './use-publish-flow';
@@ -172,21 +171,14 @@ function PublishFlowDialog({
               timezone={timezone}
               onRevertToDraft={onRevertToDraft}
             />
-          ) : step === 'confirm' ? (
-            <ConfirmStep
+          ) : (
+            <OptionsStep
+              displayName={post.displayName}
               failure={flow.failure}
-              post={post}
               state={state}
               status={flow.confirmStatus}
               timezone={timezone}
-              onBack={flow.toOptions}
-              onConfirm={() => void flow.confirmPublish()}
-            />
-          ) : (
-            <OptionsStep
-              state={state}
-              timezone={timezone}
-              onContinue={flow.toConfirm}
+              onPublish={() => void flow.publish()}
               onSetScheduledAt={flow.setScheduledAt}
               onToggleScheduled={flow.setIsScheduled}
             />

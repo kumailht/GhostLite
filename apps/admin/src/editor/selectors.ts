@@ -92,17 +92,14 @@ export const postHistoryRestoreConfirm = 'post-history-restore-confirm';
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
 export const publishFlowOptions = 'publish-flow-options';
-export const publishFlowConfirm = 'publish-flow-confirm';
 export const publishFlowComplete = 'publish-flow-complete';
 export const publishFlowPreview = 'publish-flow-preview';
 export const publishSettingPublishType = 'publish-setting-publish-type';
 export const publishSettingPublishAt = 'publish-setting-publish-at';
 export const publishScheduleDate = 'publish-schedule-date';
 export const publishScheduleTime = 'publish-schedule-time';
-export const publishContinue = 'publish-continue';
 export const publishConfirm = 'publish-confirm';
 export const publishConfirmError = 'publish-confirm-error';
-export const publishBackToSettings = 'publish-back-to-settings';
 export const publishCompleteBookmark = 'publish-complete-bookmark';
 export const publishBackToDashboard = 'publish-back-to-dashboard';
 export const publishRevertToDraft = 'publish-revert-to-draft';

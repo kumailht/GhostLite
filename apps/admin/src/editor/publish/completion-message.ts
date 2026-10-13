@@ -86,7 +86,7 @@ export function describeRejectedAction(
 }
 
 /**
- * Turns a non-success completion into the confirm step's inline error.
+ * Turns a non-success completion into the publish step's inline error.
  * Ported from `publish-flow/confirm.js` :108-138, re-expressed over the
  * engine's completion kinds rather than raw transport errors.
  */

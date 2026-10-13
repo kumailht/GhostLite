@@ -255,6 +255,9 @@ overrides:
   moment: 'catalog:'
   moment-timezone: 'catalog:'
   nwsapi: 2.2.24
+  # The 8.x Elasticsearch client hard-depends on apache-arrow for two ES|QL
+  # helpers nothing calls; drop it until the client reaches 9.x
+  '@elastic/elasticsearch>apache-arrow': '-'
   'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.71.0
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.71.0
   # mg-utils depends on the npm release of kg-default-cards, so the published
@@ -316,7 +319,7 @@ minimumReleaseAgeExclude:
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
   # helpers Ghost never calls; the patch defers that require, as 9.x does. The
-  # dependency is dropped in .pnpmfile.mjs - patches apply after resolution.
+  # dependency is dropped in overrides above.
   '@elastic/elasticsearch@8.19.2': patches/@elastic__elasticsearch@8.19.2.patch
   # Radix modals call hideOthers from an effect; StrictMode's dev replay sets,
   # removes and re-sets aria-hidden on the whole page in one task, which stalls

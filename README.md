@@ -4,8 +4,8 @@ A small, self-hosted blog built on [Ghost](https://github.com/TryGhost/Ghost),
 with everything except the blog removed.
 
 **What you get:** the Ghost editor, posts and pages, image and media uploads,
-tags, scheduling, RSS, Ghost themes, a single admin login, and import/export of
-your content.
+tags, scheduling, RSS, Ghost themes, staff logins, and import/export of your
+content.
 
 **What's gone:** members, subscriptions, payments, newsletters, comments,
 analytics, integrations, and webhooks. There is no Docker setup and no outside
@@ -16,7 +16,8 @@ uploads.
 
 - Node `22.23.3` (see `.nvmrc`)
 - pnpm 12
-- git (the default themes are git submodules)
+- git (the default themes are git submodules; see `pnpm fetch-themes` below
+  for hosts without git)
 
 ## Try it locally
 
@@ -84,14 +85,16 @@ On platforms such as Railway or Render, which build and run the app for you:
 Attach a persistent volume, mounted at `/data` for example, so your posts and
 uploads survive redeploys. Then set these environment variables:
 
-| Variable                         | Value                    |
-| -------------------------------- | ------------------------ |
+| Variable                         | Value                      |
+| -------------------------------- | -------------------------- |
 | `url`                            | `https://blog.example.com` |
-| `server__host`                   | `0.0.0.0`                |
-| `paths__contentPath`             | `/data`                  |
-| `database__connection__filename` | `/data/data/ghost.db`    |
+| `server__host`                   | `0.0.0.0`                  |
+| `paths__contentPath`             | `/data`                    |
+| `database__connection__filename` | `/data/data/ghost.db`      |
 
-Ghost listens on port 2368, so point the platform's public port there. On
+Variable names are case-sensitive (`url`, not `URL`), and `url` must start with
+`https://`. Ghost listens on port 2368, so point the platform's public port
+there. On
 start, Ghost creates its folders on the volume and copies in the default
 themes. Any config setting can be set this way: `__` separates each level, so
 `mail__options__host` is `mail.options.host` in a config file.
@@ -107,7 +110,8 @@ pnpm start
 
 ## Where your blog lives
 
-Everything is under `ghost/core/content/`:
+Everything is under `ghost/core/content/`, or under `paths__contentPath` if you
+set it:
 
 | Folder      | Contents                                        |
 | ----------- | ----------------------------------------------- |
@@ -195,7 +199,7 @@ Create the empty database first. Ghost creates the tables on first start.
 | Command            | What it does                                     |
 | ------------------ | ------------------------------------------------ |
 | `pnpm bootstrap`   | Install dependencies and the default themes      |
-| `pnpm fetch-themes`| Download the default themes without git          |
+| `pnpm fetch-themes` | Download the default themes without git        |
 | `pnpm dev`         | Build the admin and run Ghost with auto-restart  |
 | `pnpm start`       | Run Ghost in production mode                     |
 | `pnpm build`       | Build the admin                                  |
